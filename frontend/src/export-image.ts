@@ -17,6 +17,78 @@ export type ImageFormat = 'png' | 'jpeg'
 /** Discreet source line added at the foot of exported documents. */
 const SOURCE_URL = 'https://app.drawmeastix.io'
 
+/**
+ * The @font-face rules of the page, with their files inlined, ready to be
+ * handed to html-to-image as `fontEmbedCSS`.
+ *
+ * This exists to route around a bug in that library, and the bug only shows in
+ * Firefox. `embed-webfonts.js` filters the rules it collects with
+ * `rule.style.fontFamily`; on an @font-face rule Firefox leaves that property
+ * undefined where Chromium returns the family, so the library calls `.trim()`
+ * on undefined and every image export dies with "can't access property trim of
+ * undefined". Passing `fontEmbedCSS` short-circuits that whole code path.
+ *
+ * Embedding is not optional: html-to-image rasterises through an SVG
+ * foreignObject loaded as a data URL, a document that cannot reach the page's
+ * own fonts. Skip it and the exported report comes out in a fallback typeface.
+ *
+ * Everything here reads properties through `getPropertyValue`, which both
+ * engines implement, and never through the camelCase accessor that started
+ * this.
+ */
+let fontCssCache: string | null = null
+
+async function fontEmbedCss(): Promise<string> {
+  if (fontCssCache !== null) return fontCssCache
+  const parts: string[] = []
+  for (const sheet of Array.from(document.styleSheets)) {
+    let rules: CSSRule[]
+    try {
+      rules = Array.from(sheet.cssRules)
+    } catch {
+      // A cross-origin sheet throws on cssRules. Ours are same-origin, so
+      // anything unreadable here has no font of ours in it.
+      continue
+    }
+    for (const rule of rules) {
+      const style = (rule as CSSFontFaceRule).style
+      if (rule.constructor.name !== 'CSSFontFaceRule' || !style) continue
+      const src = style.getPropertyValue('src')
+      if (!src) continue
+      parts.push(`@font-face{${await inlineUrls(src, style.cssText)}}`)
+    }
+  }
+  fontCssCache = parts.join('\n')
+  return fontCssCache
+}
+
+/**
+ * Replaces every `url(...)` of a font rule with the file, base64 inlined.
+ *
+ * `base` is a parameter rather than a direct read of `document.baseURI` so the
+ * function can be exercised without a DOM: it is the only piece of the export
+ * whose behaviour a test can pin down, the rest depending on a real browser.
+ */
+export async function inlineUrls(src: string, cssText: string, base?: string): Promise<string> {
+  const urls = [...src.matchAll(/url\((['"]?)([^'")]+)\1\)/g)].map((m) => m[2])
+  let out = cssText
+  for (const url of urls) {
+    if (url.startsWith('data:')) continue
+    try {
+      const res = await fetch(new URL(url, base ?? document.baseURI).href)
+      const buf = new Uint8Array(await res.arrayBuffer())
+      let bin = ''
+      for (const b of buf) bin += String.fromCharCode(b)
+      const type = res.headers.get('content-type') || 'font/woff2'
+      out = out.replace(url, `data:${type};base64,${btoa(bin)}`)
+    } catch {
+      // One unreachable font file must not sink the whole export: the rule
+      // stays as it is and that family falls back in the image.
+    }
+  }
+  return out
+}
+
 /** Captures the whole graph as a dataURL, framed on every node. */
 export async function captureGraph(
   nodes: Node[],
@@ -46,6 +118,9 @@ export async function captureGraph(
     width,
     height,
     pixelRatio: 1,
+    // Supplied rather than left to the library: see `fontEmbedCss`. Passing it
+    // is also what keeps every image export working in Firefox.
+    fontEmbedCSS: await fontEmbedCss(),
     style: {
       width: `${width}px`,
       height: `${height}px`,
