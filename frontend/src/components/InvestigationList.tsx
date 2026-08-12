@@ -302,7 +302,7 @@ export default function InvestigationList() {
                 <ul>
                   {pendingRestore.replaced.map((r) => (
                     <li key={r.name}>
-                      {r.name} — {r.entities} object{r.entities === 1 ? '' : 's'},{' '}
+                      {r.name}, {r.entities} object{r.entities === 1 ? '' : 's'},{' '}
                       {r.relationships} relationship{r.relationships === 1 ? '' : 's'},{' '}
                       {r.notes} note{r.notes === 1 ? '' : 's'}, last modified{' '}
                       {new Date(r.updatedAt).toLocaleString()}

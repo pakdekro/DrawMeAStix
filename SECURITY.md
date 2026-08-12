@@ -35,7 +35,7 @@ scope too.
   issue for it.
 - **`connect-src https:` in the Content-Security-Policy.** The enrichment
   sidecar is chosen by the analyst and its address is unknown at build time.
-  This is a documented trade-off, not an oversight — see
+  This is a documented trade-off, not an oversight, see
   `nginx-security-headers.conf`. Tighten it in your own deployment if you know
   your endpoint.
 - **The absence of authentication.** There is nothing to authenticate against:
@@ -61,7 +61,7 @@ nobody.
 `navigator.storage.persist()`, so the database survives the clean-ups a browser
 performs when disk runs short. That prevents losing a case that was never
 exported; it also means a case from last year is still intact today. The tool
-enforces no retention of its own — deleting an investigation is a deliberate
+enforces no retention of its own: deleting an investigation is a deliberate
 act, and it removes its objects, relationships, notes and screenshots together.
 
 **What leaves.** Nothing, in the course of an investigation: no analytics, no
@@ -71,7 +71,7 @@ exceptions:
 
 - the STIX bundle you export, which is a file written to your disk;
 - enrichment, and only once you have configured an endpoint yourself. A request
-  then carries three fields — enricher, observable type, observable value — one
+  then carries three fields (enricher, observable type, observable value), one
   value at a time. Never the graph, the notes or the screenshots. Its bearer
   token is treated as a credential rather than a preference: it lives in
   `sessionStorage` and dies with the tab, unless the operator explicitly asks

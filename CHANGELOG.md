@@ -39,7 +39,7 @@ this file is the one meant for people reading the code.
 - The application host now serves a `robots.txt` and a `sitemap.xml`, which it
   had neither of.
 
-## 1.0.0 — 11 August 2026
+## 1.0.0 - 11 August 2026
 
 First version tagged for a public audience. Everything below already worked
 before; what changed is that the sharp edges an outside user would have hit
@@ -65,7 +65,7 @@ first are gone.
 - **Rejecting a triage candidate is undoable**, alone or by group, like
   deleting a node from the canvas already was.
 - Accepting a group of candidates absorbs duplicates instead of creating a
-  second node — the three acceptance paths behave the same at last.
+  second node: the three acceptance paths behave the same at last.
 - The working notes no longer overwrite what is being typed when the
   investigation reloads.
 
@@ -98,5 +98,5 @@ first are gone.
 
 - `SECURITY.md`, this file, the version shown in the status bar, Apache-2.0
   declared in `package.json`.
-- Security headers now reach `/assets/` too — nginx silently dropped them
+- Security headers now reach `/assets/` too, where nginx silently dropped them
   there.

@@ -122,7 +122,7 @@ export default function StixGuide({ mode = 'app' }: { mode?: GuideMode }) {
             <li>
               <h3 className="micro">The observable, a fact</h3>
               <p>
-                <code>nest.corax.example</code> — you saw this domain. That is all it says. No
+                <code>nest.corax.example</code>: you saw this domain. That is all it says. No
                 judgement, no claim: an observable can perfectly well be harmless, and often
                 is.
               </p>

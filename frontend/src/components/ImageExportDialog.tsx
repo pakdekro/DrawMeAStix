@@ -77,7 +77,7 @@ export default function ImageExportDialog({
 
   return (
     <Modal title="Export the graph" onClose={onClose}>
-      {nodes.length === 0 && <p className="hint">The graph is empty — nothing to export.</p>}
+      {nodes.length === 0 && <p className="hint">The graph is empty, nothing to export.</p>}
       <label>Format</label>
       <div className="radio-row">
         {(['png', 'jpeg', 'pdf', 'md'] as const).map((f) => (

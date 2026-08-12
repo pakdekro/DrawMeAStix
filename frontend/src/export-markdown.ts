@@ -30,7 +30,7 @@ export function buildMarkdown(
   out.push(`# ${title}`, '')
   out.push(
     `> ${entities.length} entit${entities.length > 1 ? 'ies' : 'y'}, ` +
-      `${rels.length} relation${rels.length > 1 ? 's' : ''} — ` +
+      `${rels.length} relation${rels.length > 1 ? 's' : ''}, ` +
       `generated with [Draw Me A STIX](${SOURCE_URL}).`,
     '',
   )

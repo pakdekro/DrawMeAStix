@@ -34,7 +34,7 @@ function Narrative({
             </p>
           )}
           {nothing && (
-            <p className="hint">No relationship yet — link some entities.</p>
+            <p className="hint">No relationship yet: link some entities.</p>
           )}
           {n.story.map((s, i) => (
             <p key={`s${i}`}>{s}</p>
