@@ -16,8 +16,8 @@ jobs:
   frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
       - name: Install
@@ -36,7 +36,7 @@ jobs:
   stix-core:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: libmagic (required by pycti)
@@ -46,7 +46,7 @@ jobs:
         run: uv sync
       - name: Lint
         working-directory: backend
-        run: uv run ruff check .
+        run: uv run ruff check --output-format=github .
       - name: Tests
         working-directory: backend
         run: uv run pytest -q
@@ -55,13 +55,20 @@ jobs:
         run: |
           uv run python scripts/generate_golden_vectors.py
           uv run python scripts/generate_golden_bundle.py
-          git diff --exit-code ../frontend/src/stix/golden-vectors.json ../frontend/src/stix/golden-bundle.json \
-            || (echo "::error::golden vectors out of sync - re-run generate_golden_*.py and commit" && exit 1)
+          golden="../frontend/src/stix/golden-vectors.json ../frontend/src/stix/golden-bundle.json"
+          if ! git diff --quiet -- $golden; then
+            # The diff in the log AND its summary in the annotation: a check
+            # that says "out of sync" without saying how forces you to re-run
+            # CI blind.
+            git diff -- $golden | head -80
+            echo "::error::golden vectors out of sync ($(git diff --shortstat -- $golden | tr -d '\n')) - re-run generate_golden_*.py and commit"
+            exit 1
+          fi
 
   enricher:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Sync
@@ -69,7 +76,7 @@ jobs:
         run: uv sync
       - name: Lint
         working-directory: enricher
-        run: uv run ruff check .
+        run: uv run ruff check --output-format=github .
       - name: Tests
         working-directory: enricher
         run: uv run pytest -q
