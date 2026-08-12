@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Deux URL, et deux seulement. Les investigations vivent dans le navigateur de
-  chacun : il n'existe aucune autre page à découvrir, et les routes #/inv/<id>
-  ne sont pas des adresses au sens du web.
+  Three URLs, and no more. Investigations live in each analyst's own browser:
+  there is no other page to discover, and the #/inv/<id> routes are not
+  addresses in the web sense.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://app.drawmeastix.io/</loc></url>

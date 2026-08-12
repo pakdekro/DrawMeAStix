@@ -79,11 +79,11 @@ export default function InvestigationList() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `dmas-sauvegarde-${new Date().toISOString().slice(0, 10)}.json`
+      a.download = `dmas-backup-${new Date().toISOString().slice(0, 10)}.json`
       a.click()
       URL.revokeObjectURL(url)
     } catch (e) {
-      setError(`Sauvegarde : ${(e as Error).message}`)
+      setError(`Backup: ${(e as Error).message}`)
     }
   }
 

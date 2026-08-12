@@ -839,7 +839,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
               })
               const page = pageAt(doc, cand.offset)
               const note = await api.createNote(iid, {
-                content: `${file.name}${page > 0 ? `, p.${page}` : ''} : « ${cand.context} »`,
+                content: `${file.name}${page > 0 ? `, p.${page}` : ''}: "${cand.context}"`,
                 entity_id: entity.id,
               })
               setNotes((ns) => [...ns, note])
@@ -1648,7 +1648,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         const capture = await api.createCapture(iid, { blob, width, height, x: pos.x, y: pos.y })
         setNodes((ns) => [...ns, toCaptureNode(capture, onOpenCapture)])
         showInfo(
-          'Capture added - link it to an entity by dragging from its top handle.',
+          'Capture added - link it to an entity by dragging from the handle on its left edge.',
         )
       } catch (e) {
         showError(e)

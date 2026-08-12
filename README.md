@@ -78,11 +78,11 @@ Then point the app at it in Settings. **With no endpoint configured, the applica
 └──────────────────────────────────────────────────┘    enrichment sidecar)
 ```
 
-`backend/` is **not** an application: it is the **reference STIX library** (stix2 + pycti) that generates the golden vectors (`backend/scripts/generate_golden_*.py`) and proves the TypeScript core reproduces the Python implementation bit for bit. It never runs in production , only in development and CI.
+`backend/` is **not** an application: it is the **reference STIX library** (stix2 + pycti) that generates the golden vectors (`backend/scripts/generate_golden_*.py`) and proves the TypeScript core reproduces the Python implementation bit for bit. It never runs in production, only in development and CI.
 
 ## How portable is the STIX it produces?
 
-Exports are **conformant STIX 2.1**: every bundle is validated against the official OASIS JSON schemas (`frontend/src/stix/schemas/`, 41 vendored files) before it is offered for download. Anything that reads STIX 2.1 can consume it : threat intelligence platforms, TAXII servers, or plain `stix2`.
+Exports are **conformant STIX 2.1**: every bundle is validated against the official OASIS JSON schemas (`frontend/src/stix/schemas/`, 41 vendored files) before it is offered for download. Anything that reads STIX 2.1 can consume it: threat intelligence platforms, TAXII servers, or plain `stix2`.
 
 **Standard, therefore valid everywhere:**
 
@@ -96,7 +96,7 @@ Exports are **conformant STIX 2.1**: every bundle is validated against the offic
 - `x_opencti_location_type` on locations: a custom property (`x_` prefix, conformant) carrying something STIX 2.1 does not model ("this is a country / a city / a region"). Tools that ignore it are left with a perfectly valid `location`;
 - the **layout extension** (`extension-definition--4a3b8e1c…`) storing node positions on the canvas: a bona fide STIX 2.1 property-extension, ignored by anything that does not know it.
 
-**Merge behaviour on import** is the platform's business, not the format's: whether an existing field is updated, overwritten or merged comes down to its configuration. That is why the export lets you pick a `confidence` and an author, and never writes an empty field , so it cannot degrade existing data anywhere.
+**Merge behaviour on import** is the platform's business, not the format's: whether an existing field is updated, overwritten or merged comes down to its configuration. That is why the export lets you pick a `confidence` and an author, and never writes an empty field, so it cannot degrade existing data anywhere.
 
 > Interoperability verified against a real **OpenCTI** (7.26): creation, re-import idempotence, no overwrite of a field by a lower confidence, multi-valued field merging. Other platforms have not been tested; the format, however, is the same for everyone.
 
