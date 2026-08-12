@@ -5,6 +5,23 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
+## 1.1.2 - 12 August 2026
+
+- **An investigation holding a pasted screenshot could not be exported as an
+  image, a JPG or a PDF**, on any deployment served with the project's own
+  Content-Security-Policy. Screenshots live as `blob:` URLs and the capture has
+  to read them back to embed them; `img-src blob:` was enough to display them
+  but not to fetch them, and the export died whole. The policy now allows
+  `connect-src blob:`. The defect had been there a long time and only shows
+  behind that policy: served by a bare static server, everything worked.
+- `font-src data:` is allowed too. The capture rasterises through an SVG loaded
+  as an image, a document that cannot reach the page's own fonts, so they are
+  embedded inline. Without it the export still produced a file, in a fallback
+  typeface.
+- When the rendering cannot be loaded the dialog said `[object Event]`, which
+  is neither actionable nor searchable. It now names the serving policy as the
+  likely cause.
+
 ## 1.1.1 - 12 August 2026
 
 - **Image, JPG and PDF export failed under Firefox**, and only there:

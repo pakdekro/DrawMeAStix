@@ -15,6 +15,31 @@ import {
 import Modal from './Modal'
 
 /**
+ * Something a reader can act on, whatever was thrown.
+ *
+ * The capture loads its rendering through an `<img>`, and a browser that
+ * refuses it rejects with an `Event`, not an `Error`. That carries no
+ * `message`, so the dialog printed the literal string "[object Event]" at the
+ * analyst: nothing to act on, and nothing to search for either.
+ *
+ * The message points at the serving policy without pretending to know which
+ * rule bit. It was written after guessing wrong once: a violation raised
+ * inside an SVG loaded as an image is not reported to the page that embeds it,
+ * so the browser console stays silent and only the operator can tell.
+ */
+function readable(e: unknown): string {
+  if (e instanceof Error && e.message) return e.message
+  if (typeof Event !== 'undefined' && e instanceof Event) {
+    return (
+      'The rendering could not be loaded. If this instance is self-hosted, the ' +
+      'Content-Security-Policy serving it is the usual cause: the capture needs ' +
+      "`connect-src blob:` to read pasted screenshots, and `font-src data:` for the typeface."
+    )
+  }
+  return String(e)
+}
+
+/**
  * Visual export (#17): a "photo" of the canvas (WYSIWYG, the analyst's layout
  * is preserved) as PNG / JPG / PDF, graph alone or graph + narrative. Markdown
  * is the odd one out: the graph is redrawn as mermaid, not captured.
@@ -69,7 +94,7 @@ export default function ImageExportDialog({
       }
       onClose()
     } catch (e) {
-      setError((e as Error).message || String(e))
+      setError(readable(e))
     } finally {
       setBusy(false)
     }
@@ -102,7 +127,7 @@ export default function ImageExportDialog({
           checked={withNarrative}
           onChange={(e) => setWithNarrative(e.target.checked)}
         />
-        Inclure le récit
+        Include the narrative
       </label>
       {error && <p className="lint-warn">{error}</p>}
       <div className="actions" style={{ justifyContent: 'flex-start' }}>
