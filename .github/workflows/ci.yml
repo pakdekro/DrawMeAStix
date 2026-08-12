@@ -46,7 +46,9 @@ jobs:
         run: uv sync
       - name: Lint
         working-directory: backend
-        run: uv run ruff check --output-format=github .
+        run: |
+          echo "::notice::$(uv run ruff --version), rules $(uv run ruff check --statistics . 2>/dev/null | tr '\n' ' ' | head -c 200)"
+          uv run ruff check --output-format=github .
       - name: Tests
         working-directory: backend
         run: uv run pytest -q
@@ -61,7 +63,8 @@ jobs:
             # that says "out of sync" without saying how forces you to re-run
             # CI blind.
             git diff -- $golden | head -80
-            echo "::error::golden vectors out of sync ($(git diff --shortstat -- $golden | tr -d '\n')) - re-run generate_golden_*.py and commit"
+            body=$(git diff -U0 -- $golden | grep -E '^[+-]' | grep -vE '^[+-]{3}' | head -12 | sed ':a;N;$!ba;s/\n/%0A/g')
+            echo "::error::golden vectors out of sync ($(git diff --shortstat -- $golden | tr -d '\n'))%0A$body"
             exit 1
           fi
 
@@ -76,7 +79,9 @@ jobs:
         run: uv sync
       - name: Lint
         working-directory: enricher
-        run: uv run ruff check --output-format=github .
+        run: |
+          echo "::notice::$(uv run ruff --version), rules $(uv run ruff check --statistics . 2>/dev/null | tr '\n' ' ' | head -c 200)"
+          uv run ruff check --output-format=github .
       - name: Tests
         working-directory: enricher
         run: uv run pytest -q
