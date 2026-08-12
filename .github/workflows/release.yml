@@ -1,0 +1,75 @@
+# Publishing a release, triggered by pushing a v* tag.
+#
+# It exists to answer one reproach that a released tool cannot dodge: without a
+# downloadable artefact, nobody can pin a version. A hosted app that updates
+# silently gives its users no way to stay on what they audited. Each tag
+# therefore ships the built site as a tarball, which is the whole application:
+# there is no backend to go with it.
+#
+# `gh` rather than a third-party release action: it is preinstalled on the
+# runner and authenticates with the token GitHub already hands the job, so
+# publishing adds no dependency to a repository whose selling point is that it
+# depends on very little.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+
+      # Deliberately the same command a contributor runs, so a release cannot
+      # be built by a path nobody else exercises.
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Pack the built site
+        run: tar -czf "drawmeastix-${GITHUB_REF_NAME}-dist.tar.gz" -C frontend/dist .
+
+      # The notes come from CHANGELOG.md, so the release and the file cannot
+      # tell two different stories. The section must exist: a release whose
+      # notes were silently empty would be worse than a failed job.
+      - name: Take the notes from the changelog
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            $0 ~ "^## " v "( |$|,)" { inside = 1; next }
+            inside && /^## / { exit }
+            inside { print }
+          ' CHANGELOG.md > NOTES.md
+          if [ ! -s NOTES.md ]; then
+            echo "::error::no section for $version in CHANGELOG.md - add one before tagging"
+            exit 1
+          fi
+          {
+            echo
+            echo "---"
+            echo
+            echo "The tarball is the built site, which is the whole application: unpack it"
+            echo "behind any static file server. See the wiki for the deployment notes:"
+            echo "https://github.com/pakdekro/DrawMeAStix/wiki/Self-hosting"
+          } >> NOTES.md
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file NOTES.md \
+            "drawmeastix-${GITHUB_REF_NAME}-dist.tar.gz"

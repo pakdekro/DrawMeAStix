@@ -5,7 +5,7 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
-## Unreleased
+## 1.1.0 - 12 August 2026
 
 - **The STIX guide is now a real page at `/guide`.** It used to live behind
   `#/guide`, an address no server ever sees: nothing could index it, a link
@@ -38,6 +38,34 @@ this file is the one meant for people reading the code.
   them could not see it for want of an accent.
 - The application host now serves a `robots.txt` and a `sitemap.xml`, which it
   had neither of.
+
+- **"Your data" is reachable from the canvas**, not only from the home page and
+  the export dialog: the `local only` badge in the status bar leads to it. The
+  badge already states the promise, so it may as well lead to the text that
+  explains and bounds it.
+- **The code comments are in English**, all of them, across 142 files. They were
+  translated by reading the code beside each comment rather than the comment
+  alone, because what they carry is not in the code: the bug that motivated a
+  line, the trap someone already fell into. Twenty-seven of them turned out to
+  describe behaviour the code does not have and were corrected rather than
+  translated.
+- **A name typed with a trailing space no longer freezes the entity form.** The
+  baseline was stored trimmed while the comparison used the untrimmed field, so
+  the form stayed marked as modified for good and stopped picking up changes
+  from anywhere else. Exactly the failure the comment above it claimed to
+  prevent.
+- The reference Python builder now derives the bundle id from the fingerprint,
+  as the TypeScript one already did. Its own documentation promised an export
+  reproducible byte for byte, which a random bundle id made false of it, and
+  the golden fixture could never be regenerated identically.
+- The identifier algorithm is specified in `docs/identifiers.md`, with the test
+  vectors that lock it, so anyone can recompute an identifier and check it
+  against ours rather than take our word for it. `SECURITY.md` gained a data
+  lifecycle section.
+- The guard against French reaching the screen was blind to text sitting alone
+  on its line, which is how a French label survived months in the image export
+  dialog. It sees that case now, and the test that checks the guard covers it.
+- Em dashes are gone from the documentation and the interface.
 
 ## 1.0.0 - 11 August 2026
 
