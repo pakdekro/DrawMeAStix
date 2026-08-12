@@ -5,6 +5,17 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
+## 1.1.1 - 12 August 2026
+
+- **Image, JPG and PDF export failed under Firefox**, and only there:
+  `can't access property "trim" of undefined`. The fault is in `html-to-image`,
+  which filters the `@font-face` rules it collects through a property Firefox
+  leaves undefined on those rules where Chromium fills it in. Markdown was
+  spared for the sole reason that it never calls the library. We now supply the
+  font CSS ourselves, which avoids that path entirely. Embedding cannot simply
+  be skipped: the capture rasterises through an SVG document that cannot reach
+  the page's own fonts, so the report would come out in a fallback typeface.
+
 ## 1.1.0 - 12 August 2026
 
 - **The STIX guide is now a real page at `/guide`.** It used to live behind
