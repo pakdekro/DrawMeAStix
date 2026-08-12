@@ -15,7 +15,6 @@ from app import config, main, schemas
 from app.enrichers import dig, subfinder
 from app.tools import ToolError, is_domain, is_ip, run_tool, validate_selector
 
-
 # ── IPv6 scope id: bypassing validation ─────────────────────────────────
 # ipaddress.ip_address() accepts "fe80::1%<anything>". CPython only refuses a
 # scope that is empty or contains '%', so spaces, semicolons, newlines and

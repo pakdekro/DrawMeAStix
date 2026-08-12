@@ -45,7 +45,7 @@ def test_plafond_tronque_et_journalise(monkeypatch, caplog):
     with caplog.at_level("WARNING"):
         res = subfinder.enrich("domain-name", "evil.example")
     assert len(res.candidates) == 3
-    assert "tronqué" in caplog.text
+    assert "truncated" in caplog.text
 
 
 def test_selecteur_invalide_rejete_avant_spawn():

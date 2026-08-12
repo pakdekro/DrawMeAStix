@@ -21,6 +21,7 @@ import hashlib
 import json
 import re
 import sqlite3
+import uuid
 from typing import Any
 
 import stix2
@@ -696,7 +697,20 @@ def build_bundle(db: sqlite3.Connection, iid: str, opts) -> tuple[dict, str, lis
     # anyway, where a missing definition is the defect we are fixing.
     bundle_dict["objects"][:0] = _tooling_objects()
 
-    return bundle_dict, fingerprint(bundle_dict), warnings
+    # Deterministic bundle id (uuid5 of the fingerprint) where stix2 draws a
+    # uuid4. Without it the "byte for byte" promise at the top of this module
+    # was false of this builder: every export of one unchanged state produced a
+    # different file, and the golden fixture could never be regenerated
+    # identically - a check that can only fail teaches nothing. The TypeScript
+    # builder already does exactly this (frontend/src/stix/bundle.ts), so this
+    # is also the oracle catching up with the product.
+    #
+    # The fingerprint hashes `objects` only, so feeding it back into the id
+    # cannot chase its own tail.
+    fp = fingerprint(bundle_dict)
+    bundle_dict["id"] = f"bundle--{uuid.uuid5(ids.OPENCTI_NAMESPACE, fp)}"
+
+    return bundle_dict, fp, warnings
 
 
 def fingerprint(bundle_dict: dict) -> str:
