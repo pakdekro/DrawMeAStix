@@ -1,0 +1,3012 @@
+:root {
+  /* Kanagawa (wave) - dark theme, warm parchment foreground.
+     Every INTERFACE color lives here. Two deliberate exceptions, because no
+     light theme is planned (product decision): the STIX type colors, which
+     are a reading code and live in `stixMeta.ts`, and the image export
+     colors, which must stay readable on the report background whatever the
+     theme. The day a light theme arrives, those are the two files to open
+     on top of this block. */
+  /* The sumiInk ramp carries ELEVATION, not outline: each level separates
+     from the previous one by its background, no longer by a stroke. Hence
+     the one-step offset (panel backgrounds recede, controls come forward). */
+  --bg: #1f1f28;          /* sumiInk1 - canvas, page background */
+  --panel: #24242f;       /* panels: one step above the canvas */
+  --panel-2: #2a2a37;     /* sumiInk2 - controls sitting on a panel */
+  --raised: #363646;      /* sumiInk3 - hover, active control */
+  /* Two distinct strokes: `--border` separates zones (quiet), while
+     `--border-strong` signals what can be manipulated (fields, selection). A
+     stroke that says nothing is a stroke to remove. */
+  --border: #34343f;      /* structural separation */
+  --border-strong: #54546d; /* sumiInk4 - affordance */
+  --text: #dcd7ba;        /* fujiWhite (warm) */
+  --text-dim: #9a9782;    /* lightened fujiGray, readable as a label */
+  --muted: var(--text-dim);  /* alias: was used without ever being defined */
+  --accent: #7e9cd8;      /* crystalBlue */
+  --accent-ink: #1f1f28;  /* text sitting on --accent */
+  --success: #98bb6c;     /* springGreen */
+  --warning: #dca561;     /* autumnYellow */
+  --danger: #c34043;      /* autumnRed */
+  --opinion: #ff9e3b;     /* roninYellow - marks an opinion note */
+  --radius: 2px;          /* sharp corners - every rounding goes through here */
+  --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', Menlo, monospace;
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
+
+/* Micro-label: whatever belongs to the system (field caption, section
+   header, counter) goes monospace. Type separates the registers, which
+   saves drawing a stroke around every section. */
+.micro {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The fill carries the affordance, not the outline: a button is known by its
+   background. The stroke returns only on hover and focus, where it informs. */
+button {
+  font: inherit;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--raised);
+  border-color: var(--border-strong);
+}
+
+button:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* The primary button already has `--accent` as its border: recoloring it
+   therefore marks nothing. It needs a ring, otherwise the most important
+   action in a dialog is the one whose focus you cannot see. */
+button.primary:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+button.primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+button.danger {
+  color: var(--danger);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Fields keep the strong stroke: these are the things that must look editable. */
+input,
+select,
+textarea {
+  font: inherit;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 7px 10px;
+  width: 100%;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+label {
+  display: block;
+  margin: 10px 0 4px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+/* ---- Top bar ---- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.topbar .brand img {
+  height: 26px;
+  width: auto;
+}
+
+.attack-palette {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.attack-version {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 11px;
+}
+
+.attack-search {
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.attack-results {
+  overflow-y: auto;
+  max-height: 40vh;
+}
+
+.attack-result {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.attack-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.attack-id {
+  color: var(--muted);
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+.triage-tray {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 6;
+  width: 300px;
+  max-height: 45%;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+.triage-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.triage-header .spacer {
+  flex: 1;
+}
+
+.triage-count {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: var(--radius);
+  padding: 0 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.triage-list {
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+}
+
+.triage-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px; /* = ROW_H (TriageTray): stable reserved height (#80) */
+  box-sizing: border-box;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.triage-row .triage-name {
+  flex: 1 1 auto;
+  /* min-width:0, otherwise a flex item refuses to shrink below its content
+     width: the name was crushed to 0px by the source tag (300px tray) */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.triage-source {
+  /* does not shrink: the name (min-width:0) is what gets ellipsized */
+  flex: 0 0 auto;
+  max-width: 38%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 4px;
+}
+
+.triage-ok,
+.triage-no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 24px;
+  height: 22px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.triage-ok {
+  color: var(--success);
+}
+
+.triage-no {
+  color: var(--danger);
+}
+
+.triage-all {
+  margin: 8px 10px;
+  font-size: 12px;
+}
+
+.triage-send {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+.triage-send:hover {
+  color: var(--text);
+}
+
+.entity-delete:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* connection handles (#83): quiet at rest, obvious when the node is
+   hovered - the "drag out a link" gesture is what we make discoverable */
+.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  /* `scale`, not transform: React Flow already centers the handle with a
+     translate that must not be overwritten */
+  transition:
+    scale 0.12s ease,
+    background-color 0.12s ease;
+}
+
+.react-flow__node:hover .react-flow__handle {
+  scale: 1.6;
+  background-color: var(--accent);
+  cursor: crosshair;
+}
+
+.suggest-wrap {
+  position: relative;
+}
+
+.suggest-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.suggest-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.suggest-item:hover {
+  /* a step of the ramp, not a translucent white: that one matched no color
+     in the system and rendered differently depending on the background */
+  background: var(--raised);
+}
+
+.suggest-item .suggest-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tpl-field {
+  margin-bottom: 8px;
+}
+
+.tpl-field label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tpl-type {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 11px;
+}
+
+.tpl-hash {
+  margin-top: 4px;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.tpl-load {
+  cursor: pointer;
+}
+
+.paste-preview {
+  margin-top: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.paste-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.paste-type {
+  color: var(--muted);
+  font-size: 11px;
+  min-width: 70px;
+}
+
+.paste-value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.pattern-builder {
+  margin: 8px 0;
+  padding: 8px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.pattern-builder-row {
+  display: flex;
+  gap: 6px;
+}
+
+.pattern-builder-row select {
+  flex: 0 0 auto;
+  max-width: 40%;
+}
+
+.pattern-builder-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.pattern-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.pattern-preview code {
+  flex: 1;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--panel-2);
+  border-radius: var(--radius);
+  padding: 4px 6px;
+}
+
+.worknotes {
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+}
+
+.worknotes-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.worknotes-header .spacer {
+  flex: 1;
+}
+
+.worknotes-info {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 11px;
+}
+
+.worknotes-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.worknotes-saving {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 11px;
+}
+
+.worknotes-text {
+  height: 140px;
+  resize: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bridge-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  margin-bottom: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.bridge-option:has(input:checked) {
+  border-color: var(--accent);
+}
+
+.bridge-label {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+.bridge-hint {
+  color: var(--muted);
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+.lint-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  font-size: 12.5px;
+}
+
+.lint-panel ul {
+  margin: 6px 0 0;
+  padding-left: 4px;
+  list-style: none;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.lint-panel li {
+  padding: 1px 0;
+}
+
+.lint-warn {
+  color: var(--warning);
+}
+
+.lint-info {
+  color: var(--muted);
+}
+
+.topbar-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.topbar-icon:hover {
+  border-color: var(--accent);
+}
+
+/* I/O buttons in the top bar (doc import, STIX import).
+   These are <label> elements: we neutralize the global `label` style
+   (uppercase / letter-spacing / form-field margins). */
+.topbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.topbar-btn:hover {
+  border-color: var(--accent);
+}
+
+/* actions laid over the canvas (React Flow Panel): re-layout / undo */
+.rf-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.rf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 11px;
+  cursor: pointer;
+}
+
+.rf-btn:hover {
+  border-color: var(--accent);
+}
+
+.endpoint-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.endpoint-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.endpoint-url {
+  color: var(--muted);
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+.endpoint-test {
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.endpoint-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 6px;
+  align-items: center;
+}
+
+/* The "keep the token" checkbox (#227) takes its own row: dropped into the
+   grid of three fields, it stole their width and the sidecar name ended up
+   truncated to three letters. */
+.endpoint-form .checkbox-row {
+  grid-column: 1 / -1;
+}
+
+.enrich-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+}
+
+.enrich-label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.enrich-desc {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.enrich-endpoint {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* waiting on a slow source (#124): a quiet pulse beats a frozen dialog,
+   which reads as a crash */
+.enrich-running {
+  color: var(--accent);
+  animation: enrich-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes enrich-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enrich-running {
+    animation: none;
+  }
+}
+
+.topbar .inv-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.topbar .spacer {
+  flex: 1;
+}
+
+/* ---- Investigation list ---- */
+
+.home {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 16px;
+  width: 100%;
+}
+
+.home h1 {
+  font-size: 20px;
+}
+
+.home .tagline {
+  color: var(--text-dim);
+  margin-bottom: 24px;
+}
+
+/* Link to the guide: under the tagline, before the controls. A beginner sees
+   it without looking, someone who knows skims past without being slowed. */
+.home-guide-link {
+  margin: -16px 0 24px;
+}
+
+.home-guide-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+}
+
+.home-guide-link a:hover {
+  border-bottom-color: var(--accent);
+}
+
+.create-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.inv-table th {
+  text-align: left;
+  color: var(--text-dim);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.inv-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.inv-table tr:hover td {
+  background: var(--panel);
+}
+
+.inv-table .name {
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ---- Workspace ---- */
+
+.workspace {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* ---- Rail + single panel ---- */
+
+.rail {
+  width: 44px;
+  flex: none;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0;
+  gap: 2px;
+}
+
+.rail-gap {
+  flex: 1;
+}
+
+.rail-btn {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: none;
+  color: var(--text-dim);
+  /* the left edge marks the active section - same vocabulary as the canvas
+     nodes, where the color also lives on the left border */
+  border-left: 2px solid transparent;
+}
+
+.rail-btn:hover:not(:disabled) {
+  background: var(--panel-2);
+  color: var(--text);
+  border-color: transparent;
+  border-left-color: transparent;
+}
+
+.rail-btn.on {
+  background: var(--panel-2);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+.rail-btn:disabled {
+  opacity: 0.35;
+}
+
+.rail-badge {
+  position: absolute;
+  top: 2px;
+  right: 1px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 7px;
+  background: var(--warning);
+  color: var(--accent-ink);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+}
+
+/* A single column: the two columns existed so the scenarios would not fall
+   below the fold, but now that the rail switches panels they have one of
+   their own. The panel holds only 19 rows, which fit without scrolling - and
+   60px go back to the canvas. */
+.sidebar {
+  width: 180px;
+  flex: none;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.sidebar h3 {
+  margin: 12px 0 6px;
+}
+
+.sidebar h3:first-child {
+  margin-top: 0;
+}
+
+/* Chip grid, one column packed tight: the 11 SDOs and the 7 SCOs fit in one
+   go, where 20 loosely spaced rows pushed the scenarios out of view. */
+.chip-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 8px;
+  font-size: 12px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* "Load a scenario…" is a <label> wrapping a file input: same neutralizations
+   as .menu-item, otherwise the global `label` rule uppercases it in the
+   middle of a list of buttons. */
+.palette-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 5px 8px;
+  text-align: left;
+  font-family: inherit;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text);
+}
+
+.palette-btn .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.canvas-wrap {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+/* right column: inspector and narrative as tabs - the two used to share the
+   height and both ended up cramped on a well-filled record */
+.right-col {
+  width: 300px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--border);
+  flex: none;
+}
+
+.tab {
+  padding: 10px 9px 8px;
+  background: none;
+  color: var(--text-dim);
+  font-size: 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+}
+
+.tab:hover {
+  background: none;
+  color: var(--text);
+}
+
+.tab.on {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.tab-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The `display: flex` above would beat the implicit `display: none` of the
+   hidden attribute: without this rule both tab panels stack up. */
+.tab-panel[hidden] {
+  display: none;
+}
+
+.inspector {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+}
+
+/* ---- Graph narrative (#116) ---- */
+
+/* As a tab, the narrative takes the whole column: no separator stroke and no
+   capped height, it has no neighbour left to push against. */
+.narrative {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.narrative-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.narrative-header .spacer {
+  flex: 1;
+}
+
+.narrative-body {
+  overflow-y: auto;
+  max-height: 38vh;
+  padding: 0 14px 12px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.narrative-body p {
+  margin: 0 0 8px;
+}
+
+.narrative-body h4 {
+  margin: 12px 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.narrative-isolated {
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ---- format picker (image export dialog) ---- */
+.radio-row {
+  display: flex;
+  gap: 16px;
+  margin: 4px 0 8px;
+}
+
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.radio input {
+  width: auto;
+}
+
+.inspector h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.inspector .type-chip {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: var(--radius);
+  border: 1px solid;
+  margin-bottom: 10px;
+  color: var(--text-dim);
+}
+
+/* Relation card (#129): source → verb → target */
+.inspector .relation-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  margin-bottom: 10px;
+  overflow-wrap: anywhere;
+}
+
+.inspector .relation-verb {
+  color: var(--text-dim);
+  font-size: 12px;
+  padding-left: 14px;
+}
+
+.inspector .relation-verb::before {
+  content: '↳ ';
+}
+
+/* Format warning (#130): flags without blocking */
+.field-warn {
+  color: var(--warning);
+  font-size: 12px;
+  margin: 4px 0 0;
+}
+
+/* note shown in full in the inspector (#136) */
+.inspector .note-full {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  margin-bottom: 10px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.inspector .empty {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* ---- Canvas nodes ---- */
+
+/* The type color moves from the outline to the left edge: it reads across the
+   whole canvas without boxing the node in a frame. The inline `borderColor`
+   set by EntityNode keeps tinting that one edge. */
+.entity-node {
+  position: relative;
+  background: var(--panel-2);
+  border: 0 solid;
+  border-left-width: 3px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 7px 12px;
+  min-width: 120px;
+  max-width: 230px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.entity-node.selected {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.entity-node .node-type {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.entity-node .node-name {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entity-node .node-badge {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+/* TLP / confidence chips (#125): quiet, under the name */
+.entity-node .node-marks {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.entity-node .node-tlp {
+  font-size: 9px;
+  letter-spacing: 0.03em;
+  border: 1px solid;
+  border-radius: var(--radius);
+  padding: 0 3px;
+  line-height: 1.5;
+}
+
+.entity-node .node-conf {
+  font-size: 9px;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 3px;
+  line-height: 1.5;
+}
+
+.react-flow__edge-text {
+  fill: var(--text-dim);
+  font-size: 11px;
+}
+
+.react-flow__edge-textbg {
+  fill: var(--bg);
+}
+
+.react-flow__attribution {
+  background: transparent;
+  color: var(--text-dim);
+}
+
+/* ---- Dialogs ---- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 12, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.modal h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.modal .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+/* Unsaved-input marker: placed left of the buttons, it pushes "Cancel" and
+   "Save" to the right without moving anything else. Warning tone, not error:
+   nothing is broken, there is simply something left to do. */
+.form-dirty {
+  margin-right: auto;
+  align-self: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--warning);
+}
+
+/* ---- Notes ---- */
+
+.notes-panel {
+  margin-top: 22px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.notes-panel h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.note-card {
+  position: relative;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 8px 26px 8px 10px;
+  margin-bottom: 6px;
+}
+
+.note-card.opinion {
+  border-left-color: var(--opinion);
+}
+
+.note-card p {
+  margin: 0;
+  font-size: 13px;
+  white-space: pre-wrap;
+  /* an FQDN has no natural break point: without this, an enrichment note
+     (#124) overflows and forces horizontal scrolling */
+  overflow-wrap: anywhere;
+}
+
+.opinion-badge {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--opinion);
+  border: 1px solid var(--opinion);
+  border-radius: var(--radius);
+  padding: 1px 7px;
+  margin-bottom: 4px;
+}
+
+.note-delete {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  padding: 2px 6px;
+  font-size: 14px;
+}
+
+.note-delete:hover {
+  color: var(--danger);
+  border: none;
+}
+
+.note-form textarea {
+  margin-bottom: 6px;
+}
+
+.note-form-row {
+  display: flex;
+  gap: 6px;
+}
+
+.note-form-row select {
+  width: auto;
+  flex: 1;
+}
+
+input.checkbox {
+  width: auto;
+}
+
+/* ---- Export / import ---- */
+
+.modal-wide {
+  width: 560px;
+}
+
+.export-options {
+  display: flex;
+  gap: 12px;
+}
+
+.export-options > div {
+  flex: 1;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: none;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.export-problems {
+  background: color-mix(in srgb, var(--danger) 16%, var(--panel));
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+.export-problems ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.export-result {
+  margin-top: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.fingerprint {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--accent);
+  word-break: break-all;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+}
+
+.bundle-preview {
+  max-height: 320px;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  font-size: 11px;
+  margin-top: 10px;
+}
+
+/* ---- Persistent status bar ---- */
+/* At the TOP, unlike toasts: a state that lasts must not be mistaken for a
+   message that passes. It pushes the content instead of covering it -
+   covering the canvas to report a space problem would contradict itself. */
+.alert-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid;
+}
+
+.alert-bar.danger {
+  background: color-mix(in srgb, var(--danger) 16%, var(--panel));
+  border-bottom-color: var(--danger);
+  color: color-mix(in srgb, var(--danger) 40%, var(--text));
+}
+
+.alert-bar.warn {
+  background: color-mix(in srgb, var(--warning) 14%, var(--panel));
+  border-bottom-color: var(--warning);
+  color: color-mix(in srgb, var(--warning) 45%, var(--text));
+}
+
+.alert-bar svg {
+  flex: none;
+}
+
+.alert-text {
+  flex: 1;
+}
+
+.alert-action {
+  background: none;
+  border: 1px solid currentColor;
+  color: inherit;
+  font-size: 12px;
+  padding: 3px 10px;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 2px 4px;
+  opacity: 0.7;
+}
+
+.alert-close:hover {
+  background: none;
+  border: none;
+  opacity: 1;
+}
+
+/* ---- Miscellaneous ---- */
+
+.error-banner {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: color-mix(in srgb, var(--danger) 16%, var(--panel));
+  border: 1px solid var(--danger);
+  color: color-mix(in srgb, var(--danger) 40%, var(--text));
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  z-index: 100;
+  max-width: 70vw;
+}
+
+/* same shape as .error-banner, neutral tint (extraction summary #14) */
+.info-banner {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: color-mix(in srgb, var(--accent) 15%, var(--panel));
+  border: 1px solid var(--accent);
+  color: color-mix(in srgb, var(--accent) 45%, var(--text));
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  z-index: 100;
+  max-width: 70vw;
+}
+
+.hint {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+/* isolation warning in the scenario form (#82) -
+   same amber as .lint-warn */
+.tpl-warn {
+  color: var(--warning);
+}
+
+/* --- Annotation layer (#136) ---------------------------------------------- */
+
+.note-pin {
+  position: absolute;
+  top: 4px;
+  right: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  padding: 2px 6px;
+  font-size: 14px;
+}
+
+.note-pin:hover,
+.note-pin.pinned {
+  color: var(--accent);
+  border: none;
+}
+
+/* pinned note: quiet card, "paper" tone - nothing to do with a STIX object */
+.annot-note {
+  position: relative;
+  max-width: 220px;
+  background: color-mix(in srgb, var(--warning) 8%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--warning) 35%, var(--border));
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+/* quick delete on hover: a cross (entities, captures) or a minus (unpin a
+   note) at the node's top right, understated at rest */
+.node-close {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  padding: 2px 4px;
+  line-height: 1;
+  opacity: 0;
+  z-index: 2;
+}
+
+.entity-node:hover .node-close,
+.entity-node.selected .node-close,
+.annot-note:hover .node-close,
+.annot-note.selected .node-close,
+.annot-capture:hover .node-close,
+.annot-capture.selected .node-close,
+/* Invisible does not mean unreachable: this button stayed in the tab order at
+   opacity 0, so keyboard navigation could delete an entity with nothing
+   announcing it. It shows itself as soon as it has focus. */
+.node-close:focus-visible {
+  opacity: 1;
+}
+
+.node-close:hover {
+  color: var(--danger);
+  border: none;
+}
+
+.annot-note .node-close:hover {
+  /* unpinning is not destroying: no red on the note */
+  color: var(--text);
+}
+
+.annot-capture .node-close {
+  background: color-mix(in srgb, var(--bg) 75%, transparent);
+  border-radius: var(--radius);
+}
+
+.annot-note.selected {
+  outline: 1px solid var(--accent);
+}
+
+.annot-note-kind {
+  color: var(--text-dim);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.annot-note-content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 7;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* capture: plain thumbnail, double-click to enlarge */
+.annot-capture {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 3px;
+  line-height: 0;
+}
+
+.annot-capture.selected {
+  outline: 1px solid var(--accent);
+}
+
+.annot-capture img {
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: var(--radius);
+}
+
+/* annotation handles: quiet but grabbable (test feedback: 6px was too
+   small to aim at) */
+.annot-note .react-flow__handle,
+.annot-capture .react-flow__handle,
+.entity-node .annot-handle {
+  width: 10px;
+  height: 10px;
+  background: var(--text-dim);
+  border: 2px solid var(--bg);
+  cursor: crosshair;
+}
+
+.annot-capture .react-flow__handle:hover,
+.entity-node .annot-handle:hover {
+  background: var(--accent);
+}
+
+/* The lightbox goes through <Modal> like the other dialogs (Escape, focus
+   returned), but it has no frame and no background: the image IS the content. */
+.lightbox-box {
+  width: auto;
+  max-width: 92vw;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: zoom-out;
+}
+
+.lightbox-box img {
+  max-width: 92vw;
+  max-height: 92vh;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: block;
+}
+
+/* STIX labels (#132): quiet chips under the name */
+.entity-node .node-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 3px;
+}
+
+.entity-node .node-label {
+  font-size: 9px;
+  color: var(--text-dim);
+  background: color-mix(in srgb, var(--accent) 12%, var(--panel));
+  border-radius: var(--radius);
+  padding: 0 4px;
+  line-height: 1.6;
+}
+
+/* grouped triage tray (#97) */
+.triage-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  border-top: 1px solid var(--border);
+}
+
+.triage-group:first-child {
+  border-top: none;
+}
+
+.triage-fold {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 2px;
+  text-align: left;
+}
+
+.triage-fold:hover {
+  border: none;
+  color: var(--accent);
+}
+
+.triage-group + div .triage-row {
+  padding-left: 20px;
+}
+
+/* search within the canvas (#122) */
+.search-panel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  color: var(--text-dim);
+}
+
+.search-panel input {
+  width: 240px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  outline: none;
+}
+
+.search-count {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.react-flow__node.search-hit {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 70%, transparent));
+}
+
+.react-flow__node.search-miss {
+  opacity: 0.2;
+}
+
+/* multiple canonical bridges (#37): one name field per recipe ticked */
+.bridge-name {
+  margin: 2px 0 8px 26px;
+  width: calc(100% - 26px);
+}
+
+/* typed handles (#136): arrow = STIX flow (in at the top, out at the
+   bottom, the triangle follows the reading direction), diamond = annotation */
+.entity-node .react-flow__handle-top,
+.entity-node .react-flow__handle-bottom {
+  width: 12px;
+  height: 7px;
+  border: none;
+  border-radius: 0;
+  background: var(--text-dim);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.entity-node .react-flow__handle-bottom {
+  background: var(--accent);
+}
+
+.entity-node .annot-handle,
+.annot-note .react-flow__handle,
+.annot-capture .react-flow__handle {
+  width: 10px;
+  height: 10px;
+  border: none;
+  border-radius: 0;
+  background: var(--text-dim);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* welcome panel, first launch (#115) */
+.welcome {
+  margin-top: 24px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  max-width: 560px;
+}
+
+.welcome h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.welcome p {
+  margin: 0 0 16px;
+  color: var(--text-dim);
+  font-size: 13.5px;
+}
+
+/* backup / restore row (#123) */
+.backup-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border);
+}
+
+.backup-row .hint {
+  flex: 1;
+  min-width: 240px;
+  margin: 0;
+}
+
+.backup-row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+/* explanation of a relationship verb (#164) */
+.rel-help {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  border-left: 2px solid var(--accent);
+  padding: 2px 0 2px 9px;
+  margin: 10px 0 0;
+}
+
+.rel-help strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* correcting a relationship's verb (#164) */
+.inspector .relation-type {
+  width: auto;
+  margin-left: 14px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  color: var(--text-dim);
+}
+
+/* a relationship's activity window (#170): two dates side by side in the
+   inspector, captions above */
+.rel-window {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.rel-window label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rel-window input {
+  width: 100%;
+}
+
+/* ── Crash screen (ErrorBoundary) ────────────────────────────────────────
+   Deliberately plain and dependency-free: this component is displayed
+   exactly when normal rendering has failed, so it must assume nothing
+   about the rest of the app. */
+.crash {
+  max-width: 560px;
+  margin: 12vh auto;
+  padding: 0 24px;
+  color: var(--text);
+}
+
+.crash h1 {
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+}
+
+.crash p {
+  color: var(--text-dim);
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+
+.crash-detail {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--danger);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  /* an error message can contain a very long FQDN */
+  overflow-wrap: anywhere;
+}
+
+.crash-actions {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.crash-hint {
+  font-size: 0.85rem;
+}
+
+/* ---- Status bar ---- */
+
+/* The summary before the detail: all these numbers already existed in the
+   state, none was shown. They fit in 24px, under the work notes. */
+.statusbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 4px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+  padding: 0 10px;
+  border-right: 1px solid var(--border);
+}
+
+.stat:last-child {
+  border-right: 0;
+}
+
+/* The only clickable stat (#225). It keeps the colour it had as a badge and
+   takes an underline on hover: in a bar of pure indicators, a link has to
+   announce itself, and nothing else here reacts to the pointer. */
+.stat-link {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.stat-link:hover {
+  text-decoration: underline;
+  background: var(--panel-2);
+}
+
+/* The version number is a landmark, not working information: it stays
+   monospace and understated, like the other system markers. */
+.stat.version {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.stat b {
+  color: var(--text);
+  font-weight: 600;
+  /* the counters change live: without tabular figures, the whole bar
+     jumps when going from 9 to 10 */
+  font-variant-numeric: tabular-nums;
+}
+
+.stat.warn b {
+  color: var(--warning);
+}
+
+.stat.ok {
+  color: var(--success);
+}
+
+.stat-gap {
+  flex: 1;
+}
+
+.stat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---- Top bar menus ---- */
+
+.topbar-menu {
+  position: relative;
+}
+
+.topbar-btn.on {
+  background: var(--raised);
+}
+
+.topbar-menu-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 250px;
+  padding: 4px;
+  background: var(--panel-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Every other entry is a <label> (it wraps a file input): without
+   neutralizing here, the global `label` rule turns it monospace and
+   uppercase, and half the menu ends up shouting. */
+.menu-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  width: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  background: none;
+  border: 0;
+  border-radius: var(--radius);
+  text-align: left;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: var(--raised);
+}
+
+.menu-item svg {
+  margin-top: 2px;
+  color: var(--text-dim);
+}
+
+.menu-item span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.menu-item em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* ---- Command palette (Ctrl+K) ---- */
+
+.cmdk-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 280px;
+  padding: 5px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+
+.cmdk-hint:hover {
+  background: var(--bg);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.cmdk-hint .kbd {
+  margin-left: auto;
+}
+
+.kbd {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  background: var(--panel-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 1px 5px;
+}
+
+.palette-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  /* anchored to the top rather than centered: the list grows downward, a
+     centered box would shift under the cursor on every keystroke */
+  align-items: flex-start;
+  padding-top: 12vh;
+}
+
+.palette {
+  width: min(600px, 92vw);
+  max-height: 66vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+}
+
+.palette-input {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-dim);
+  flex: none;
+}
+
+.palette-input input {
+  flex: 1;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 14.5px;
+  color: var(--text);
+}
+
+.palette-input input:focus {
+  outline: none;
+  border: 0;
+}
+
+.palette-list {
+  overflow-y: auto;
+  padding-bottom: 6px;
+}
+
+.palette-group {
+  padding: 10px 13px 4px;
+}
+
+.palette-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 13px;
+  background: none;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0;
+  text-align: left;
+  font-size: 13px;
+}
+
+.palette-row.on {
+  background: var(--panel-2);
+  border-left-color: var(--accent);
+}
+
+.palette-row:hover {
+  background: var(--panel-2);
+  border-color: transparent;
+  border-left-color: var(--accent);
+}
+
+.palette-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.palette-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.palette-hint {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  flex: none;
+}
+
+.palette-empty {
+  padding: 16px 13px;
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.palette-foot {
+  display: flex;
+  gap: 16px;
+  padding: 7px 13px;
+  border-top: 1px solid var(--border);
+  flex: none;
+}
+
+/* Keyboard triage cursor (j/k/y/n): the tray has to hold focus, hence the
+   quiet ring around the whole panel when it does. */
+.triage-tray:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.triage-row.on {
+  background: var(--panel-2);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.triage-keys {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 4px;
+}
+
+/* Breadcrumb of the "connect" mode: the chosen source stays visible while you
+   hunt for the target, otherwise you forget what you were connecting. */
+.palette-crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  max-width: 40%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 2px 6px;
+  background: var(--panel-2);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--text);
+  font-size: 12.5px;
+}
+
+.palette-crumb svg {
+  color: var(--text-dim);
+}
+
+/* ---- Bulk editing (#185) ---- */
+
+.inspector.bulk h3 {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.bulk-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.bulk-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  background: var(--panel-2);
+  border-radius: var(--radius);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.bulk-type .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.bulk-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.bulk-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  font-size: 11.5px;
+  background: var(--panel-2);
+}
+
+.bulk-label svg {
+  color: var(--text-dim);
+}
+
+/* A label marked for removal stays READABLE and one click from being undone:
+   the analyst must see what is about to be removed before confirming. */
+.bulk-label.dropped {
+  color: var(--danger);
+  text-decoration: line-through;
+  border-color: var(--danger);
+}
+
+.bulk-label.dropped svg {
+  color: var(--danger);
+}
+
+.bulk-apply {
+  margin-top: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* ---- Collapsible panels (responsive) ---- */
+
+.tabs-gap {
+  flex: 1;
+}
+
+.tab-collapse {
+  padding: 8px 6px;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  color: var(--text-dim);
+}
+
+.tab-collapse:hover {
+  background: none;
+  border: 0;
+  color: var(--text);
+}
+
+.topbar-icon.on {
+  color: var(--accent);
+}
+
+/* Below the threshold the top bar must stop growing: the palette shortcut
+   drops its label, and the app keeps a single line. */
+.topbar .brand,
+.topbar-btn,
+.topbar .primary,
+.cmdk-hint {
+  white-space: nowrap;
+}
+
+@media (max-width: 1200px) {
+  /* the shortcut drops its label but keeps its icon and its key: the bar
+     stops growing without the way in disappearing */
+  .cmdk-hint {
+    min-width: 0;
+  }
+
+  .cmdk-label {
+    display: none;
+  }
+
+  .topbar .inv-name {
+    max-width: 22ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Very narrow: the logo alone is enough to identify the application. */
+@media (max-width: 950px) {
+  /* `.brand span` removed: the wordmark is a direct text node of the link,
+     there is no span to target. The rule therefore never applied. */
+  .topbar .brand {
+    font-size: 0;
+  }
+
+  .topbar .brand img {
+    height: 24px;
+  }
+}
+
+/* Very narrow: the secondary counters give up their place, the two that
+   matter (pending triage, export freshness) stay. */
+@media (max-width: 900px) {
+  .statusbar .stat:nth-child(2),
+  .statusbar .stat:nth-child(3) {
+    display: none;
+  }
+}
+
+/* ---- Small screens: presentation card ---- */
+
+/* First impression for whoever arrives from a shared link: this screen must
+   make them want to come back on a desktop, not read as a closed door. */
+.small-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 20px;
+  background: var(--bg);
+}
+
+.small-card {
+  width: 100%;
+  max-width: 34rem;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.small-logo {
+  width: 46px;
+  height: auto;
+}
+
+.small-card h1 {
+  margin: 0;
+  font-size: 27px;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
+.small-tagline {
+  margin: -8px 0 0;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.small-body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.small-points {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.small-points li::marker {
+  color: var(--accent);
+}
+
+/* The edge reuses the vocabulary of the canvas nodes: color carries the
+   meaning on the left border, never as a frame. */
+.small-warn {
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  background: var(--panel);
+  border-left: 3px solid var(--warning);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.small-warn em {
+  font-style: normal;
+  color: var(--warning);
+}
+
+.small-cta {
+  margin-top: 8px;
+  padding: 12px 16px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 15px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.small-anyway {
+  background: none;
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+  font-size: 13.5px;
+  padding: 9px 14px;
+}
+
+.small-anyway:hover {
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+/* ---- Shortcut cheat sheet ("?") ---- */
+
+/* Wider than the other dialogs: a cheat sheet is SCANNED, and two columns
+   halve the height to travel. At 560px the grid fell back to a single column
+   and the list ran past a laptop screen. */
+.shortcuts {
+  width: 760px;
+}
+
+.shortcuts .shortcut-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px 28px;
+  margin: 4px 0 14px;
+}
+
+.shortcut-group h3 {
+  margin: 0;
+}
+
+/* The context is part of the shortcut: "j / k" means nothing outside the
+   triage tray. So it sits above the list, not in a footnote. */
+.shortcut-scope {
+  margin: 2px 0 8px;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.shortcut-group dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.shortcut-row {
+  display: grid;
+  grid-template-columns: 108px 1fr;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.shortcut-row dt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  justify-content: flex-end;
+}
+
+.shortcut-keys {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.shortcut-or {
+  color: var(--text-dim);
+  font-size: 10px;
+  margin: 0 2px;
+}
+
+.shortcut-row dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.shortcut-note {
+  display: block;
+  color: var(--text-dim);
+  font-size: 11.5px;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.shortcuts .hint a {
+  color: var(--accent);
+}
+
+/* ---- STIX guide (#/guide) ---- */
+
+.guide {
+  max-width: 780px;
+  padding-bottom: 64px;
+}
+
+.guide-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12.5px;
+  margin-bottom: 14px;
+}
+
+.guide-back:hover {
+  color: var(--text);
+}
+
+/* Sections are separated by their breathing room and one hairline on top:
+   boxing every block would turn the page into a form. */
+.guide-section {
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+
+.guide-section h2 {
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+
+.guide-section h3 {
+  margin: 0 0 8px;
+}
+
+.guide-section p {
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.guide-section code {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  background: var(--panel);
+  padding: 1px 4px;
+  border-radius: var(--radius);
+}
+
+/* The standalone picker does not stretch across the column: a wide field
+   announces free input, whereas this is about choosing a type. */
+.guide-section > select {
+  max-width: 280px;
+  margin-bottom: 4px;
+}
+
+.guide-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 16px 0;
+}
+
+.guide-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.guide-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel);
+  padding: 4px 9px;
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+
+.guide-chip .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* The rule that catches everyone out, treated like a canvas warning:
+   colored left edge, no frame. */
+.guide-rule {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border-left: 3px solid var(--warning);
+  font-size: 13.5px;
+}
+
+.guide-rule svg {
+  flex: none;
+  color: var(--warning);
+  margin-top: 2px;
+}
+
+.guide-rule em {
+  font-style: normal;
+  color: var(--warning);
+}
+
+.guide-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 16px 0;
+}
+
+.guide-verbs {
+  margin: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.guide-verbs dt {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.guide-verbs dd {
+  margin: 2px 0 0;
+  color: var(--text-dim);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.guide-others {
+  color: var(--text-dim);
+}
+
+.guide-pair {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.guide-pair select {
+  flex: 1;
+  min-width: 180px;
+}
+
+.guide-arrow {
+  color: var(--text-dim);
+  font-size: 16px;
+}
+
+/* The answer's color carries the verdict before you even read it: green you
+   can, ochre it takes a detour, red no. */
+.guide-answer {
+  padding: 14px 16px;
+  background: var(--panel);
+  border-left: 3px solid var(--border-strong);
+}
+
+.guide-answer.ok {
+  border-left-color: var(--success);
+}
+
+.guide-answer.bridge {
+  border-left-color: var(--accent);
+}
+
+.guide-answer.weak {
+  border-left-color: var(--warning);
+}
+
+.guide-answer.no {
+  border-left-color: var(--danger);
+}
+
+.guide-answer p:last-child {
+  margin-bottom: 0;
+}
+
+.guide-answer ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* The three levels: numbered, because this is a progression from fact to
+   reasoning, not a list of interchangeable definitions. */
+.guide-ladder {
+  list-style: none;
+  counter-reset: rung;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.guide-ladder > li {
+  counter-increment: rung;
+  position: relative;
+  padding: 0 0 14px 30px;
+  border-left: 1px solid var(--border);
+  margin-left: 9px;
+}
+
+.guide-ladder > li:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+
+.guide-ladder > li::before {
+  content: counter(rung);
+  position: absolute;
+  left: -9px;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel-2);
+  color: var(--text-dim);
+  border-radius: 50%;
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.guide-ladder h3 {
+  margin: 1px 0 6px;
+}
+
+.guide-ladder p:last-child {
+  margin-bottom: 0;
+}
+
+.guide-patterns {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.guide-patterns li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.guide-patterns .guide-others {
+  flex: none;
+  min-width: 62px;
+}
+
+/* The pattern can be long: it scrolls rather than wrapping, which used to
+   shift the caption and break the alignment of the three examples.
+   min-width:0 is indispensable, a flex item otherwise refusing to shrink
+   below the width of its content. */
+.guide-patterns code {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 3px 6px;
+}
+
+.guide-recipes li {
+  margin-bottom: 8px;
+}
+
+.guide-recipes li:last-child {
+  margin-bottom: 0;
+}
+
+/* The chain goes on its own line under its caption: it reads as one block,
+   and tacking it onto the end of a sentence would break it anywhere. */
+.guide-chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  font-size: 12.5px;
+}
+
+.guide-chain-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.guide-chain-arrow {
+  color: var(--text-dim);
+}
+
+.guide-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.guide-cta {
+  padding: 10px 16px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+/* ---- Pre-rendered guide (/guide, #223) ----
+   The page served at /guide is the SAME guide, written into the HTML at build
+   time then hydrated. It therefore has no styling of its own, with one
+   exception. */
+
+/* The pickers only act once the script is in place. A dead control says so:
+   that is more honest than a menu that would produce nothing, and it only
+   lasts as long as the load. */
+.guide select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* The guide is the only page deliberately readable on a phone: it is prose,
+   and it is often the way people discover the tool. */
+@media (max-width: 700px) {
+  .guide-legend,
+  .guide-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-pair {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .guide-arrow {
+    align-self: center;
+    transform: rotate(90deg);
+  }
+
+  .shortcut-row {
+    grid-template-columns: 1fr;
+  }
+
+  .shortcut-row dt {
+    justify-content: flex-start;
+  }
+}

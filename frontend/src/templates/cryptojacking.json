@@ -1,0 +1,119 @@
+{
+  "name": "Cryptojacking",
+  "description": "Resource hijacking for mining: compromised server, miner, mining pool.",
+  "labels": [
+    "cryptojacking",
+    "resource-hijacking"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "threat-actor",
+      "label": "Actor (if known)"
+    },
+    {
+      "key": "server",
+      "type": "infrastructure",
+      "label": "Compromised server",
+      "placeholder": "Exposed Kubernetes cluster"
+    },
+    {
+      "key": "cve",
+      "type": "vulnerability",
+      "label": "Entry flaw (if known)"
+    },
+    {
+      "key": "miner",
+      "type": "malware",
+      "label": "Deployed miner",
+      "placeholder": "XMRig",
+      "prefill": {
+        "is_family": true
+      }
+    },
+    {
+      "key": "pool_domain",
+      "type": "domain-name",
+      "label": "Mining pool"
+    },
+    {
+      "key": "pool_ip",
+      "type": "ipv4-addr",
+      "label": "Pool IP"
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Victim organisation",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "t1496",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Resource Hijacking",
+      "prefill": {
+        "x_mitre_id": "T1496"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "compromises",
+      "to": "server"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "miner"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1496"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "cve"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1496",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "server",
+      "rel": "has",
+      "to": "cve"
+    },
+    {
+      "from": "miner",
+      "rel": "exploits",
+      "to": "cve"
+    },
+    {
+      "from": "miner",
+      "rel": "communicates-with",
+      "to": "pool_domain"
+    },
+    {
+      "from": "miner",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "pool_domain",
+      "rel": "resolves-to",
+      "to": "pool_ip"
+    }
+  ]
+}

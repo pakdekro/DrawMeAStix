@@ -1,0 +1,935 @@
+{
+  "type": "bundle",
+  "id": "bundle--c0ra0000-0000-4000-8000-000000000061",
+  "objects": [
+    {
+      "type": "identity",
+      "spec_version": "2.1",
+      "id": "identity--856129ab-fbe0-513c-822b-2266fcf038fc",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "name": "Draw Me A STIX",
+      "identity_class": "system"
+    },
+    {
+      "type": "extension-definition",
+      "spec_version": "2.1",
+      "id": "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d",
+      "created_by_ref": "identity--856129ab-fbe0-513c-822b-2266fcf038fc",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "name": "Draw Me A STIX layout",
+      "description": "Node positions on the DMAS canvas (ignored by other tools).",
+      "schema": "Canvas layout only. Adds position_x and position_y (numbers), local_id and source (strings) to an object, recording where it sat on the Draw Me A STIX canvas and where it came from. Carries no intelligence: a consumer can ignore this extension without losing anything.",
+      "version": "1.0",
+      "extension_types": [
+        "property-extension"
+      ]
+    },
+    {
+      "type": "report",
+      "spec_version": "2.1",
+      "id": "report--c0ra0000-0000-4000-8000-000000000060",
+      "name": "Operation Aviary",
+      "description": "Fictional investigation: the Corax espionage group targets Aerodyne Defence. Demonstration dataset, no real data.",
+      "report_types": [
+        "campaign"
+      ],
+      "published": "2024-11-15T09:00:00.000Z",
+      "object_refs": [
+        "intrusion-set--c0ra0000-0000-4000-8000-000000000001",
+        "threat-actor--c0ra0000-0000-4000-8000-000000000002",
+        "campaign--c0ra0000-0000-4000-8000-000000000003",
+        "malware--c0ra0000-0000-4000-8000-000000000004",
+        "malware--c0ra0000-0000-4000-8000-000000000005",
+        "tool--c0ra0000-0000-4000-8000-000000000006",
+        "tool--c0ra0000-0000-4000-8000-000000000007",
+        "attack-pattern--c0ra0000-0000-4000-8000-000000000008",
+        "attack-pattern--c0ra0000-0000-4000-8000-000000000009",
+        "indicator--c0ra0000-0000-4000-8000-000000000010",
+        "indicator--c0ra0000-0000-4000-8000-000000000011",
+        "vulnerability--c0ra0000-0000-4000-8000-000000000012",
+        "identity--c0ra0000-0000-4000-8000-000000000013",
+        "location--c0ra0000-0000-4000-8000-000000000014",
+        "location--c0ra0000-0000-4000-8000-000000000015",
+        "infrastructure--c0ra0000-0000-4000-8000-000000000016",
+        "domain-name--c0ra0000-0000-4000-8000-000000000017",
+        "domain-name--c0ra0000-0000-4000-8000-000000000018",
+        "ipv4-addr--c0ra0000-0000-4000-8000-000000000019",
+        "ipv6-addr--c0ra0000-0000-4000-8000-000000000020",
+        "url--c0ra0000-0000-4000-8000-000000000021",
+        "email-addr--c0ra0000-0000-4000-8000-000000000022",
+        "file--c0ra0000-0000-4000-8000-000000000023",
+        "autonomous-system--c0ra0000-0000-4000-8000-000000000024",
+        "relationship--c0ra0000-0000-4000-8000-000000000025",
+        "relationship--c0ra0000-0000-4000-8000-000000000026",
+        "relationship--c0ra0000-0000-4000-8000-000000000027",
+        "relationship--c0ra0000-0000-4000-8000-000000000028",
+        "relationship--c0ra0000-0000-4000-8000-000000000029",
+        "relationship--c0ra0000-0000-4000-8000-000000000030",
+        "relationship--c0ra0000-0000-4000-8000-000000000031",
+        "relationship--c0ra0000-0000-4000-8000-000000000032",
+        "relationship--c0ra0000-0000-4000-8000-000000000033",
+        "relationship--c0ra0000-0000-4000-8000-000000000034",
+        "relationship--c0ra0000-0000-4000-8000-000000000035",
+        "relationship--c0ra0000-0000-4000-8000-000000000036",
+        "relationship--c0ra0000-0000-4000-8000-000000000037",
+        "relationship--c0ra0000-0000-4000-8000-000000000038",
+        "relationship--c0ra0000-0000-4000-8000-000000000039",
+        "relationship--c0ra0000-0000-4000-8000-000000000040",
+        "relationship--c0ra0000-0000-4000-8000-000000000041",
+        "relationship--c0ra0000-0000-4000-8000-000000000042",
+        "relationship--c0ra0000-0000-4000-8000-000000000043",
+        "relationship--c0ra0000-0000-4000-8000-000000000044",
+        "relationship--c0ra0000-0000-4000-8000-000000000045",
+        "relationship--c0ra0000-0000-4000-8000-000000000046",
+        "relationship--c0ra0000-0000-4000-8000-000000000047",
+        "relationship--c0ra0000-0000-4000-8000-000000000048",
+        "relationship--c0ra0000-0000-4000-8000-000000000049",
+        "relationship--c0ra0000-0000-4000-8000-000000000050",
+        "relationship--c0ra0000-0000-4000-8000-000000000051",
+        "relationship--c0ra0000-0000-4000-8000-000000000052",
+        "relationship--c0ra0000-0000-4000-8000-000000000053",
+        "note--c0ra0000-0000-4000-8000-000000000054",
+        "note--c0ra0000-0000-4000-8000-000000000055",
+        "note--c0ra0000-0000-4000-8000-000000000056",
+        "note--c0ra0000-0000-4000-8000-000000000057",
+        "note--c0ra0000-0000-4000-8000-000000000058",
+        "opinion--c0ra0000-0000-4000-8000-000000000059"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "intrusion-set",
+      "spec_version": "2.1",
+      "id": "intrusion-set--c0ra0000-0000-4000-8000-000000000001",
+      "name": "Corax",
+      "aliases": [
+        "Raven Team",
+        "APT-Corax"
+      ],
+      "description": "Fictional espionage group targeting the defence sector.",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "corax",
+          "position_x": 273,
+          "position_y": 189,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "threat-actor",
+      "spec_version": "2.1",
+      "id": "threat-actor--c0ra0000-0000-4000-8000-000000000002",
+      "name": "Corax Operators",
+      "threat_actor_types": [
+        "nation-state"
+      ],
+      "roles": [
+        "agent"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "coraxops",
+          "position_x": 486,
+          "position_y": 318,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "campaign",
+      "spec_version": "2.1",
+      "id": "campaign--c0ra0000-0000-4000-8000-000000000003",
+      "name": "Operation Aviary",
+      "description": "Fictional intellectual property theft campaign (2024).",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "voliere",
+          "position_x": 699,
+          "position_y": 447,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "malware",
+      "spec_version": "2.1",
+      "id": "malware--c0ra0000-0000-4000-8000-000000000004",
+      "name": "NestDrop",
+      "malware_types": [
+        "dropper"
+      ],
+      "is_family": true,
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "nestdrop",
+          "position_x": 912,
+          "position_y": 576,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "malware",
+      "spec_version": "2.1",
+      "id": "malware--c0ra0000-0000-4000-8000-000000000005",
+      "name": "EggShell",
+      "malware_types": [
+        "remote-access-trojan"
+      ],
+      "is_family": true,
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "eggshell",
+          "position_x": 1125,
+          "position_y": 705,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "tool",
+      "spec_version": "2.1",
+      "id": "tool--c0ra0000-0000-4000-8000-000000000006",
+      "name": "Cobalt Strike",
+      "tool_types": [
+        "remote-access"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "cobalt",
+          "position_x": 1338,
+          "position_y": 834,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "tool",
+      "spec_version": "2.1",
+      "id": "tool--c0ra0000-0000-4000-8000-000000000007",
+      "name": "Rclone",
+      "tool_types": [
+        "exfiltration"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "rclone",
+          "position_x": 1551,
+          "position_y": 143,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--c0ra0000-0000-4000-8000-000000000008",
+      "name": "Spearphishing Attachment",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1566.001"
+        }
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "spearphish",
+          "position_x": 264,
+          "position_y": 272,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--c0ra0000-0000-4000-8000-000000000009",
+      "name": "Exfiltration Over C2 Channel",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1041"
+        }
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "exfilc2",
+          "position_x": 477,
+          "position_y": 401,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--c0ra0000-0000-4000-8000-000000000010",
+      "name": "EggShell C2 domain",
+      "pattern": "[domain-name:value = 'nest.corax.example']",
+      "pattern_type": "stix",
+      "valid_from": "2024-11-15T09:00:00.000Z",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "ind_domain",
+          "position_x": 690,
+          "position_y": 530,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--c0ra0000-0000-4000-8000-000000000011",
+      "name": "Phishing sender",
+      "pattern": "[email-addr:value = 'rh@aerodyne-defence.example']",
+      "pattern_type": "stix",
+      "valid_from": "2024-11-15T09:00:00.000Z",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "ind_mail",
+          "position_x": 903,
+          "position_y": 659,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--c0ra0000-0000-4000-8000-000000000012",
+      "name": "CVE-2024-3400",
+      "description": "Fictional vulnerability exploited for initial access.",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "cve",
+          "position_x": 1116,
+          "position_y": 788,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "identity",
+      "spec_version": "2.1",
+      "id": "identity--c0ra0000-0000-4000-8000-000000000013",
+      "name": "Aerodyne Defence",
+      "identity_class": "organization",
+      "sectors": [
+        "defense"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "aerodyne",
+          "position_x": 1329,
+          "position_y": 97,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "location",
+      "spec_version": "2.1",
+      "id": "location--c0ra0000-0000-4000-8000-000000000014",
+      "name": "France",
+      "country": "FR",
+      "region": "western-europe",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "france",
+          "position_x": 1542,
+          "position_y": 226,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "location",
+      "spec_version": "2.1",
+      "id": "location--c0ra0000-0000-4000-8000-000000000015",
+      "name": "Russia",
+      "country": "RU",
+      "region": "eastern-europe",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "russia",
+          "position_x": 255,
+          "position_y": 355,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--c0ra0000-0000-4000-8000-000000000016",
+      "name": "Corax C2 Cluster",
+      "infrastructure_types": [
+        "command-and-control"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "c2infra",
+          "position_x": 468,
+          "position_y": 484,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "domain-name",
+      "spec_version": "2.1",
+      "id": "domain-name--c0ra0000-0000-4000-8000-000000000017",
+      "value": "nest.corax.example",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "d_nest",
+          "position_x": 681,
+          "position_y": 613,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "domain-name",
+      "spec_version": "2.1",
+      "id": "domain-name--c0ra0000-0000-4000-8000-000000000018",
+      "value": "update.aerodyne-defence.example",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "d_spoof",
+          "position_x": 894,
+          "position_y": 742,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "ipv4-addr",
+      "spec_version": "2.1",
+      "id": "ipv4-addr--c0ra0000-0000-4000-8000-000000000019",
+      "value": "185.220.101.7",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "ip4",
+          "position_x": 1107,
+          "position_y": 871,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "ipv6-addr",
+      "spec_version": "2.1",
+      "id": "ipv6-addr--c0ra0000-0000-4000-8000-000000000020",
+      "value": "2001:db8::feed:7",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "ip6",
+          "position_x": 1320,
+          "position_y": 180,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "url",
+      "spec_version": "2.1",
+      "id": "url--c0ra0000-0000-4000-8000-000000000021",
+      "value": "http://nest.corax.example/beacon",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "url_beacon",
+          "position_x": 1533,
+          "position_y": 309,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "email-addr",
+      "spec_version": "2.1",
+      "id": "email-addr--c0ra0000-0000-4000-8000-000000000022",
+      "value": "rh@aerodyne-defence.example",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "mail",
+          "position_x": 246,
+          "position_y": 438,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "file",
+      "spec_version": "2.1",
+      "id": "file--c0ra0000-0000-4000-8000-000000000023",
+      "name": "invoice_2024.pdf.exe",
+      "hashes": {
+        "SHA-256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "sample",
+          "position_x": 459,
+          "position_y": 567,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "autonomous-system",
+      "spec_version": "2.1",
+      "id": "autonomous-system--c0ra0000-0000-4000-8000-000000000024",
+      "number": 209476,
+      "name": "AS209476 CORAX-NET",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z",
+      "extensions": {
+        "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+          "extension_type": "property-extension",
+          "local_id": "asn",
+          "position_x": 672,
+          "position_y": 696,
+          "source": "manual"
+        }
+      }
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000025",
+      "relationship_type": "attributed-to",
+      "source_ref": "campaign--c0ra0000-0000-4000-8000-000000000003",
+      "target_ref": "intrusion-set--c0ra0000-0000-4000-8000-000000000001",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000026",
+      "relationship_type": "attributed-to",
+      "source_ref": "intrusion-set--c0ra0000-0000-4000-8000-000000000001",
+      "target_ref": "threat-actor--c0ra0000-0000-4000-8000-000000000002",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000027",
+      "relationship_type": "originates-from",
+      "source_ref": "intrusion-set--c0ra0000-0000-4000-8000-000000000001",
+      "target_ref": "location--c0ra0000-0000-4000-8000-000000000015",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000028",
+      "relationship_type": "targets",
+      "source_ref": "campaign--c0ra0000-0000-4000-8000-000000000003",
+      "target_ref": "identity--c0ra0000-0000-4000-8000-000000000013",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000029",
+      "relationship_type": "targets",
+      "source_ref": "campaign--c0ra0000-0000-4000-8000-000000000003",
+      "target_ref": "location--c0ra0000-0000-4000-8000-000000000014",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000030",
+      "relationship_type": "uses",
+      "source_ref": "intrusion-set--c0ra0000-0000-4000-8000-000000000001",
+      "target_ref": "malware--c0ra0000-0000-4000-8000-000000000004",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000031",
+      "relationship_type": "uses",
+      "source_ref": "intrusion-set--c0ra0000-0000-4000-8000-000000000001",
+      "target_ref": "malware--c0ra0000-0000-4000-8000-000000000005",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000032",
+      "relationship_type": "uses",
+      "source_ref": "intrusion-set--c0ra0000-0000-4000-8000-000000000001",
+      "target_ref": "tool--c0ra0000-0000-4000-8000-000000000006",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000033",
+      "relationship_type": "uses",
+      "source_ref": "intrusion-set--c0ra0000-0000-4000-8000-000000000001",
+      "target_ref": "tool--c0ra0000-0000-4000-8000-000000000007",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000034",
+      "relationship_type": "uses",
+      "source_ref": "intrusion-set--c0ra0000-0000-4000-8000-000000000001",
+      "target_ref": "attack-pattern--c0ra0000-0000-4000-8000-000000000008",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000035",
+      "relationship_type": "uses",
+      "source_ref": "intrusion-set--c0ra0000-0000-4000-8000-000000000001",
+      "target_ref": "attack-pattern--c0ra0000-0000-4000-8000-000000000009",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000036",
+      "relationship_type": "delivers",
+      "source_ref": "attack-pattern--c0ra0000-0000-4000-8000-000000000008",
+      "target_ref": "malware--c0ra0000-0000-4000-8000-000000000004",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000037",
+      "relationship_type": "drops",
+      "source_ref": "malware--c0ra0000-0000-4000-8000-000000000004",
+      "target_ref": "malware--c0ra0000-0000-4000-8000-000000000005",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000038",
+      "relationship_type": "drops",
+      "source_ref": "malware--c0ra0000-0000-4000-8000-000000000004",
+      "target_ref": "file--c0ra0000-0000-4000-8000-000000000023",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000039",
+      "relationship_type": "exploits",
+      "source_ref": "malware--c0ra0000-0000-4000-8000-000000000005",
+      "target_ref": "vulnerability--c0ra0000-0000-4000-8000-000000000012",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000040",
+      "relationship_type": "communicates-with",
+      "source_ref": "malware--c0ra0000-0000-4000-8000-000000000005",
+      "target_ref": "domain-name--c0ra0000-0000-4000-8000-000000000017",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000041",
+      "relationship_type": "communicates-with",
+      "source_ref": "malware--c0ra0000-0000-4000-8000-000000000005",
+      "target_ref": "url--c0ra0000-0000-4000-8000-000000000021",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000042",
+      "relationship_type": "beacons-to",
+      "source_ref": "malware--c0ra0000-0000-4000-8000-000000000005",
+      "target_ref": "infrastructure--c0ra0000-0000-4000-8000-000000000016",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000043",
+      "relationship_type": "consists-of",
+      "source_ref": "infrastructure--c0ra0000-0000-4000-8000-000000000016",
+      "target_ref": "ipv4-addr--c0ra0000-0000-4000-8000-000000000019",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000044",
+      "relationship_type": "consists-of",
+      "source_ref": "infrastructure--c0ra0000-0000-4000-8000-000000000016",
+      "target_ref": "domain-name--c0ra0000-0000-4000-8000-000000000017",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000045",
+      "relationship_type": "resolves-to",
+      "source_ref": "domain-name--c0ra0000-0000-4000-8000-000000000017",
+      "target_ref": "ipv4-addr--c0ra0000-0000-4000-8000-000000000019",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000046",
+      "relationship_type": "resolves-to",
+      "source_ref": "domain-name--c0ra0000-0000-4000-8000-000000000017",
+      "target_ref": "ipv6-addr--c0ra0000-0000-4000-8000-000000000020",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000047",
+      "relationship_type": "resolves-to",
+      "source_ref": "domain-name--c0ra0000-0000-4000-8000-000000000018",
+      "target_ref": "ipv4-addr--c0ra0000-0000-4000-8000-000000000019",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000048",
+      "relationship_type": "belongs-to",
+      "source_ref": "ipv4-addr--c0ra0000-0000-4000-8000-000000000019",
+      "target_ref": "autonomous-system--c0ra0000-0000-4000-8000-000000000024",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000049",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--c0ra0000-0000-4000-8000-000000000010",
+      "target_ref": "malware--c0ra0000-0000-4000-8000-000000000005",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000050",
+      "relationship_type": "based-on",
+      "source_ref": "indicator--c0ra0000-0000-4000-8000-000000000010",
+      "target_ref": "domain-name--c0ra0000-0000-4000-8000-000000000017",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000051",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--c0ra0000-0000-4000-8000-000000000011",
+      "target_ref": "campaign--c0ra0000-0000-4000-8000-000000000003",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000052",
+      "relationship_type": "based-on",
+      "source_ref": "indicator--c0ra0000-0000-4000-8000-000000000011",
+      "target_ref": "email-addr--c0ra0000-0000-4000-8000-000000000022",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ra0000-0000-4000-8000-000000000053",
+      "relationship_type": "located-at",
+      "source_ref": "identity--c0ra0000-0000-4000-8000-000000000013",
+      "target_ref": "location--c0ra0000-0000-4000-8000-000000000014",
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "note",
+      "spec_version": "2.1",
+      "id": "note--c0ra0000-0000-4000-8000-000000000054",
+      "content": "Attribution to confirm: the infrastructure overlaps two clusters we already track, but the evidence stays thin. Do not publish as is.",
+      "object_refs": [
+        "intrusion-set--c0ra0000-0000-4000-8000-000000000001"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "note",
+      "spec_version": "2.1",
+      "id": "note--c0ra0000-0000-4000-8000-000000000055",
+      "content": "Whois: domain registered 6 days before the first detection, low-reputation registrar, name servers shared with the impersonation domain. See the attached capture.",
+      "object_refs": [
+        "domain-name--c0ra0000-0000-4000-8000-000000000017"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "note",
+      "spec_version": "2.1",
+      "id": "note--c0ra0000-0000-4000-8000-000000000056",
+      "content": "The binary is an obfuscated .NET dropper (double .pdf.exe extension). Persistence via a scheduled task, no deobfuscation in the sandbox.",
+      "object_refs": [
+        "file--c0ra0000-0000-4000-8000-000000000023"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "note",
+      "spec_version": "2.1",
+      "id": "note--c0ra0000-0000-4000-8000-000000000057",
+      "content": "Exploitation confirmed on initial access; the vendor patch had been available for 3 weeks at the time of the incident.",
+      "object_refs": [
+        "vulnerability--c0ra0000-0000-4000-8000-000000000012"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "note",
+      "spec_version": "2.1",
+      "id": "note--c0ra0000-0000-4000-8000-000000000058",
+      "content": "HTTP beacon every 60 s (10% jitter), User-Agent impersonating an update client. Proxy log extract attached.",
+      "object_refs": [
+        "url--c0ra0000-0000-4000-8000-000000000021"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    },
+    {
+      "type": "opinion",
+      "spec_version": "2.1",
+      "id": "opinion--c0ra0000-0000-4000-8000-000000000059",
+      "opinion": "agree",
+      "explanation": "Two independent sources corroborate the modus operandi and the time window of the campaign.",
+      "object_refs": [
+        "campaign--c0ra0000-0000-4000-8000-000000000003"
+      ],
+      "created": "2024-11-15T09:00:00.000Z",
+      "modified": "2024-11-15T09:00:00.000Z"
+    }
+  ]
+}

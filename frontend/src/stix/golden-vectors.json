@@ -1,0 +1,413 @@
+{
+  "_comment": "Généré par generate_golden_vectors.py - ne pas éditer à la main.",
+  "namespace": "00abedb4-aa42-466c-9c01-fed23315a9b7",
+  "cases": [
+    {
+      "fn": "attack_pattern_id",
+      "args": {
+        "x_mitre_id": "T1566"
+      },
+      "expected": "attack-pattern--d041e624-3991-5138-9544-d3ba2ce68ff7"
+    },
+    {
+      "fn": "attack_pattern_id",
+      "args": {
+        "x_mitre_id": "  t1059.001  "
+      },
+      "expected": "attack-pattern--b4d20430-6a7e-59fd-b2e4-8d3f6be56a6a"
+    },
+    {
+      "fn": "attack_pattern_id",
+      "args": {
+        "name": "Spearphishing Attachment"
+      },
+      "expected": "attack-pattern--70166673-00f0-5946-a641-b0b502ea6f5b"
+    },
+    {
+      "fn": "attack_pattern_id",
+      "args": {
+        "name": "  Phishing  "
+      },
+      "expected": "attack-pattern--5e290919-629e-593d-9e43-6991fce07ce4"
+    },
+    {
+      "fn": "attack_pattern_id",
+      "args": {
+        "name": "Ingénierie sociale - ciblée"
+      },
+      "expected": "attack-pattern--e5d348e9-21b0-56ca-82a0-419a357238d1"
+    },
+    {
+      "fn": "attack_pattern_id",
+      "args": {
+        "name": "Δοκιμή Unicode"
+      },
+      "expected": "attack-pattern--50a1623d-f6ab-5d7f-898b-a19714ab1aaf"
+    },
+    {
+      "fn": "campaign_id",
+      "args": {
+        "name": "Opération Héron"
+      },
+      "expected": "campaign--2bcdbdec-c488-5217-82ed-b4fe70000d0e"
+    },
+    {
+      "fn": "campaign_id",
+      "args": {
+        "name": " SolarWinds Compromise "
+      },
+      "expected": "campaign--14361ccf-effe-579d-b1a4-ed5bf5ed2a62"
+    },
+    {
+      "fn": "grouping_id",
+      "args": {
+        "name": "Triage - Opération Héron",
+        "context": "suspicious-activity"
+      },
+      "expected": "grouping--69de51fe-4fb5-54c7-9417-914f855ea411"
+    },
+    {
+      "fn": "grouping_id",
+      "args": {
+        "name": "Triage - Opération Héron",
+        "context": "suspicious-activity",
+        "created": "2026-07-25T10:00:00.000Z"
+      },
+      "expected": "grouping--184094d9-cbd4-5a51-b1e3-c08cefdd641f"
+    },
+    {
+      "fn": "identity_id",
+      "args": {
+        "name": "CERT Pak",
+        "identity_class": "organization"
+      },
+      "expected": "identity--61400248-00d0-534d-b950-9b500734f82b"
+    },
+    {
+      "fn": "identity_id",
+      "args": {
+        "name": "Jean Dupont",
+        "identity_class": "Individual"
+      },
+      "expected": "identity--32f4ae75-b1ea-5ba1-ae76-0afceb2ec729"
+    },
+    {
+      "fn": "indicator_id",
+      "args": {
+        "pattern": "[ipv4-addr:value = '203.0.113.5']"
+      },
+      "expected": "indicator--b043e4db-c04c-5577-a531-8e844948b163"
+    },
+    {
+      "fn": "indicator_id",
+      "args": {
+        "pattern": "  [domain-name:value = 'evil.example']  "
+      },
+      "expected": "indicator--4085ccb3-051d-5f93-9a2e-e75dfe732425"
+    },
+    {
+      "fn": "indicator_id",
+      "args": {
+        "pattern": "[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f' AND file:name = 'payload.exe']"
+      },
+      "expected": "indicator--fbd06847-76a8-5a96-8f1f-b8f90cd713a6"
+    },
+    {
+      "fn": "infrastructure_id",
+      "args": {
+        "name": "C2 - evil.example"
+      },
+      "expected": "infrastructure--84bcf2fb-9ec9-5ed1-b133-ed56d69f6406"
+    },
+    {
+      "fn": "intrusion_set_id",
+      "args": {
+        "name": "APT28"
+      },
+      "expected": "intrusion-set--f743ab1d-b2f2-58f8-975f-0993511c0b9d"
+    },
+    {
+      "fn": "intrusion_set_id",
+      "args": {
+        "name": "aPt29  "
+      },
+      "expected": "intrusion-set--36319194-19e1-50ac-9163-778b56a1bf12"
+    },
+    {
+      "fn": "intrusion_set_id",
+      "args": {
+        "name": "Sandworm Team"
+      },
+      "expected": "intrusion-set--65e968be-f15b-5c63-880a-c9d6d6ace875"
+    },
+    {
+      "fn": "location_id",
+      "args": {
+        "name": "France",
+        "location_type": "Country"
+      },
+      "expected": "location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d"
+    },
+    {
+      "fn": "location_id",
+      "args": {
+        "name": "Paris",
+        "location_type": "City"
+      },
+      "expected": "location--521ef7f0-6bfa-58f9-adca-f5e1737524d5"
+    },
+    {
+      "fn": "location_id",
+      "args": {
+        "name": "Point 48N2E",
+        "location_type": "Position",
+        "latitude": 48.85,
+        "longitude": 2.35
+      },
+      "expected": "location--aaf8ffac-edc5-5ca2-8ffa-0b6a356afe0e"
+    },
+    {
+      "fn": "location_id",
+      "args": {
+        "name": "Point sans coordonnées",
+        "location_type": "Position"
+      },
+      "expected": "location--bca430ca-9998-5344-9ae6-44be4816e975"
+    },
+    {
+      "fn": "malware_id",
+      "args": {
+        "name": "X-Agent"
+      },
+      "expected": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff"
+    },
+    {
+      "fn": "malware_id",
+      "args": {
+        "name": "  Emotet "
+      },
+      "expected": "malware--36297121-bf18-56e1-b200-d39c9f9f5cee"
+    },
+    {
+      "fn": "malware_id",
+      "args": {
+        "name": "ПлохойСофт"
+      },
+      "expected": "malware--ecbc711a-0c55-5e7c-9ed4-094c5b1a036b"
+    },
+    {
+      "fn": "note_id",
+      "args": {
+        "content": "  Attribution incertaine, infra partagée.  "
+      },
+      "expected": "note--b091839f-a52e-5af3-8694-29383a1ef163"
+    },
+    {
+      "fn": "note_id",
+      "args": {
+        "content": "Attribution incertaine.",
+        "created": "2026-07-25T10:00:00.000Z"
+      },
+      "expected": "note--40aace90-dbf3-5e9c-b51e-436f7286665d"
+    },
+    {
+      "fn": "opinion_id",
+      "args": {
+        "opinion": "probably-true"
+      },
+      "expected": "opinion--41f8436a-ac6d-5e79-af88-4458ba28445d"
+    },
+    {
+      "fn": "opinion_id",
+      "args": {
+        "opinion": "probably-true",
+        "created": "2026-07-25T10:00:00.000Z"
+      },
+      "expected": "opinion--513def8f-8a3e-56c7-8ad0-929612ca4d9f"
+    },
+    {
+      "fn": "report_id",
+      "args": {
+        "name": "Rapport Héron",
+        "published": "2026-07-25T12:00:00.000Z"
+      },
+      "expected": "report--e7067a88-f43e-50ab-a092-fc2233467dbe"
+    },
+    {
+      "fn": "threat_actor_group_id",
+      "args": {
+        "name": "APT28"
+      },
+      "expected": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d"
+    },
+    {
+      "fn": "threat_actor_group_id",
+      "args": {
+        "name": "Fancy Bear"
+      },
+      "expected": "threat-actor--3730c22c-d97f-5128-ab8b-a2a6a570dac3"
+    },
+    {
+      "fn": "threat_actor_individual_id",
+      "args": {
+        "name": "John Doe"
+      },
+      "expected": "threat-actor--e031126e-78ea-53ca-b0cd-34d8f71a71db"
+    },
+    {
+      "fn": "tool_id",
+      "args": {
+        "name": "Mimikatz"
+      },
+      "expected": "tool--dae20ca4-ebdf-5248-83ac-0f7a52f94fcc"
+    },
+    {
+      "fn": "tool_id",
+      "args": {
+        "name": "PsExec "
+      },
+      "expected": "tool--437bffbb-47b5-511f-b3cc-c0173c30d3db"
+    },
+    {
+      "fn": "vulnerability_id",
+      "args": {
+        "name": "CVE-2024-3094"
+      },
+      "expected": "vulnerability--eb9df705-bde1-52ed-99dc-00d5bab90129"
+    },
+    {
+      "fn": "relationship_id",
+      "args": {
+        "relationship_type": "uses",
+        "source_ref": "threat-actor--0225e0e0-3a4d-5f5f-8b3f-6b6f5c8d9e0a",
+        "target_ref": "malware--1336f1f1-4b5e-6a6a-9c4a-7c7a6d9e0f1b"
+      },
+      "expected": "relationship--92ea81f2-8b13-52d8-84fc-bbe0e030192e"
+    },
+    {
+      "fn": "relationship_id",
+      "args": {
+        "relationship_type": "uses",
+        "source_ref": "threat-actor--0225e0e0-3a4d-5f5f-8b3f-6b6f5c8d9e0a",
+        "target_ref": "malware--1336f1f1-4b5e-6a6a-9c4a-7c7a6d9e0f1b",
+        "start_time": "2026-01-01T00:00:00.000Z"
+      },
+      "expected": "relationship--559126cb-6764-51df-bdba-fb55d905c47c"
+    },
+    {
+      "fn": "relationship_id",
+      "args": {
+        "relationship_type": "uses",
+        "source_ref": "threat-actor--0225e0e0-3a4d-5f5f-8b3f-6b6f5c8d9e0a",
+        "target_ref": "malware--1336f1f1-4b5e-6a6a-9c4a-7c7a6d9e0f1b",
+        "start_time": "2026-01-01T00:00:00.000Z",
+        "stop_time": "2026-02-01T00:00:00.000Z"
+      },
+      "expected": "relationship--387908fb-dd4d-5a3c-9a5f-a36f5ac0f7b2"
+    },
+    {
+      "fn": "relationship_id",
+      "args": {
+        "relationship_type": "uses",
+        "source_ref": "threat-actor--0225e0e0-3a4d-5f5f-8b3f-6b6f5c8d9e0a",
+        "target_ref": "malware--1336f1f1-4b5e-6a6a-9c4a-7c7a6d9e0f1b",
+        "stop_time": "2026-02-01T00:00:00.000Z"
+      },
+      "expected": "relationship--92ea81f2-8b13-52d8-84fc-bbe0e030192e"
+    }
+  ],
+  "sco_cases": [
+    {
+      "type": "ipv4-addr",
+      "props": {
+        "value": "203.0.113.5"
+      },
+      "expected": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3"
+    },
+    {
+      "type": "ipv4-addr",
+      "props": {
+        "value": "198.51.100.0/24"
+      },
+      "expected": "ipv4-addr--1ea47840-aa39-5aa8-b4a2-cd203eb6662a"
+    },
+    {
+      "type": "ipv6-addr",
+      "props": {
+        "value": "2001:db8::1"
+      },
+      "expected": "ipv6-addr--6469e3a9-b053-5e34-a025-9396ae051d26"
+    },
+    {
+      "type": "domain-name",
+      "props": {
+        "value": "evil.example"
+      },
+      "expected": "domain-name--69228563-c8d2-54ae-aeca-5f4134cb59aa"
+    },
+    {
+      "type": "domain-name",
+      "props": {
+        "value": "café.example"
+      },
+      "expected": "domain-name--798f74e6-5cf8-5c00-b03b-70fcc710ed0f"
+    },
+    {
+      "type": "url",
+      "props": {
+        "value": "https://evil.example/payload?id=1&x=à"
+      },
+      "expected": "url--aa99a2aa-9002-52ff-8232-9f47562871ff"
+    },
+    {
+      "type": "email-addr",
+      "props": {
+        "value": "phish@evil.example"
+      },
+      "expected": "email-addr--e9c7461d-4c69-5b9b-9de9-2e64d776257f"
+    },
+    {
+      "type": "file",
+      "props": {
+        "name": "payload.exe"
+      },
+      "expected": "file--551d9698-9e57-547a-bd63-1f46262137c5"
+    },
+    {
+      "type": "file",
+      "props": {
+        "hashes": {
+          "MD5": "44d88612fea8a8f36de82e1278abb02f"
+        }
+      },
+      "expected": "file--5a0c55a1-48a3-5003-9776-42946d1054cb"
+    },
+    {
+      "type": "file",
+      "props": {
+        "hashes": {
+          "SHA-256": "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f"
+        }
+      },
+      "expected": "file--02c74237-f6bc-5e2e-bcbe-e9bf3d69ac64"
+    },
+    {
+      "type": "file",
+      "props": {
+        "name": "dropper.dll",
+        "hashes": {
+          "MD5": "44d88612fea8a8f36de82e1278abb02f",
+          "SHA-256": "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f"
+        }
+      },
+      "expected": "file--5c58e358-816f-5f45-a7e1-dec64afc1ce5"
+    },
+    {
+      "type": "autonomous-system",
+      "props": {
+        "number": 64496
+      },
+      "expected": "autonomous-system--9ad79ee3-2fde-5015-b0cc-7a96404effca"
+    }
+  ]
+}

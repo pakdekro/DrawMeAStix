@@ -1,0 +1,28 @@
+services:
+  drawmeastix:
+    build: .
+    image: drawmeastix:latest
+    ports:
+      - "8000:80"
+    restart: unless-stopped
+    # No volume: investigations live in each analyst's own browser
+    # (IndexedDB). Backing up means exporting the STIX bundle.
+
+  # Passive enrichment sidecar (v3), optional and movable elsewhere.
+  # A container of its own because its network posture differs (outbound
+  # calls + a token): run it on another host, or not at all - with no
+  # endpoint the app is guaranteed offline.
+  enricher:
+    build: ./enricher
+    image: drawmeastix-enricher:latest
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+    environment:
+      # Bearer token shared with the app (set it; otherwise one is generated
+      # at startup and printed to the logs). In production put the enricher
+      # behind an HTTPS reverse proxy: browsers block mixed content (#52).
+      - STIXIT_ENRICHER_TOKEN=${ENRICHER_TOKEN:-}
+      - STIXIT_ENRICHER_ORIGINS=${ENRICHER_ORIGINS:-http://localhost:8000}
+    profiles:
+      - enrich

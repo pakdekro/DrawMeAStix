@@ -1,0 +1,176 @@
+{
+  "name": "SEO poisoning (search spam)",
+  "description": "Legitimate site compromised to host spam pages redirecting to dubious sites (casino, pharmacy, counterfeit). No malicious payload: the victim is the site's search ranking.",
+  "labels": [
+    "seo-poisoning",
+    "spam"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "threat-actor",
+      "label": "SEO spam operator (if known)"
+    },
+    {
+      "key": "host_site",
+      "type": "infrastructure",
+      "label": "Compromised legitimate site",
+      "placeholder": "A local authority's WordPress"
+    },
+    {
+      "key": "host_domain",
+      "type": "domain-name",
+      "label": "Compromised site domain"
+    },
+    {
+      "key": "host_ip",
+      "type": "ipv4-addr",
+      "label": "Hosting IP"
+    },
+    {
+      "key": "cve",
+      "type": "vulnerability",
+      "label": "CMS / plugin flaw (if known)"
+    },
+    {
+      "key": "webshell",
+      "type": "tool",
+      "label": "Webshell / injection backdoor"
+    },
+    {
+      "key": "doorway_url",
+      "type": "url",
+      "label": "Injected page (doorway)",
+      "placeholder": "https://site.example/wp-content/casino-en.html"
+    },
+    {
+      "key": "monetize",
+      "type": "infrastructure",
+      "label": "Monetisation infrastructure"
+    },
+    {
+      "key": "target_domain",
+      "type": "domain-name",
+      "label": "Destination domain",
+      "placeholder": "best-casino.example"
+    },
+    {
+      "key": "redirect_url",
+      "type": "url",
+      "label": "Final redirect URL"
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Site owner",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "t1608_006",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "SEO Poisoning",
+      "prefill": {
+        "x_mitre_id": "T1608.006"
+      }
+    },
+    {
+      "key": "t1505_003",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Web Shell",
+      "prefill": {
+        "x_mitre_id": "T1505.003"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "compromises",
+      "to": "host_site"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "webshell"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "monetize"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1608_006"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1505_003"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "cve"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1608_006",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1505_003",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "host_site",
+      "rel": "consists-of",
+      "to": "host_domain"
+    },
+    {
+      "from": "host_site",
+      "rel": "consists-of",
+      "to": "host_ip"
+    },
+    {
+      "from": "host_site",
+      "rel": "consists-of",
+      "to": "doorway_url"
+    },
+    {
+      "from": "host_site",
+      "rel": "has",
+      "to": "cve"
+    },
+    {
+      "from": "host_site",
+      "rel": "communicates-with",
+      "to": "target_domain"
+    },
+    {
+      "from": "monetize",
+      "rel": "consists-of",
+      "to": "target_domain"
+    },
+    {
+      "from": "monetize",
+      "rel": "consists-of",
+      "to": "redirect_url"
+    },
+    {
+      "from": "host_domain",
+      "rel": "resolves-to",
+      "to": "host_ip"
+    }
+  ]
+}

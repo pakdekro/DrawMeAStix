@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <title>Draw Me A STIX - the canvas</title>
+    <!--
+      Title and description DISTINCT from the showcase site's.
+
+      The application is a SPA: its initial HTML is empty, so there is almost
+      nothing to index beyond these two lines. Copying them from the showcase
+      put two pages in competition for the same query, one of them with no
+      content - and the showcase is the one with something to argue.
+
+      What is described here is what the page IS, not what the product
+      promises: whoever arrives from a search must understand they are on the
+      tool itself.
+    -->
+    <meta
+      name="description"
+      content="The Draw Me A STIX canvas itself. Create an investigation, annotate it, export STIX 2.1 - all in this browser, nothing sent to a server."
+    />
+    <link rel="canonical" href="https://app.drawmeastix.io/" />
+
+    <!--
+      Link preview, aligned with the showcase site (landing/index.html):
+      sharing the application in a Slack or a Mastodon used to produce an
+      empty card, while the showcase link rendered properly.
+
+      The image MUST be an absolute URL: several aggregators still refuse a
+      relative og:image. Consequence for anyone self-hosting: these three
+      lines point at the reference domain and are to be replaced with their
+      own - the only place in the whole application tied to a domain.
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Draw Me A STIX" />
+    <meta property="og:title" content="Draw Me A STIX - open the canvas" />
+    <meta
+      property="og:description"
+      content="The canvas itself: create an investigation, annotate it, export STIX 2.1. Everything stays in your browser."
+    />
+    <meta property="og:url" content="https://app.drawmeastix.io/" />
+    <meta property="og:image" content="https://app.drawmeastix.io/og.png" />
+    <meta property="og:image:width" content="1199" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Draw Me A STIX, the CTI analyst's STIX scratchpad. Local-first, no LLM, STIX 2.1."
+    />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:locale" content="en_GB" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

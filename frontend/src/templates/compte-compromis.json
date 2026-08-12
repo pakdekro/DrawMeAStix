@@ -1,0 +1,108 @@
+{
+  "name": "Account compromise",
+  "description": "Takeover of a legitimate account: valid credentials, suspicious logins, access infrastructure.",
+  "labels": [
+    "account-takeover",
+    "initial-access"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "threat-actor",
+      "label": "Actor (if known)"
+    },
+    {
+      "key": "account",
+      "type": "identity",
+      "label": "Compromised account / user",
+      "placeholder": "j.smith",
+      "prefill": {
+        "identity_class": "individual"
+      }
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Victim organisation",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "access_infra",
+      "type": "infrastructure",
+      "label": "Access infrastructure",
+      "placeholder": "Commercial VPN / proxy"
+    },
+    {
+      "key": "src_ip",
+      "type": "ipv4-addr",
+      "label": "Suspicious login IP"
+    },
+    {
+      "key": "t1078",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Valid Accounts",
+      "prefill": {
+        "x_mitre_id": "T1078"
+      }
+    },
+    {
+      "key": "t1621",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Multi-Factor Authentication Request Generation",
+      "prefill": {
+        "x_mitre_id": "T1621"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "impersonates",
+      "to": "account"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "access_infra"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1078"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1621"
+    },
+    {
+      "from": "t1078",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1621",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "access_infra",
+      "rel": "consists-of",
+      "to": "src_ip"
+    },
+    {
+      "from": "account",
+      "rel": "related-to",
+      "to": "victim"
+    }
+  ]
+}

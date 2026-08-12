@@ -1,0 +1,10 @@
+.git
+.direnv
+data
+backend/.venv
+backend/.pytest_cache
+backend/.ruff_cache
+frontend/node_modules
+frontend/dist
+**/__pycache__
+*.sqlite3*

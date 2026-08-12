@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <title>Your data - Draw Me A STIX</title>
+    <!--
+      Vite's third entry point (#225), served at /about.
+
+      No script at all, and that is deliberate: the page explaining that
+      nothing leaves the browser has no business running code to say so. It
+      holds no state, so there is nothing to hydrate - the stylesheet is
+      declared right here, and `prerender.mjs` fills the #root after the
+      build.
+    -->
+    <link rel="stylesheet" href="/src/index.css" />
+    <meta
+      name="description"
+      content="Where a Draw Me A STIX investigation lives, what leaves your browser and what never does, how long it is kept, and what deterministic identifiers give away."
+    />
+    <link rel="canonical" href="https://app.drawmeastix.io/about" />
+
+    <!-- As in index.html: these lines carry the reference domain and are to
+         be replaced with your own if you host the tool yourself. -->
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Draw Me A STIX" />
+    <meta property="og:title" content="Your data, and what this tool does with it" />
+    <meta
+      property="og:description"
+      content="Where an investigation lives, what leaves your browser, and what the identifiers give away."
+    />
+    <meta property="og:url" content="https://app.drawmeastix.io/about" />
+    <meta property="og:image" content="https://app.drawmeastix.io/og.png" />
+    <meta property="og:image:width" content="1199" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_GB" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

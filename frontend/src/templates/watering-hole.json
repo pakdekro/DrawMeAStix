@@ -1,0 +1,119 @@
+{
+  "name": "Watering hole",
+  "description": "A site frequented by the target is compromised to serve a payload to visitors.",
+  "labels": [
+    "watering-hole",
+    "drive-by"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "intrusion-set",
+      "label": "Group (if known)"
+    },
+    {
+      "key": "site",
+      "type": "infrastructure",
+      "label": "Compromised legitimate site",
+      "placeholder": "sector portal"
+    },
+    {
+      "key": "lure_url",
+      "type": "url",
+      "label": "Malicious URL",
+      "placeholder": "https://portail.example/news"
+    },
+    {
+      "key": "domain",
+      "type": "domain-name",
+      "label": "Site domain"
+    },
+    {
+      "key": "ip",
+      "type": "ipv4-addr",
+      "label": "Hosting IP"
+    },
+    {
+      "key": "payload",
+      "type": "malware",
+      "label": "Delivered payload",
+      "prefill": {
+        "is_family": true
+      }
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Targeted audience / sector",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "t1189",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Drive-by Compromise",
+      "prefill": {
+        "x_mitre_id": "T1189"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "compromises",
+      "to": "site"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "payload"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1189"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1189",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "site",
+      "rel": "consists-of",
+      "to": "lure_url"
+    },
+    {
+      "from": "site",
+      "rel": "consists-of",
+      "to": "domain"
+    },
+    {
+      "from": "site",
+      "rel": "consists-of",
+      "to": "ip"
+    },
+    {
+      "from": "site",
+      "rel": "delivers",
+      "to": "payload"
+    },
+    {
+      "from": "payload",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "domain",
+      "rel": "resolves-to",
+      "to": "ip"
+    }
+  ]
+}

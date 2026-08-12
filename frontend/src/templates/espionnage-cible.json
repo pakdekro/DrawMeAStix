@@ -1,0 +1,168 @@
+{
+  "name": "Targeted espionage",
+  "description": "Spear phishing leading to a backdoor and quiet exfiltration of documents.",
+  "labels": [
+    "espionage",
+    "targeted-attack"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "intrusion-set",
+      "label": "Group (if known)"
+    },
+    {
+      "key": "mail_infra",
+      "type": "infrastructure",
+      "label": "Sending infrastructure"
+    },
+    {
+      "key": "sender",
+      "type": "email-addr",
+      "label": "Sender address"
+    },
+    {
+      "key": "attach",
+      "type": "file",
+      "label": "Malicious attachment",
+      "placeholder": "summons.docx",
+      "hash": true
+    },
+    {
+      "key": "backdoor",
+      "type": "malware",
+      "label": "Backdoor",
+      "prefill": {
+        "is_family": true
+      }
+    },
+    {
+      "key": "c2_infra",
+      "type": "infrastructure",
+      "label": "C2 infrastructure"
+    },
+    {
+      "key": "c2_domain",
+      "type": "domain-name",
+      "label": "C2 domain"
+    },
+    {
+      "key": "c2_ip",
+      "type": "ipv4-addr",
+      "label": "C2 IP"
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Targeted organisation",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "t1566_001",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Spearphishing Attachment",
+      "prefill": {
+        "x_mitre_id": "T1566.001"
+      }
+    },
+    {
+      "key": "t1041",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Exfiltration Over C2 Channel",
+      "prefill": {
+        "x_mitre_id": "T1041"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "backdoor"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "mail_infra"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "c2_infra"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1566_001"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1041"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1566_001",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1041",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "mail_infra",
+      "rel": "consists-of",
+      "to": "sender"
+    },
+    {
+      "from": "mail_infra",
+      "rel": "consists-of",
+      "to": "attach"
+    },
+    {
+      "from": "mail_infra",
+      "rel": "delivers",
+      "to": "backdoor"
+    },
+    {
+      "from": "backdoor",
+      "rel": "communicates-with",
+      "to": "c2_domain"
+    },
+    {
+      "from": "backdoor",
+      "rel": "exfiltrates-to",
+      "to": "c2_infra"
+    },
+    {
+      "from": "backdoor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "c2_infra",
+      "rel": "consists-of",
+      "to": "c2_domain"
+    },
+    {
+      "from": "c2_infra",
+      "rel": "consists-of",
+      "to": "c2_ip"
+    },
+    {
+      "from": "c2_domain",
+      "rel": "resolves-to",
+      "to": "c2_ip"
+    }
+  ]
+}

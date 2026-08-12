@@ -1,0 +1,123 @@
+{
+  "name": "Botnet / denial of service",
+  "description": "Availability attack run from a fleet of infected machines: botnet, C2, target.",
+  "labels": [
+    "ddos",
+    "botnet"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "threat-actor",
+      "label": "Actor / sponsor (if known)"
+    },
+    {
+      "key": "botnet",
+      "type": "infrastructure",
+      "label": "Botnet (attack sources)",
+      "placeholder": "Infected IoT fleet"
+    },
+    {
+      "key": "c2",
+      "type": "infrastructure",
+      "label": "Botnet C2"
+    },
+    {
+      "key": "bot_malware",
+      "type": "malware",
+      "label": "Bot strain",
+      "prefill": {
+        "is_family": true
+      }
+    },
+    {
+      "key": "c2_domain",
+      "type": "domain-name",
+      "label": "C2 domain"
+    },
+    {
+      "key": "c2_ip",
+      "type": "ipv4-addr",
+      "label": "C2 IP"
+    },
+    {
+      "key": "asn",
+      "type": "autonomous-system",
+      "label": "Source AS (if dominant)"
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Targeted organisation",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "t1498",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Network Denial of Service",
+      "prefill": {
+        "x_mitre_id": "T1498"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "botnet"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "bot_malware"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1498"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1498",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "c2",
+      "rel": "controls",
+      "to": "botnet"
+    },
+    {
+      "from": "c2",
+      "rel": "consists-of",
+      "to": "c2_domain"
+    },
+    {
+      "from": "c2",
+      "rel": "consists-of",
+      "to": "c2_ip"
+    },
+    {
+      "from": "botnet",
+      "rel": "consists-of",
+      "to": "asn"
+    },
+    {
+      "from": "bot_malware",
+      "rel": "beacons-to",
+      "to": "c2"
+    },
+    {
+      "from": "c2_domain",
+      "rel": "resolves-to",
+      "to": "c2_ip"
+    }
+  ]
+}

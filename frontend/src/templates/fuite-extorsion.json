@@ -1,0 +1,106 @@
+{
+  "name": "Data leak / extortion",
+  "description": "Exfiltration then blackmail over publication, without encryption: exfiltration tool, leak site.",
+  "labels": [
+    "data-leak",
+    "extortion"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "intrusion-set",
+      "label": "Group (if known)"
+    },
+    {
+      "key": "leak_infra",
+      "type": "infrastructure",
+      "label": "Publication / leak site"
+    },
+    {
+      "key": "leak_domain",
+      "type": "domain-name",
+      "label": "Leak site domain"
+    },
+    {
+      "key": "leak_url",
+      "type": "url",
+      "label": "Ad URL"
+    },
+    {
+      "key": "exfil_tool",
+      "type": "tool",
+      "label": "Exfiltration tool",
+      "placeholder": "Rclone"
+    },
+    {
+      "key": "storage",
+      "type": "infrastructure",
+      "label": "Destination storage",
+      "placeholder": "Third-party cloud account"
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Victim organisation",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "t1567_002",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Exfiltration to Cloud Storage",
+      "prefill": {
+        "x_mitre_id": "T1567.002"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "leak_infra"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "exfil_tool"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "storage"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1567_002"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1567_002",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "leak_infra",
+      "rel": "consists-of",
+      "to": "leak_domain"
+    },
+    {
+      "from": "leak_infra",
+      "rel": "consists-of",
+      "to": "leak_url"
+    },
+    {
+      "from": "exfil_tool",
+      "rel": "targets",
+      "to": "victim"
+    }
+  ]
+}

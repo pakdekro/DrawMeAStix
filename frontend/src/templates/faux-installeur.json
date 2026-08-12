@@ -1,0 +1,134 @@
+{
+  "name": "Fake installer (SEO / ads)",
+  "description": "Search results or ads diverted to a fake download site serving a trojanised installer.",
+  "labels": [
+    "seo-poisoning",
+    "malvertising"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "threat-actor",
+      "label": "Actor (if known)"
+    },
+    {
+      "key": "fake_site",
+      "type": "infrastructure",
+      "label": "Fake download site"
+    },
+    {
+      "key": "fake_domain",
+      "type": "domain-name",
+      "label": "Fake site domain",
+      "placeholder": "notepad-plus.example"
+    },
+    {
+      "key": "download_url",
+      "type": "url",
+      "label": "Download URL"
+    },
+    {
+      "key": "installer",
+      "type": "file",
+      "label": "Trojanised installer",
+      "placeholder": "setup.msi",
+      "hash": true
+    },
+    {
+      "key": "payload",
+      "type": "malware",
+      "label": "Final payload",
+      "prefill": {
+        "is_family": true
+      }
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Victim organisation",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "t1608_006",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "SEO Poisoning",
+      "prefill": {
+        "x_mitre_id": "T1608.006"
+      }
+    },
+    {
+      "key": "t1204_002",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Malicious File",
+      "prefill": {
+        "x_mitre_id": "T1204.002"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "fake_site"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "payload"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1608_006"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1204_002"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1608_006",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1204_002",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "fake_site",
+      "rel": "consists-of",
+      "to": "fake_domain"
+    },
+    {
+      "from": "fake_site",
+      "rel": "consists-of",
+      "to": "download_url"
+    },
+    {
+      "from": "fake_site",
+      "rel": "consists-of",
+      "to": "installer"
+    },
+    {
+      "from": "fake_site",
+      "rel": "delivers",
+      "to": "payload"
+    },
+    {
+      "from": "payload",
+      "rel": "targets",
+      "to": "victim"
+    }
+  ]
+}

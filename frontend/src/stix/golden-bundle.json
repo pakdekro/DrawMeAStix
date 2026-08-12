@@ -1,0 +1,1837 @@
+{
+  "_comment": "Généré par generate_golden_bundle.py - ne pas éditer à la main.",
+  "state": {
+    "investigation": {
+      "id": "inv-1",
+      "name": "Opération Héron",
+      "description": "Campagne d'hameçonnage ciblée - attribution à l'étude.",
+      "created_at": "2026-07-20T09:00:00.000Z",
+      "updated_at": "2026-07-21T10:30:00.000Z"
+    },
+    "entities": [
+      {
+        "id": "e1",
+        "investigation_id": "inv-1",
+        "stix_type": "threat-actor",
+        "name": "APT28",
+        "properties": "{\"aliases\": [\"Fancy Bear\", \"Sofacy\"], \"description\": \"Groupe étatique présumé.\", \"confidence\": 85}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 120.5,
+        "position_y": 80.0,
+        "created_at": "2026-07-20T09:05:00.000Z",
+        "updated_at": "2026-07-20T09:06:00.000Z"
+      },
+      {
+        "id": "e2",
+        "investigation_id": "inv-1",
+        "stix_type": "malware",
+        "name": "X-Agent",
+        "properties": "{\"is_family\": true, \"tlp\": \"red\"}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 360.0,
+        "position_y": 80.25,
+        "created_at": "2026-07-20T09:10:00.000Z",
+        "updated_at": "2026-07-20T09:10:00.000Z"
+      },
+      {
+        "id": "e3",
+        "investigation_id": "inv-1",
+        "stix_type": "indicator",
+        "name": "Détection C2 Héron",
+        "properties": "{\"pattern\": \"[ipv4-addr:value = '203.0.113.5']\"}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 600.0,
+        "position_y": 80.0,
+        "created_at": "2026-07-20T09:15:00.000Z",
+        "updated_at": "2026-07-20T09:15:00.000Z"
+      },
+      {
+        "id": "e4",
+        "investigation_id": "inv-1",
+        "stix_type": "attack-pattern",
+        "name": "Spearphishing Attachment",
+        "properties": "{\"x_mitre_id\": \"T1566.001\", \"description\": \"\", \"aliases\": []}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 120.0,
+        "position_y": 240.0,
+        "created_at": "2026-07-20T09:20:00.000Z",
+        "updated_at": "2026-07-20T09:20:00.000Z"
+      },
+      {
+        "id": "e5",
+        "investigation_id": "inv-1",
+        "stix_type": "identity",
+        "name": "Ministère cible",
+        "properties": "{\"identity_class\": \"organization\"}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 360.0,
+        "position_y": 240.0,
+        "created_at": "2026-07-20T09:25:00.000Z",
+        "updated_at": "2026-07-20T09:25:00.000Z"
+      },
+      {
+        "id": "e6",
+        "investigation_id": "inv-1",
+        "stix_type": "location",
+        "name": "France",
+        "properties": "{\"location_type\": \"Country\", \"country\": \"FR\"}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 600.0,
+        "position_y": 240.0,
+        "created_at": "2026-07-20T09:30:00.000Z",
+        "updated_at": "2026-07-20T09:30:00.000Z"
+      },
+      {
+        "id": "e7",
+        "investigation_id": "inv-1",
+        "stix_type": "vulnerability",
+        "name": "CVE-2024-3094",
+        "properties": "{}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 840.0,
+        "position_y": 240.0,
+        "created_at": "2026-07-20T09:35:00.000Z",
+        "updated_at": "2026-07-20T09:35:00.000Z"
+      },
+      {
+        "id": "e8",
+        "investigation_id": "inv-1",
+        "stix_type": "ipv4-addr",
+        "name": "203.0.113.5",
+        "properties": "{}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 120.0,
+        "position_y": 400.0,
+        "created_at": "2026-07-20T09:40:00.000Z",
+        "updated_at": "2026-07-20T09:40:00.000Z"
+      },
+      {
+        "id": "e9",
+        "investigation_id": "inv-1",
+        "stix_type": "domain-name",
+        "name": "evil.example",
+        "properties": "{}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 360.0,
+        "position_y": 400.0,
+        "created_at": "2026-07-20T09:45:00.000Z",
+        "updated_at": "2026-07-20T09:45:00.000Z"
+      },
+      {
+        "id": "e10",
+        "investigation_id": "inv-1",
+        "stix_type": "file",
+        "name": "dropper.dll",
+        "properties": "{\"hashes\": {\"SHA-256\": \"aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f\"}, \"file_name\": \"dropper.dll\"}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 600.0,
+        "position_y": 400.0,
+        "created_at": "2026-07-20T09:50:00.000Z",
+        "updated_at": "2026-07-20T09:50:00.000Z"
+      },
+      {
+        "id": "e11",
+        "investigation_id": "inv-1",
+        "stix_type": "autonomous-system",
+        "name": "AS64496",
+        "properties": "{\"number\": 64496, \"as_name\": \"EVIL-AS\"}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 840.0,
+        "position_y": 400.0,
+        "created_at": "2026-07-20T09:55:00.000Z",
+        "updated_at": "2026-07-20T09:55:00.000Z"
+      },
+      {
+        "id": "e12",
+        "investigation_id": "inv-1",
+        "stix_type": "tool",
+        "name": "Mimikatz",
+        "properties": "{}",
+        "status": "candidate",
+        "source": "manual",
+        "position_x": 840.0,
+        "position_y": 80.0,
+        "created_at": "2026-07-20T10:00:00.000Z",
+        "updated_at": "2026-07-20T10:00:00.000Z"
+      },
+      {
+        "id": "e13",
+        "investigation_id": "inv-1",
+        "stix_type": "url",
+        "name": "https://evil.example/payload?id=1",
+        "properties": "{}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 120.0,
+        "position_y": 560.0,
+        "created_at": "2026-07-20T10:05:00.000Z",
+        "updated_at": "2026-07-20T10:05:00.000Z"
+      },
+      {
+        "id": "e14",
+        "investigation_id": "inv-1",
+        "stix_type": "email-addr",
+        "name": "phish@evil.example",
+        "properties": "{}",
+        "status": "confirmed",
+        "source": "import",
+        "position_x": 360.0,
+        "position_y": 560.0,
+        "created_at": "2026-07-20T10:10:00.000Z",
+        "updated_at": "2026-07-20T10:10:00.000Z"
+      }
+    ],
+    "relationships": [
+      {
+        "id": "r1",
+        "investigation_id": "inv-1",
+        "source_id": "e1",
+        "target_id": "e2",
+        "rel_type": "uses",
+        "description": "Outillage récurrent du groupe.",
+        "start_time": null,
+        "stop_time": null,
+        "created_at": "2026-07-20T11:00:00.000Z"
+      },
+      {
+        "id": "r2",
+        "investigation_id": "inv-1",
+        "source_id": "e2",
+        "target_id": "e8",
+        "rel_type": "communicates-with",
+        "description": "",
+        "start_time": null,
+        "stop_time": null,
+        "created_at": "2026-07-20T11:05:00.000Z"
+      },
+      {
+        "id": "r3",
+        "investigation_id": "inv-1",
+        "source_id": "e3",
+        "target_id": "e8",
+        "rel_type": "based-on",
+        "description": "",
+        "start_time": null,
+        "stop_time": null,
+        "created_at": "2026-07-20T11:10:00.000Z"
+      },
+      {
+        "id": "r4",
+        "investigation_id": "inv-1",
+        "source_id": "e3",
+        "target_id": "e1",
+        "rel_type": "indicates",
+        "description": "",
+        "start_time": "2026-07-01T00:00:00.000Z",
+        "stop_time": "2026-07-15T00:00:00.000Z",
+        "created_at": "2026-07-20T11:15:00.000Z"
+      },
+      {
+        "id": "r5",
+        "investigation_id": "inv-1",
+        "source_id": "e1",
+        "target_id": "e12",
+        "rel_type": "uses",
+        "description": "",
+        "start_time": null,
+        "stop_time": null,
+        "created_at": "2026-07-20T11:20:00.000Z"
+      },
+      {
+        "id": "r6",
+        "investigation_id": "inv-1",
+        "source_id": "e9",
+        "target_id": "e8",
+        "rel_type": "resolves-to",
+        "description": "",
+        "start_time": null,
+        "stop_time": null,
+        "created_at": "2026-07-20T11:25:00.000Z"
+      },
+      {
+        "id": "r7",
+        "investigation_id": "inv-1",
+        "source_id": "e1",
+        "target_id": "e5",
+        "rel_type": "targets",
+        "description": "",
+        "start_time": null,
+        "stop_time": null,
+        "created_at": "2026-07-20T11:30:00.000Z"
+      },
+      {
+        "id": "r8",
+        "investigation_id": "inv-1",
+        "source_id": "e2",
+        "target_id": "e7",
+        "rel_type": "exploits",
+        "description": "",
+        "start_time": null,
+        "stop_time": null,
+        "created_at": "2026-07-20T11:35:00.000Z"
+      }
+    ],
+    "notes": [
+      {
+        "id": "n1",
+        "investigation_id": "inv-1",
+        "entity_id": "e1",
+        "kind": "note",
+        "content": "Attribution APT28 fondée sur l'infra partagée - à consolider.",
+        "opinion_value": null,
+        "created_at": "2026-07-20T12:00:00.000Z",
+        "updated_at": "2026-07-20T12:00:00.000Z"
+      },
+      {
+        "id": "n2",
+        "investigation_id": "inv-1",
+        "entity_id": null,
+        "kind": "note",
+        "content": "Piste « fournisseur compromis » écartée le 20/07.",
+        "opinion_value": null,
+        "created_at": "2026-07-20T12:05:00Z",
+        "updated_at": "2026-07-20T12:10:00Z"
+      },
+      {
+        "id": "n3",
+        "investigation_id": "inv-1",
+        "entity_id": "e1",
+        "kind": "opinion",
+        "content": "Recoupé par deux sources indépendantes.",
+        "opinion_value": "agree",
+        "created_at": "2026-07-20T12:15:00.000Z",
+        "updated_at": "2026-07-20T12:15:00.000Z"
+      }
+    ]
+  },
+  "exports": [
+    {
+      "opts": {
+        "container": "report",
+        "tlp": "amber",
+        "author_name": "CERT Pak",
+        "author_class": "organization",
+        "include_notes": true,
+        "confidence": null
+      },
+      "bundle": {
+        "type": "bundle",
+        "id": "bundle--fe8ec9b7-8af3-4667-b15e-abf898461c30",
+        "objects": [
+          {
+            "type": "identity",
+            "spec_version": "2.1",
+            "id": "identity--856129ab-fbe0-513c-822b-2266fcf038fc",
+            "created": "2024-11-15T09:00:00.000Z",
+            "modified": "2024-11-15T09:00:00.000Z",
+            "name": "Draw Me A STIX",
+            "identity_class": "system"
+          },
+          {
+            "type": "extension-definition",
+            "spec_version": "2.1",
+            "id": "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d",
+            "created_by_ref": "identity--856129ab-fbe0-513c-822b-2266fcf038fc",
+            "created": "2024-11-15T09:00:00.000Z",
+            "modified": "2024-11-15T09:00:00.000Z",
+            "name": "Draw Me A STIX layout",
+            "description": "Node positions on the DMAS canvas (ignored by other tools).",
+            "schema": "Canvas layout only. Adds position_x and position_y (numbers), local_id and source (strings) to an object, recording where it sat on the Draw Me A STIX canvas and where it came from. Carries no intelligence: a consumer can ignore this extension without losing anything.",
+            "version": "1.0",
+            "extension_types": [
+              "property-extension"
+            ]
+          },
+          {
+            "type": "identity",
+            "spec_version": "2.1",
+            "id": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:00:00.000Z",
+            "modified": "2026-07-20T09:00:00.000Z",
+            "name": "CERT Pak",
+            "identity_class": "organization"
+          },
+          {
+            "type": "marking-definition",
+            "spec_version": "2.1",
+            "id": "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82",
+            "created": "2017-01-20T00:00:00.000Z",
+            "definition_type": "tlp",
+            "name": "TLP:AMBER",
+            "definition": {
+              "tlp": "amber"
+            }
+          },
+          {
+            "type": "marking-definition",
+            "spec_version": "2.1",
+            "id": "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed",
+            "created": "2017-01-20T00:00:00.000Z",
+            "definition_type": "tlp",
+            "name": "TLP:RED",
+            "definition": {
+              "tlp": "red"
+            }
+          },
+          {
+            "type": "threat-actor",
+            "spec_version": "2.1",
+            "id": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:05:00.000Z",
+            "modified": "2026-07-20T09:06:00.000Z",
+            "name": "APT28",
+            "description": "Groupe étatique présumé.",
+            "aliases": [
+              "Fancy Bear",
+              "Sofacy"
+            ],
+            "confidence": 85,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e1",
+                "position_x": 120.5,
+                "position_y": 80.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "malware",
+            "spec_version": "2.1",
+            "id": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:10:00.000Z",
+            "modified": "2026-07-20T09:10:00.000Z",
+            "name": "X-Agent",
+            "is_family": true,
+            "object_marking_refs": [
+              "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e2",
+                "position_x": 360.0,
+                "position_y": 80.25,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "indicator",
+            "spec_version": "2.1",
+            "id": "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:15:00.000Z",
+            "modified": "2026-07-20T09:15:00.000Z",
+            "name": "Détection C2 Héron",
+            "pattern": "[ipv4-addr:value = '203.0.113.5']",
+            "pattern_type": "stix",
+            "pattern_version": "2.1",
+            "valid_from": "2026-07-20T09:15:00Z",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e3",
+                "position_x": 600.0,
+                "position_y": 80.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--8180a360-cca4-5911-850e-07d17893cbf8",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:20:00.000Z",
+            "modified": "2026-07-20T09:20:00.000Z",
+            "name": "Spearphishing Attachment",
+            "external_references": [
+              {
+                "source_name": "mitre-attack",
+                "external_id": "T1566.001"
+              }
+            ],
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e4",
+                "position_x": 120.0,
+                "position_y": 240.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "identity",
+            "spec_version": "2.1",
+            "id": "identity--0737df8c-616f-5806-82be-6d4eafb691ce",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:25:00.000Z",
+            "modified": "2026-07-20T09:25:00.000Z",
+            "name": "Ministère cible",
+            "identity_class": "organization",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e5",
+                "position_x": 360.0,
+                "position_y": 240.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "location",
+            "spec_version": "2.1",
+            "id": "location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:30:00.000Z",
+            "modified": "2026-07-20T09:30:00.000Z",
+            "name": "France",
+            "country": "FR",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e6",
+                "position_x": 600.0,
+                "position_y": 240.0,
+                "source": "manual"
+              }
+            },
+            "x_opencti_location_type": "Country"
+          },
+          {
+            "type": "vulnerability",
+            "spec_version": "2.1",
+            "id": "vulnerability--eb9df705-bde1-52ed-99dc-00d5bab90129",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:35:00.000Z",
+            "modified": "2026-07-20T09:35:00.000Z",
+            "name": "CVE-2024-3094",
+            "external_references": [
+              {
+                "source_name": "cve",
+                "external_id": "CVE-2024-3094"
+              }
+            ],
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e7",
+                "position_x": 840.0,
+                "position_y": 240.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "ipv4-addr",
+            "spec_version": "2.1",
+            "id": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3",
+            "value": "203.0.113.5",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e8",
+                "position_x": 120.0,
+                "position_y": 400.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "domain-name",
+            "spec_version": "2.1",
+            "id": "domain-name--69228563-c8d2-54ae-aeca-5f4134cb59aa",
+            "value": "evil.example",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e9",
+                "position_x": 360.0,
+                "position_y": 400.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "file",
+            "spec_version": "2.1",
+            "id": "file--1f48c75f-78d8-5466-99fa-fd8c33b6631c",
+            "hashes": {
+              "SHA-256": "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f"
+            },
+            "name": "dropper.dll",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e10",
+                "position_x": 600.0,
+                "position_y": 400.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "autonomous-system",
+            "spec_version": "2.1",
+            "id": "autonomous-system--9ad79ee3-2fde-5015-b0cc-7a96404effca",
+            "number": 64496,
+            "name": "EVIL-AS",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e11",
+                "position_x": 840.0,
+                "position_y": 400.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "url",
+            "spec_version": "2.1",
+            "id": "url--0651761a-87d4-5024-a463-6169da5fc2bc",
+            "value": "https://evil.example/payload?id=1",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e13",
+                "position_x": 120.0,
+                "position_y": 560.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "email-addr",
+            "spec_version": "2.1",
+            "id": "email-addr--e9c7461d-4c69-5b9b-9de9-2e64d776257f",
+            "value": "phish@evil.example",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e14",
+                "position_x": 360.0,
+                "position_y": 560.0,
+                "source": "import"
+              }
+            }
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--bfbc59e6-e280-5140-8631-a32e99405f8a",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:00:00.000Z",
+            "modified": "2026-07-20T11:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Outillage récurrent du groupe.",
+            "source_ref": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+            "target_ref": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--1ece966d-9a01-5eec-89dd-afd4c0562898",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:05:00.000Z",
+            "modified": "2026-07-20T11:05:00.000Z",
+            "relationship_type": "communicates-with",
+            "source_ref": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+            "target_ref": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--1bfae382-15e5-5d2f-b524-b91148ba046e",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:10:00.000Z",
+            "modified": "2026-07-20T11:10:00.000Z",
+            "relationship_type": "based-on",
+            "source_ref": "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+            "target_ref": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--bbbacdb4-dfb1-5bee-a264-95bcaed6ef02",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:15:00.000Z",
+            "modified": "2026-07-20T11:15:00.000Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+            "target_ref": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+            "start_time": "2026-07-01T00:00:00Z",
+            "stop_time": "2026-07-15T00:00:00Z",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--863b6a73-089f-5224-aead-aa30d5c1435e",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:25:00.000Z",
+            "modified": "2026-07-20T11:25:00.000Z",
+            "relationship_type": "resolves-to",
+            "source_ref": "domain-name--69228563-c8d2-54ae-aeca-5f4134cb59aa",
+            "target_ref": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--65c78d32-a411-5302-89d5-defe99eab7f2",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:30:00.000Z",
+            "modified": "2026-07-20T11:30:00.000Z",
+            "relationship_type": "targets",
+            "source_ref": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+            "target_ref": "identity--0737df8c-616f-5806-82be-6d4eafb691ce",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--d3179231-0d81-5f46-be66-6b85dec147f8",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:35:00.000Z",
+            "modified": "2026-07-20T11:35:00.000Z",
+            "relationship_type": "exploits",
+            "source_ref": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+            "target_ref": "vulnerability--eb9df705-bde1-52ed-99dc-00d5bab90129",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "note",
+            "spec_version": "2.1",
+            "id": "note--99344a10-1887-5dfc-ae15-29db322107c6",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T12:00:00.000Z",
+            "modified": "2026-07-20T12:00:00.000Z",
+            "content": "Attribution APT28 fondée sur l'infra partagée - à consolider.",
+            "object_refs": [
+              "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d"
+            ],
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "note",
+            "spec_version": "2.1",
+            "id": "note--6cbc7ee6-5e32-57cf-bd8c-ad4f25afa0ae",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T12:05:00.000Z",
+            "modified": "2026-07-20T12:10:00.000Z",
+            "content": "Piste « fournisseur compromis » écartée le 20/07.",
+            "object_refs": [
+              "report--4d950379-c4ba-5df5-8282-897b70ea27cc"
+            ],
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "opinion",
+            "spec_version": "2.1",
+            "id": "opinion--a36a1dfb-6773-5c5e-b159-c79dd0024ecc",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T12:15:00.000Z",
+            "modified": "2026-07-20T12:15:00.000Z",
+            "explanation": "Recoupé par deux sources indépendantes.",
+            "opinion": "agree",
+            "object_refs": [
+              "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d"
+            ],
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "report",
+            "spec_version": "2.1",
+            "id": "report--4d950379-c4ba-5df5-8282-897b70ea27cc",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:00:00.000Z",
+            "modified": "2026-07-21T10:30:00.000Z",
+            "name": "Opération Héron",
+            "description": "Campagne d'hameçonnage ciblée - attribution à l'étude.",
+            "report_types": [
+              "threat-report"
+            ],
+            "published": "2026-07-20T09:00:00Z",
+            "object_refs": [
+              "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+              "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+              "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+              "attack-pattern--8180a360-cca4-5911-850e-07d17893cbf8",
+              "identity--0737df8c-616f-5806-82be-6d4eafb691ce",
+              "location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d",
+              "vulnerability--eb9df705-bde1-52ed-99dc-00d5bab90129",
+              "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3",
+              "domain-name--69228563-c8d2-54ae-aeca-5f4134cb59aa",
+              "file--1f48c75f-78d8-5466-99fa-fd8c33b6631c",
+              "autonomous-system--9ad79ee3-2fde-5015-b0cc-7a96404effca",
+              "url--0651761a-87d4-5024-a463-6169da5fc2bc",
+              "email-addr--e9c7461d-4c69-5b9b-9de9-2e64d776257f",
+              "relationship--bfbc59e6-e280-5140-8631-a32e99405f8a",
+              "relationship--1ece966d-9a01-5eec-89dd-afd4c0562898",
+              "relationship--1bfae382-15e5-5d2f-b524-b91148ba046e",
+              "relationship--bbbacdb4-dfb1-5bee-a264-95bcaed6ef02",
+              "relationship--863b6a73-089f-5224-aead-aa30d5c1435e",
+              "relationship--65c78d32-a411-5302-89d5-defe99eab7f2",
+              "relationship--d3179231-0d81-5f46-be66-6b85dec147f8",
+              "note--99344a10-1887-5dfc-ae15-29db322107c6",
+              "note--6cbc7ee6-5e32-57cf-bd8c-ad4f25afa0ae",
+              "opinion--a36a1dfb-6773-5c5e-b159-c79dd0024ecc"
+            ],
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          }
+        ]
+      },
+      "fingerprint": "sha256:44effc307b0c8daa860723af63ec49ec96875b5d772755478da52008d04fa167",
+      "warnings": [
+        "relationship uses skipped: one end is not exported (candidate entity?)"
+      ]
+    },
+    {
+      "opts": {
+        "container": "grouping",
+        "tlp": "none",
+        "author_name": null,
+        "author_class": "organization",
+        "include_notes": false,
+        "confidence": null
+      },
+      "bundle": {
+        "type": "bundle",
+        "id": "bundle--bd1bdf67-6f80-462b-ad08-ee733db2c9ab",
+        "objects": [
+          {
+            "type": "identity",
+            "spec_version": "2.1",
+            "id": "identity--856129ab-fbe0-513c-822b-2266fcf038fc",
+            "created": "2024-11-15T09:00:00.000Z",
+            "modified": "2024-11-15T09:00:00.000Z",
+            "name": "Draw Me A STIX",
+            "identity_class": "system"
+          },
+          {
+            "type": "extension-definition",
+            "spec_version": "2.1",
+            "id": "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d",
+            "created_by_ref": "identity--856129ab-fbe0-513c-822b-2266fcf038fc",
+            "created": "2024-11-15T09:00:00.000Z",
+            "modified": "2024-11-15T09:00:00.000Z",
+            "name": "Draw Me A STIX layout",
+            "description": "Node positions on the DMAS canvas (ignored by other tools).",
+            "schema": "Canvas layout only. Adds position_x and position_y (numbers), local_id and source (strings) to an object, recording where it sat on the Draw Me A STIX canvas and where it came from. Carries no intelligence: a consumer can ignore this extension without losing anything.",
+            "version": "1.0",
+            "extension_types": [
+              "property-extension"
+            ]
+          },
+          {
+            "type": "marking-definition",
+            "spec_version": "2.1",
+            "id": "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed",
+            "created": "2017-01-20T00:00:00.000Z",
+            "definition_type": "tlp",
+            "name": "TLP:RED",
+            "definition": {
+              "tlp": "red"
+            }
+          },
+          {
+            "type": "threat-actor",
+            "spec_version": "2.1",
+            "id": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+            "created": "2026-07-20T09:05:00.000Z",
+            "modified": "2026-07-20T09:06:00.000Z",
+            "name": "APT28",
+            "description": "Groupe étatique présumé.",
+            "aliases": [
+              "Fancy Bear",
+              "Sofacy"
+            ],
+            "confidence": 85,
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e1",
+                "position_x": 120.5,
+                "position_y": 80.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "malware",
+            "spec_version": "2.1",
+            "id": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+            "created": "2026-07-20T09:10:00.000Z",
+            "modified": "2026-07-20T09:10:00.000Z",
+            "name": "X-Agent",
+            "is_family": true,
+            "object_marking_refs": [
+              "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e2",
+                "position_x": 360.0,
+                "position_y": 80.25,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "indicator",
+            "spec_version": "2.1",
+            "id": "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+            "created": "2026-07-20T09:15:00.000Z",
+            "modified": "2026-07-20T09:15:00.000Z",
+            "name": "Détection C2 Héron",
+            "pattern": "[ipv4-addr:value = '203.0.113.5']",
+            "pattern_type": "stix",
+            "pattern_version": "2.1",
+            "valid_from": "2026-07-20T09:15:00Z",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e3",
+                "position_x": 600.0,
+                "position_y": 80.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--8180a360-cca4-5911-850e-07d17893cbf8",
+            "created": "2026-07-20T09:20:00.000Z",
+            "modified": "2026-07-20T09:20:00.000Z",
+            "name": "Spearphishing Attachment",
+            "external_references": [
+              {
+                "source_name": "mitre-attack",
+                "external_id": "T1566.001"
+              }
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e4",
+                "position_x": 120.0,
+                "position_y": 240.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "identity",
+            "spec_version": "2.1",
+            "id": "identity--0737df8c-616f-5806-82be-6d4eafb691ce",
+            "created": "2026-07-20T09:25:00.000Z",
+            "modified": "2026-07-20T09:25:00.000Z",
+            "name": "Ministère cible",
+            "identity_class": "organization",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e5",
+                "position_x": 360.0,
+                "position_y": 240.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "location",
+            "spec_version": "2.1",
+            "id": "location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d",
+            "created": "2026-07-20T09:30:00.000Z",
+            "modified": "2026-07-20T09:30:00.000Z",
+            "name": "France",
+            "country": "FR",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e6",
+                "position_x": 600.0,
+                "position_y": 240.0,
+                "source": "manual"
+              }
+            },
+            "x_opencti_location_type": "Country"
+          },
+          {
+            "type": "vulnerability",
+            "spec_version": "2.1",
+            "id": "vulnerability--eb9df705-bde1-52ed-99dc-00d5bab90129",
+            "created": "2026-07-20T09:35:00.000Z",
+            "modified": "2026-07-20T09:35:00.000Z",
+            "name": "CVE-2024-3094",
+            "external_references": [
+              {
+                "source_name": "cve",
+                "external_id": "CVE-2024-3094"
+              }
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e7",
+                "position_x": 840.0,
+                "position_y": 240.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "ipv4-addr",
+            "spec_version": "2.1",
+            "id": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3",
+            "value": "203.0.113.5",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e8",
+                "position_x": 120.0,
+                "position_y": 400.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "domain-name",
+            "spec_version": "2.1",
+            "id": "domain-name--69228563-c8d2-54ae-aeca-5f4134cb59aa",
+            "value": "evil.example",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e9",
+                "position_x": 360.0,
+                "position_y": 400.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "file",
+            "spec_version": "2.1",
+            "id": "file--1f48c75f-78d8-5466-99fa-fd8c33b6631c",
+            "hashes": {
+              "SHA-256": "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f"
+            },
+            "name": "dropper.dll",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e10",
+                "position_x": 600.0,
+                "position_y": 400.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "autonomous-system",
+            "spec_version": "2.1",
+            "id": "autonomous-system--9ad79ee3-2fde-5015-b0cc-7a96404effca",
+            "number": 64496,
+            "name": "EVIL-AS",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e11",
+                "position_x": 840.0,
+                "position_y": 400.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "url",
+            "spec_version": "2.1",
+            "id": "url--0651761a-87d4-5024-a463-6169da5fc2bc",
+            "value": "https://evil.example/payload?id=1",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e13",
+                "position_x": 120.0,
+                "position_y": 560.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "email-addr",
+            "spec_version": "2.1",
+            "id": "email-addr--e9c7461d-4c69-5b9b-9de9-2e64d776257f",
+            "value": "phish@evil.example",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e14",
+                "position_x": 360.0,
+                "position_y": 560.0,
+                "source": "import"
+              }
+            }
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--bfbc59e6-e280-5140-8631-a32e99405f8a",
+            "created": "2026-07-20T11:00:00.000Z",
+            "modified": "2026-07-20T11:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Outillage récurrent du groupe.",
+            "source_ref": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+            "target_ref": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff"
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--1ece966d-9a01-5eec-89dd-afd4c0562898",
+            "created": "2026-07-20T11:05:00.000Z",
+            "modified": "2026-07-20T11:05:00.000Z",
+            "relationship_type": "communicates-with",
+            "source_ref": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+            "target_ref": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3"
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--1bfae382-15e5-5d2f-b524-b91148ba046e",
+            "created": "2026-07-20T11:10:00.000Z",
+            "modified": "2026-07-20T11:10:00.000Z",
+            "relationship_type": "based-on",
+            "source_ref": "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+            "target_ref": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3"
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--bbbacdb4-dfb1-5bee-a264-95bcaed6ef02",
+            "created": "2026-07-20T11:15:00.000Z",
+            "modified": "2026-07-20T11:15:00.000Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+            "target_ref": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+            "start_time": "2026-07-01T00:00:00Z",
+            "stop_time": "2026-07-15T00:00:00Z"
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--863b6a73-089f-5224-aead-aa30d5c1435e",
+            "created": "2026-07-20T11:25:00.000Z",
+            "modified": "2026-07-20T11:25:00.000Z",
+            "relationship_type": "resolves-to",
+            "source_ref": "domain-name--69228563-c8d2-54ae-aeca-5f4134cb59aa",
+            "target_ref": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3"
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--65c78d32-a411-5302-89d5-defe99eab7f2",
+            "created": "2026-07-20T11:30:00.000Z",
+            "modified": "2026-07-20T11:30:00.000Z",
+            "relationship_type": "targets",
+            "source_ref": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+            "target_ref": "identity--0737df8c-616f-5806-82be-6d4eafb691ce"
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--d3179231-0d81-5f46-be66-6b85dec147f8",
+            "created": "2026-07-20T11:35:00.000Z",
+            "modified": "2026-07-20T11:35:00.000Z",
+            "relationship_type": "exploits",
+            "source_ref": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+            "target_ref": "vulnerability--eb9df705-bde1-52ed-99dc-00d5bab90129"
+          },
+          {
+            "type": "grouping",
+            "spec_version": "2.1",
+            "id": "grouping--4aed7025-576f-5822-b980-423b2e808e25",
+            "created": "2026-07-20T09:00:00.000Z",
+            "modified": "2026-07-21T10:30:00.000Z",
+            "name": "Opération Héron",
+            "description": "Campagne d'hameçonnage ciblée - attribution à l'étude.",
+            "context": "suspicious-activity",
+            "object_refs": [
+              "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+              "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+              "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+              "attack-pattern--8180a360-cca4-5911-850e-07d17893cbf8",
+              "identity--0737df8c-616f-5806-82be-6d4eafb691ce",
+              "location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d",
+              "vulnerability--eb9df705-bde1-52ed-99dc-00d5bab90129",
+              "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3",
+              "domain-name--69228563-c8d2-54ae-aeca-5f4134cb59aa",
+              "file--1f48c75f-78d8-5466-99fa-fd8c33b6631c",
+              "autonomous-system--9ad79ee3-2fde-5015-b0cc-7a96404effca",
+              "url--0651761a-87d4-5024-a463-6169da5fc2bc",
+              "email-addr--e9c7461d-4c69-5b9b-9de9-2e64d776257f",
+              "relationship--bfbc59e6-e280-5140-8631-a32e99405f8a",
+              "relationship--1ece966d-9a01-5eec-89dd-afd4c0562898",
+              "relationship--1bfae382-15e5-5d2f-b524-b91148ba046e",
+              "relationship--bbbacdb4-dfb1-5bee-a264-95bcaed6ef02",
+              "relationship--863b6a73-089f-5224-aead-aa30d5c1435e",
+              "relationship--65c78d32-a411-5302-89d5-defe99eab7f2",
+              "relationship--d3179231-0d81-5f46-be66-6b85dec147f8"
+            ]
+          }
+        ]
+      },
+      "fingerprint": "sha256:4e3d88746c955df3842acdacdf377ae2e2aca356bce9d92ec657c20f0ace6e34",
+      "warnings": [
+        "relationship uses skipped: one end is not exported (candidate entity?)"
+      ]
+    },
+    {
+      "opts": {
+        "container": "report",
+        "tlp": "amber",
+        "author_name": "CERT Pak",
+        "author_class": "organization",
+        "include_notes": true,
+        "confidence": 75
+      },
+      "bundle": {
+        "type": "bundle",
+        "id": "bundle--5bd8ab79-7642-48f7-bd04-36e4a4f222c0",
+        "objects": [
+          {
+            "type": "identity",
+            "spec_version": "2.1",
+            "id": "identity--856129ab-fbe0-513c-822b-2266fcf038fc",
+            "created": "2024-11-15T09:00:00.000Z",
+            "modified": "2024-11-15T09:00:00.000Z",
+            "name": "Draw Me A STIX",
+            "identity_class": "system"
+          },
+          {
+            "type": "extension-definition",
+            "spec_version": "2.1",
+            "id": "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d",
+            "created_by_ref": "identity--856129ab-fbe0-513c-822b-2266fcf038fc",
+            "created": "2024-11-15T09:00:00.000Z",
+            "modified": "2024-11-15T09:00:00.000Z",
+            "name": "Draw Me A STIX layout",
+            "description": "Node positions on the DMAS canvas (ignored by other tools).",
+            "schema": "Canvas layout only. Adds position_x and position_y (numbers), local_id and source (strings) to an object, recording where it sat on the Draw Me A STIX canvas and where it came from. Carries no intelligence: a consumer can ignore this extension without losing anything.",
+            "version": "1.0",
+            "extension_types": [
+              "property-extension"
+            ]
+          },
+          {
+            "type": "identity",
+            "spec_version": "2.1",
+            "id": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:00:00.000Z",
+            "modified": "2026-07-20T09:00:00.000Z",
+            "name": "CERT Pak",
+            "identity_class": "organization"
+          },
+          {
+            "type": "marking-definition",
+            "spec_version": "2.1",
+            "id": "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82",
+            "created": "2017-01-20T00:00:00.000Z",
+            "definition_type": "tlp",
+            "name": "TLP:AMBER",
+            "definition": {
+              "tlp": "amber"
+            }
+          },
+          {
+            "type": "marking-definition",
+            "spec_version": "2.1",
+            "id": "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed",
+            "created": "2017-01-20T00:00:00.000Z",
+            "definition_type": "tlp",
+            "name": "TLP:RED",
+            "definition": {
+              "tlp": "red"
+            }
+          },
+          {
+            "type": "threat-actor",
+            "spec_version": "2.1",
+            "id": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:05:00.000Z",
+            "modified": "2026-07-20T09:06:00.000Z",
+            "name": "APT28",
+            "description": "Groupe étatique présumé.",
+            "aliases": [
+              "Fancy Bear",
+              "Sofacy"
+            ],
+            "confidence": 85,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e1",
+                "position_x": 120.5,
+                "position_y": 80.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "malware",
+            "spec_version": "2.1",
+            "id": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:10:00.000Z",
+            "modified": "2026-07-20T09:10:00.000Z",
+            "name": "X-Agent",
+            "is_family": true,
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e2",
+                "position_x": 360.0,
+                "position_y": 80.25,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "indicator",
+            "spec_version": "2.1",
+            "id": "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:15:00.000Z",
+            "modified": "2026-07-20T09:15:00.000Z",
+            "name": "Détection C2 Héron",
+            "pattern": "[ipv4-addr:value = '203.0.113.5']",
+            "pattern_type": "stix",
+            "pattern_version": "2.1",
+            "valid_from": "2026-07-20T09:15:00Z",
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e3",
+                "position_x": 600.0,
+                "position_y": 80.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--8180a360-cca4-5911-850e-07d17893cbf8",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:20:00.000Z",
+            "modified": "2026-07-20T09:20:00.000Z",
+            "name": "Spearphishing Attachment",
+            "confidence": 75,
+            "external_references": [
+              {
+                "source_name": "mitre-attack",
+                "external_id": "T1566.001"
+              }
+            ],
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e4",
+                "position_x": 120.0,
+                "position_y": 240.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "identity",
+            "spec_version": "2.1",
+            "id": "identity--0737df8c-616f-5806-82be-6d4eafb691ce",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:25:00.000Z",
+            "modified": "2026-07-20T09:25:00.000Z",
+            "name": "Ministère cible",
+            "identity_class": "organization",
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e5",
+                "position_x": 360.0,
+                "position_y": 240.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "location",
+            "spec_version": "2.1",
+            "id": "location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:30:00.000Z",
+            "modified": "2026-07-20T09:30:00.000Z",
+            "name": "France",
+            "country": "FR",
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e6",
+                "position_x": 600.0,
+                "position_y": 240.0,
+                "source": "manual"
+              }
+            },
+            "x_opencti_location_type": "Country"
+          },
+          {
+            "type": "vulnerability",
+            "spec_version": "2.1",
+            "id": "vulnerability--eb9df705-bde1-52ed-99dc-00d5bab90129",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:35:00.000Z",
+            "modified": "2026-07-20T09:35:00.000Z",
+            "name": "CVE-2024-3094",
+            "confidence": 75,
+            "external_references": [
+              {
+                "source_name": "cve",
+                "external_id": "CVE-2024-3094"
+              }
+            ],
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e7",
+                "position_x": 840.0,
+                "position_y": 240.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "ipv4-addr",
+            "spec_version": "2.1",
+            "id": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3",
+            "value": "203.0.113.5",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e8",
+                "position_x": 120.0,
+                "position_y": 400.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "domain-name",
+            "spec_version": "2.1",
+            "id": "domain-name--69228563-c8d2-54ae-aeca-5f4134cb59aa",
+            "value": "evil.example",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e9",
+                "position_x": 360.0,
+                "position_y": 400.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "file",
+            "spec_version": "2.1",
+            "id": "file--1f48c75f-78d8-5466-99fa-fd8c33b6631c",
+            "hashes": {
+              "SHA-256": "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f"
+            },
+            "name": "dropper.dll",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e10",
+                "position_x": 600.0,
+                "position_y": 400.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "autonomous-system",
+            "spec_version": "2.1",
+            "id": "autonomous-system--9ad79ee3-2fde-5015-b0cc-7a96404effca",
+            "number": 64496,
+            "name": "EVIL-AS",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e11",
+                "position_x": 840.0,
+                "position_y": 400.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "url",
+            "spec_version": "2.1",
+            "id": "url--0651761a-87d4-5024-a463-6169da5fc2bc",
+            "value": "https://evil.example/payload?id=1",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e13",
+                "position_x": 120.0,
+                "position_y": 560.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "email-addr",
+            "spec_version": "2.1",
+            "id": "email-addr--e9c7461d-4c69-5b9b-9de9-2e64d776257f",
+            "value": "phish@evil.example",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e14",
+                "position_x": 360.0,
+                "position_y": 560.0,
+                "source": "import"
+              }
+            }
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--bfbc59e6-e280-5140-8631-a32e99405f8a",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:00:00.000Z",
+            "modified": "2026-07-20T11:00:00.000Z",
+            "relationship_type": "uses",
+            "description": "Outillage récurrent du groupe.",
+            "source_ref": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+            "target_ref": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--1ece966d-9a01-5eec-89dd-afd4c0562898",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:05:00.000Z",
+            "modified": "2026-07-20T11:05:00.000Z",
+            "relationship_type": "communicates-with",
+            "source_ref": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+            "target_ref": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3",
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--1bfae382-15e5-5d2f-b524-b91148ba046e",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:10:00.000Z",
+            "modified": "2026-07-20T11:10:00.000Z",
+            "relationship_type": "based-on",
+            "source_ref": "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+            "target_ref": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3",
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--bbbacdb4-dfb1-5bee-a264-95bcaed6ef02",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:15:00.000Z",
+            "modified": "2026-07-20T11:15:00.000Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+            "target_ref": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+            "start_time": "2026-07-01T00:00:00Z",
+            "stop_time": "2026-07-15T00:00:00Z",
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--863b6a73-089f-5224-aead-aa30d5c1435e",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:25:00.000Z",
+            "modified": "2026-07-20T11:25:00.000Z",
+            "relationship_type": "resolves-to",
+            "source_ref": "domain-name--69228563-c8d2-54ae-aeca-5f4134cb59aa",
+            "target_ref": "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3",
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--65c78d32-a411-5302-89d5-defe99eab7f2",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:30:00.000Z",
+            "modified": "2026-07-20T11:30:00.000Z",
+            "relationship_type": "targets",
+            "source_ref": "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+            "target_ref": "identity--0737df8c-616f-5806-82be-6d4eafb691ce",
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--d3179231-0d81-5f46-be66-6b85dec147f8",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:35:00.000Z",
+            "modified": "2026-07-20T11:35:00.000Z",
+            "relationship_type": "exploits",
+            "source_ref": "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+            "target_ref": "vulnerability--eb9df705-bde1-52ed-99dc-00d5bab90129",
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "note",
+            "spec_version": "2.1",
+            "id": "note--99344a10-1887-5dfc-ae15-29db322107c6",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T12:00:00.000Z",
+            "modified": "2026-07-20T12:00:00.000Z",
+            "content": "Attribution APT28 fondée sur l'infra partagée - à consolider.",
+            "object_refs": [
+              "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d"
+            ],
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "note",
+            "spec_version": "2.1",
+            "id": "note--6cbc7ee6-5e32-57cf-bd8c-ad4f25afa0ae",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T12:05:00.000Z",
+            "modified": "2026-07-20T12:10:00.000Z",
+            "content": "Piste « fournisseur compromis » écartée le 20/07.",
+            "object_refs": [
+              "report--4d950379-c4ba-5df5-8282-897b70ea27cc"
+            ],
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "opinion",
+            "spec_version": "2.1",
+            "id": "opinion--a36a1dfb-6773-5c5e-b159-c79dd0024ecc",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T12:15:00.000Z",
+            "modified": "2026-07-20T12:15:00.000Z",
+            "explanation": "Recoupé par deux sources indépendantes.",
+            "opinion": "agree",
+            "object_refs": [
+              "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d"
+            ],
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
+            "type": "report",
+            "spec_version": "2.1",
+            "id": "report--4d950379-c4ba-5df5-8282-897b70ea27cc",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T09:00:00.000Z",
+            "modified": "2026-07-21T10:30:00.000Z",
+            "name": "Opération Héron",
+            "description": "Campagne d'hameçonnage ciblée - attribution à l'étude.",
+            "report_types": [
+              "threat-report"
+            ],
+            "published": "2026-07-20T09:00:00Z",
+            "object_refs": [
+              "threat-actor--90bd2396-8173-5dd4-92ad-31f3786e636d",
+              "malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff",
+              "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+              "attack-pattern--8180a360-cca4-5911-850e-07d17893cbf8",
+              "identity--0737df8c-616f-5806-82be-6d4eafb691ce",
+              "location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d",
+              "vulnerability--eb9df705-bde1-52ed-99dc-00d5bab90129",
+              "ipv4-addr--826fe3cb-56b0-5620-9d30-4c17ed7b24e3",
+              "domain-name--69228563-c8d2-54ae-aeca-5f4134cb59aa",
+              "file--1f48c75f-78d8-5466-99fa-fd8c33b6631c",
+              "autonomous-system--9ad79ee3-2fde-5015-b0cc-7a96404effca",
+              "url--0651761a-87d4-5024-a463-6169da5fc2bc",
+              "email-addr--e9c7461d-4c69-5b9b-9de9-2e64d776257f",
+              "relationship--bfbc59e6-e280-5140-8631-a32e99405f8a",
+              "relationship--1ece966d-9a01-5eec-89dd-afd4c0562898",
+              "relationship--1bfae382-15e5-5d2f-b524-b91148ba046e",
+              "relationship--bbbacdb4-dfb1-5bee-a264-95bcaed6ef02",
+              "relationship--863b6a73-089f-5224-aead-aa30d5c1435e",
+              "relationship--65c78d32-a411-5302-89d5-defe99eab7f2",
+              "relationship--d3179231-0d81-5f46-be66-6b85dec147f8",
+              "note--99344a10-1887-5dfc-ae15-29db322107c6",
+              "note--6cbc7ee6-5e32-57cf-bd8c-ad4f25afa0ae",
+              "opinion--a36a1dfb-6773-5c5e-b159-c79dd0024ecc"
+            ],
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          }
+        ]
+      },
+      "fingerprint": "sha256:1ec2308b40c870cb1de41e51b0aee4458e2636bee1d6f00847adf998efe2a33e",
+      "warnings": [
+        "relationship uses skipped: one end is not exported (candidate entity?)"
+      ]
+    }
+  ]
+}

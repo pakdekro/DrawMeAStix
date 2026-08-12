@@ -1,0 +1,95 @@
+{
+  "name": "Phishing - FOVI / BEC",
+  "description": "Fraudulent transfer order: impersonation of an executive or a supplier.",
+  "labels": [
+    "phishing",
+    "fovi",
+    "bec"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "threat-actor",
+      "label": "Actor"
+    },
+    {
+      "key": "spoofed",
+      "type": "identity",
+      "label": "Impersonated identity (executive, supplier…)",
+      "prefill": {
+        "identity_class": "individual"
+      }
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Targeted organisation",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "sender",
+      "type": "email-addr",
+      "label": "Scammer email",
+      "placeholder": "dg.acme@webmail.example"
+    },
+    {
+      "key": "domain",
+      "type": "domain-name",
+      "label": "Typosquatted domain",
+      "placeholder": "acme-corp.example"
+    },
+    {
+      "key": "infra",
+      "type": "infrastructure",
+      "label": "Sending infrastructure"
+    },
+    {
+      "key": "t1656",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Impersonation",
+      "prefill": {
+        "x_mitre_id": "T1656"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "impersonates",
+      "to": "spoofed"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1656",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1656"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "infra"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "sender"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "domain"
+    }
+  ]
+}

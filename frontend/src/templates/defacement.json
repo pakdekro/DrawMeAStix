@@ -1,0 +1,113 @@
+{
+  "name": "Defacement / hacktivism",
+  "description": "Public alteration of a site to make a claim: defaced page, collective, target.",
+  "labels": [
+    "hacktivism",
+    "defacement"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "threat-actor",
+      "label": "Collective / actor",
+      "placeholder": "XYZ collective"
+    },
+    {
+      "key": "site",
+      "type": "infrastructure",
+      "label": "Defaced site"
+    },
+    {
+      "key": "page_url",
+      "type": "url",
+      "label": "Defaced page"
+    },
+    {
+      "key": "domain",
+      "type": "domain-name",
+      "label": "Targeted domain"
+    },
+    {
+      "key": "ip",
+      "type": "ipv4-addr",
+      "label": "Hosting IP"
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Victim organisation",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "country",
+      "type": "location",
+      "label": "Targeted country",
+      "prefill": {
+        "location_type": "Country"
+      }
+    },
+    {
+      "key": "t1491_002",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "External Defacement",
+      "prefill": {
+        "x_mitre_id": "T1491.002"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "compromises",
+      "to": "site"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1491_002"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "country"
+    },
+    {
+      "from": "t1491_002",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "site",
+      "rel": "consists-of",
+      "to": "page_url"
+    },
+    {
+      "from": "site",
+      "rel": "consists-of",
+      "to": "domain"
+    },
+    {
+      "from": "site",
+      "rel": "consists-of",
+      "to": "ip"
+    },
+    {
+      "from": "victim",
+      "rel": "located-at",
+      "to": "country"
+    },
+    {
+      "from": "domain",
+      "rel": "resolves-to",
+      "to": "ip"
+    }
+  ]
+}

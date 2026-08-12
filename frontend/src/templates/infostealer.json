@@ -1,0 +1,131 @@
+{
+  "name": "Infostealer - credential theft",
+  "description": "Data-stealing strain: sample, collection infrastructure, exfiltration panel.",
+  "labels": [
+    "infostealer",
+    "credential-theft"
+  ],
+  "slots": [
+    {
+      "key": "stealer",
+      "type": "malware",
+      "label": "Infostealer strain",
+      "placeholder": "Lumma",
+      "prefill": {
+        "is_family": true
+      }
+    },
+    {
+      "key": "sample",
+      "type": "file",
+      "label": "Analysed sample",
+      "placeholder": "invoice.pdf.exe",
+      "hash": true
+    },
+    {
+      "key": "operator",
+      "type": "threat-actor",
+      "label": "Operator / affiliate (if known)"
+    },
+    {
+      "key": "c2_infra",
+      "type": "infrastructure",
+      "label": "Collection infrastructure"
+    },
+    {
+      "key": "c2_domain",
+      "type": "domain-name",
+      "label": "Harvesting domain"
+    },
+    {
+      "key": "panel_url",
+      "type": "url",
+      "label": "Panel / exfiltration point",
+      "placeholder": "https://evil.example/gate.php"
+    },
+    {
+      "key": "c2_ip",
+      "type": "ipv4-addr",
+      "label": "C2 IP"
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Victim",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "t1555",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Credentials from Password Stores",
+      "prefill": {
+        "x_mitre_id": "T1555"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "operator",
+      "rel": "uses",
+      "to": "stealer"
+    },
+    {
+      "from": "operator",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "stealer",
+      "rel": "uses",
+      "to": "t1555"
+    },
+    {
+      "from": "t1555",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "stealer",
+      "rel": "drops",
+      "to": "sample"
+    },
+    {
+      "from": "stealer",
+      "rel": "exfiltrates-to",
+      "to": "c2_infra"
+    },
+    {
+      "from": "stealer",
+      "rel": "communicates-with",
+      "to": "c2_domain"
+    },
+    {
+      "from": "stealer",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "c2_infra",
+      "rel": "consists-of",
+      "to": "c2_domain"
+    },
+    {
+      "from": "c2_infra",
+      "rel": "consists-of",
+      "to": "panel_url"
+    },
+    {
+      "from": "c2_infra",
+      "rel": "consists-of",
+      "to": "c2_ip"
+    },
+    {
+      "from": "c2_domain",
+      "rel": "resolves-to",
+      "to": "c2_ip"
+    }
+  ]
+}

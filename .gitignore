@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Configuration locale. .env.example est versionné, .env ne l'est jamais :
+# il porte le token de l'enricher.
+.env
+
+# Données locales
+data/
+*.sqlite3
+*.sqlite3-*
+
+# Divers
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# Validateurs ajv précompilés au build (#77) - générés, non versionnés
+frontend/src/stix/generated/*.mjs
+
+# Réglages locaux de l'agent : contiennent des hôtes et des chemins propres
+# à la machine, jamais du contenu de projet.
+.claude/

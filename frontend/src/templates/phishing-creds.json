@@ -1,0 +1,108 @@
+{
+  "name": "Phishing - credential harvesting",
+  "description": "Phishing campaign aimed at stealing credentials: sender, kit, harvesting URL.",
+  "labels": [
+    "phishing",
+    "credential-harvesting"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "threat-actor",
+      "label": "Actor (if known)"
+    },
+    {
+      "key": "infra",
+      "type": "infrastructure",
+      "label": "Kit / infrastructure",
+      "placeholder": "EvilProxy kit"
+    },
+    {
+      "key": "sender",
+      "type": "email-addr",
+      "label": "Sender email",
+      "placeholder": "hr@evil.example"
+    },
+    {
+      "key": "lure_url",
+      "type": "url",
+      "label": "Harvesting URL",
+      "placeholder": "https://evil.example/login"
+    },
+    {
+      "key": "domain",
+      "type": "domain-name",
+      "label": "Phishing domain",
+      "placeholder": "evil.example"
+    },
+    {
+      "key": "ip",
+      "type": "ipv4-addr",
+      "label": "Hosting IP"
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Targeted organisation",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "t1566_002",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Spearphishing Link",
+      "prefill": {
+        "x_mitre_id": "T1566.002"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "infra"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1566_002"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1566_002",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "sender"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "lure_url"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "domain"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "ip"
+    },
+    {
+      "from": "domain",
+      "rel": "resolves-to",
+      "to": "ip"
+    }
+  ]
+}

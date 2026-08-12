@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 52" fill="none">
+  <!-- Draw Me A STIX - le mouton-graphe : la laine est faite de nœuds reliés,
+       hommage original au Petit Prince (aucun dessin de Saint-Exupéry repris). -->
+  <g stroke="#8ecbe8" stroke-width="1.4" stroke-linecap="round">
+    <!-- arêtes du graphe (la laine) -->
+    <line x1="23" y1="23" x2="31" y2="17"/>
+    <line x1="31" y1="17" x2="40" y2="15"/>
+    <line x1="40" y1="15" x2="48" y2="20"/>
+    <line x1="48" y1="20" x2="50" y2="28"/>
+    <line x1="50" y1="28" x2="42" y2="33"/>
+    <line x1="42" y1="33" x2="32" y2="33"/>
+    <line x1="32" y1="33" x2="23" y2="23"/>
+    <line x1="31" y1="17" x2="42" y2="33"/>
+    <line x1="40" y1="15" x2="32" y2="33"/>
+    <line x1="23" y1="23" x2="48" y2="20" opacity="0.45"/>
+  </g>
+  <!-- pattes -->
+  <g stroke="#e8eef2" stroke-width="1.6" stroke-linecap="round">
+    <line x1="28" y1="35" x2="27" y2="45"/>
+    <line x1="36" y1="35" x2="36" y2="45"/>
+    <line x1="44" y1="34" x2="45" y2="44"/>
+  </g>
+  <!-- nœuds (la laine) -->
+  <g fill="#0f1720" stroke="#8ecbe8" stroke-width="1.6">
+    <circle cx="23" cy="23" r="4.2"/>
+    <circle cx="31" cy="17" r="4.2"/>
+    <circle cx="40" cy="15" r="4.2"/>
+    <circle cx="48" cy="20" r="4.2"/>
+    <circle cx="50" cy="28" r="4.2"/>
+    <circle cx="42" cy="33" r="4.2"/>
+    <circle cx="32" cy="33" r="4.2"/>
+  </g>
+  <!-- tête, oreille, œil -->
+  <g>
+    <ellipse cx="15" cy="21" rx="6.5" ry="5" fill="#e8eef2"/>
+    <ellipse cx="10.5" cy="17.5" rx="3" ry="1.8" fill="#e8eef2" transform="rotate(-35 10.5 17.5)"/>
+    <circle cx="13.2" cy="20" r="1" fill="#0f1720"/>
+  </g>
+</svg>

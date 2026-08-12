@@ -1,0 +1,106 @@
+{
+  "name": "Brand impersonation (typosquatting)",
+  "description": "Look-alike domain registered to impersonate an organisation: domain, hosting, sending address.",
+  "labels": [
+    "typosquatting",
+    "brand-abuse"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "threat-actor",
+      "label": "Actor (if known)"
+    },
+    {
+      "key": "infra",
+      "type": "infrastructure",
+      "label": "Impersonation infrastructure"
+    },
+    {
+      "key": "typo_domain",
+      "type": "domain-name",
+      "label": "Look-alike domain",
+      "placeholder": "acme-support.example"
+    },
+    {
+      "key": "ip",
+      "type": "ipv4-addr",
+      "label": "Hosting IP"
+    },
+    {
+      "key": "sender",
+      "type": "email-addr",
+      "label": "Sending address",
+      "placeholder": "contact@acme-support.example"
+    },
+    {
+      "key": "lure_url",
+      "type": "url",
+      "label": "Decoy page"
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Impersonated brand / organisation",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "t1583_001",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Domains",
+      "prefill": {
+        "x_mitre_id": "T1583.001"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "infra"
+    },
+    {
+      "from": "actor",
+      "rel": "impersonates",
+      "to": "victim"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1583_001"
+    },
+    {
+      "from": "t1583_001",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "typo_domain"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "ip"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "sender"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "lure_url"
+    },
+    {
+      "from": "typo_domain",
+      "rel": "resolves-to",
+      "to": "ip"
+    }
+  ]
+}

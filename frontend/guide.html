@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <title>STIX objects, observables and relationships - Draw Me A STIX</title>
+    <!--
+      Vite's second entry point (#223), served at /guide.
+
+      This page has something the rest of the application does not: its
+      content is written into the HTML at build time, and the script only
+      hydrates it afterwards. Without JavaScript it is complete and reads
+      fine; with it, the dropdowns come alive. The enhancement adds, it never
+      gates - the opposite of a SPA, and deliberately so for the one page of
+      the project that is prose.
+
+      The `#root` stays empty here: `prerender.mjs` injects the render after
+      the build and writes the result to dist/guide/index.html.
+    -->
+    <meta
+      name="description"
+      content="What a STIX object is, what an observable is, what an indicator claims, and which relationships the spec allows between them. The full matrix, derived from the tool itself."
+    />
+    <link rel="canonical" href="https://app.drawmeastix.io/guide" />
+
+    <!-- As in index.html: these lines carry the reference domain and are to
+         be replaced with your own if you host the tool yourself. -->
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Draw Me A STIX" />
+    <meta
+      property="og:title"
+      content="STIX objects, observables and relationships"
+    />
+    <meta
+      property="og:description"
+      content="What a STIX object is, what an observable is, what an indicator claims, and which relationships the spec allows between them."
+    />
+    <meta property="og:url" content="https://app.drawmeastix.io/guide" />
+    <meta property="og:image" content="https://app.drawmeastix.io/og.png" />
+    <meta property="og:image:width" content="1199" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_GB" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/guide-entry.tsx"></script>
+  </body>
+</html>

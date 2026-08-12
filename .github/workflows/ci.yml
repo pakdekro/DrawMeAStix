@@ -1,0 +1,75 @@
+# Draw Me A STIX - automated non-regression.
+#
+# Three independent jobs: the application, the reference STIX core, and the
+# enrichment sidecar. The second one regenerates the golden vectors and fails
+# if they differ from what is committed: that is what keeps the Python and
+# TypeScript implementations of the identifiers from drifting apart. See
+# docs/identifiers.md.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+      - name: Type-check
+        working-directory: frontend
+        run: npx tsc -b
+      - name: Tests
+        working-directory: frontend
+        run: npm test
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  stix-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: libmagic (required by pycti)
+        run: sudo apt-get update && sudo apt-get install -y libmagic1
+      - name: Sync
+        working-directory: backend
+        run: uv sync
+      - name: Lint
+        working-directory: backend
+        run: uv run ruff check .
+      - name: Tests
+        working-directory: backend
+        run: uv run pytest -q
+      - name: Golden vectors up to date?
+        working-directory: backend
+        run: |
+          uv run python scripts/generate_golden_vectors.py
+          uv run python scripts/generate_golden_bundle.py
+          git diff --exit-code ../frontend/src/stix/golden-vectors.json ../frontend/src/stix/golden-bundle.json \
+            || (echo "::error::golden vectors out of sync - re-run generate_golden_*.py and commit" && exit 1)
+
+  enricher:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Sync
+        working-directory: enricher
+        run: uv sync
+      - name: Lint
+        working-directory: enricher
+        run: uv run ruff check .
+      - name: Tests
+        working-directory: enricher
+        run: uv run pytest -q

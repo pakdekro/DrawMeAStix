@@ -1,0 +1,129 @@
+{
+  "name": "Supply chain compromise",
+  "description": "A compromised supplier ships a trojanised update: vendor, distribution channel, package, backdoor.",
+  "labels": [
+    "supply-chain",
+    "third-party"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "intrusion-set",
+      "label": "Group / operator (if known)"
+    },
+    {
+      "key": "vendor",
+      "type": "identity",
+      "label": "Compromised supplier / vendor",
+      "placeholder": "Software Vendor Ltd",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "channel",
+      "type": "infrastructure",
+      "label": "Compromised distribution channel",
+      "placeholder": "Update server"
+    },
+    {
+      "key": "pkg",
+      "type": "file",
+      "label": "Trojanised package / update",
+      "placeholder": "agent-update-3.2.1.msi",
+      "hash": true
+    },
+    {
+      "key": "backdoor",
+      "type": "malware",
+      "label": "Delivered backdoor",
+      "prefill": {
+        "is_family": true
+      }
+    },
+    {
+      "key": "c2_domain",
+      "type": "domain-name",
+      "label": "C2 domain"
+    },
+    {
+      "key": "c2_ip",
+      "type": "ipv4-addr",
+      "label": "C2 IP"
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Victim organisation",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "t1195_002",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Compromise Software Supply Chain",
+      "prefill": {
+        "x_mitre_id": "T1195.002"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "vendor"
+    },
+    {
+      "from": "actor",
+      "rel": "compromises",
+      "to": "channel"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "backdoor"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1195_002"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1195_002",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "channel",
+      "rel": "consists-of",
+      "to": "pkg"
+    },
+    {
+      "from": "channel",
+      "rel": "delivers",
+      "to": "backdoor"
+    },
+    {
+      "from": "backdoor",
+      "rel": "communicates-with",
+      "to": "c2_domain"
+    },
+    {
+      "from": "backdoor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "c2_domain",
+      "rel": "resolves-to",
+      "to": "c2_ip"
+    }
+  ]
+}

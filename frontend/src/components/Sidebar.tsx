@@ -1,0 +1,162 @@
+import { memo } from 'react'
+import type { AttackEntry } from '../attack'
+import { SCO_ORDER, SDO_ORDER, typeMeta } from '../stixMeta'
+import { BUILTIN_TEMPLATES } from '../templates'
+import type { ScenarioTemplate } from '../templates'
+import AttackPalette from './AttackPalette'
+import Icon from './Icon'
+import type { IconName } from './Icon'
+
+/**
+ * Rail + single panel.
+ *
+ * The three sections (ATT&CK, entity creation, scenarios) used to be stacked
+ * in one scrolling column: scenarios fell below the fold and the whole rail
+ * scrolled while the canvas stayed put. The rail now switches ONE panel at a
+ * time, and clicking the active section folds it away - the canvas takes the
+ * panel's 180px back when nobody needs it.
+ *
+ * The triage tray is not a panel: it stays anchored at the bottom of the
+ * canvas (the reserved-height logic depends on it, #80). The rail only
+ * carries its count and its opening, so the curation step announces itself
+ * instead of existing only once filled.
+ *
+ * Memoised - its props are stable callbacks, so it does not re-render on
+ * every drag frame on the canvas.
+ */
+
+type PanelId = 'objects' | 'attack' | 'scenarios'
+
+const PANELS: { id: PanelId; icon: IconName; label: string }[] = [
+  { id: 'objects', icon: 'grid', label: 'Objects and observables' },
+  { id: 'attack', icon: 'search', label: 'ATT&CK' },
+  { id: 'scenarios', icon: 'scenario', label: 'Scenarios' },
+]
+
+function Sidebar({
+  onAdd,
+  onPaste,
+  onPickAttack,
+  onPickTemplate,
+  onLoadTemplate,
+  candidateCount,
+  triageOpen,
+  onToggleTriage,
+  panel,
+  onPanel,
+}: {
+  onAdd: (stixType: string) => void
+  onPaste: () => void
+  onPickAttack: (entry: AttackEntry) => void
+  onPickTemplate: (template: ScenarioTemplate) => void
+  onLoadTemplate: (file: File) => void
+  candidateCount: number
+  triageOpen: boolean
+  onToggleTriage: () => void
+  /** driven by the Workspace: window width decides the initial state, and
+      both Ctrl+B and the command palette must be able to change it */
+  panel: PanelId | null
+  onPanel: (panel: PanelId | null) => void
+}) {
+
+  return (
+    <>
+      <nav className="rail" aria-label="Panels">
+        {PANELS.map((p) => (
+          <button
+            key={p.id}
+            className={`rail-btn${panel === p.id ? ' on' : ''}`}
+            title={p.label}
+            aria-label={p.label}
+            aria-pressed={panel === p.id}
+            onClick={() => onPanel(panel === p.id ? null : p.id)}
+          >
+            <Icon name={p.icon} size={17} />
+          </button>
+        ))}
+        <span className="rail-gap" />
+        <button
+          className={`rail-btn${triageOpen && candidateCount > 0 ? ' on' : ''}`}
+          title={
+            candidateCount > 0
+              ? `Triage tray - ${candidateCount} awaiting a decision`
+              : 'Triage tray - empty'
+          }
+          aria-label="Triage tray"
+          aria-pressed={triageOpen && candidateCount > 0}
+          disabled={candidateCount === 0}
+          onClick={onToggleTriage}
+        >
+          <Icon name="tray" size={17} />
+          {candidateCount > 0 && <span className="rail-badge">{candidateCount}</span>}
+        </button>
+      </nav>
+
+      {panel && (
+        <aside className="sidebar">
+          {panel === 'objects' && (
+            <>
+              <h3 className="micro">Objects (SDO)</h3>
+              <div className="chip-grid">
+                {SDO_ORDER.map((t) => (
+                  <button key={t} className="chip" onClick={() => onAdd(t)} title={typeMeta(t).label}>
+                    <span className="dot" style={{ background: typeMeta(t).color }} />
+                    {typeMeta(t).label}
+                  </button>
+                ))}
+              </div>
+              <h3 className="micro">Observables (SCO)</h3>
+              <div className="chip-grid">
+                {SCO_ORDER.map((t) => (
+                  <button key={t} className="chip" onClick={() => onAdd(t)} title={typeMeta(t).label}>
+                    <span className="dot" style={{ background: typeMeta(t).color }} />
+                    {typeMeta(t).label}
+                  </button>
+                ))}
+                <button className="chip" onClick={onPaste}>
+                  <Icon name="paste" size={13} />
+                  Paste IOCs…
+                </button>
+              </div>
+            </>
+          )}
+
+          {panel === 'attack' && <AttackPalette onPick={onPickAttack} />}
+
+          {panel === 'scenarios' && (
+            <>
+              <h3 className="micro">Scenarios</h3>
+              {BUILTIN_TEMPLATES.map((tpl) => (
+                <button
+                  key={tpl.name}
+                  className="palette-btn"
+                  title={tpl.description}
+                  onClick={() => onPickTemplate(tpl)}
+                >
+                  <Icon name="scenario" />
+                  {tpl.name}
+                </button>
+              ))}
+              <label className="palette-btn tpl-load">
+                <Icon name="doc" />
+                Load a scenario…
+                <input
+                  type="file"
+                  accept=".json,application/json"
+                  hidden
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) onLoadTemplate(file)
+                    e.target.value = ''
+                  }}
+                />
+              </label>
+            </>
+          )}
+        </aside>
+      )}
+    </>
+  )
+}
+
+export default memo(Sidebar)

@@ -1,0 +1,114 @@
+{
+  "name": "Ransomware",
+  "description": "Typical outline of a ransomware case: operator, strain, C2, victim.",
+  "labels": [
+    "ransomware"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "threat-actor",
+      "label": "Group / operator",
+      "placeholder": "LockBit"
+    },
+    {
+      "key": "malware",
+      "type": "malware",
+      "label": "Ransomware (family)",
+      "placeholder": "LockBit 3.0",
+      "prefill": {
+        "is_family": true
+      }
+    },
+    {
+      "key": "tool",
+      "type": "tool",
+      "label": "Tool (access, exfil…)",
+      "placeholder": "Rclone"
+    },
+    {
+      "key": "binary",
+      "type": "file",
+      "label": "Dropped binary",
+      "placeholder": "encryptor.exe",
+      "hash": true
+    },
+    {
+      "key": "c2_ip",
+      "type": "ipv4-addr",
+      "label": "C2 - IP address",
+      "placeholder": "203.0.113.5"
+    },
+    {
+      "key": "c2_domain",
+      "type": "domain-name",
+      "label": "C2 - domain",
+      "placeholder": "evil.example"
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Victim",
+      "placeholder": "ACME Corp",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "t1486",
+      "type": "attack-pattern",
+      "label": "Typical technique",
+      "fixed": "Data Encrypted for Impact",
+      "prefill": {
+        "x_mitre_id": "T1486"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "malware"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "tool"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t1486"
+    },
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t1486",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "malware",
+      "rel": "drops",
+      "to": "binary"
+    },
+    {
+      "from": "malware",
+      "rel": "communicates-with",
+      "to": "c2_ip"
+    },
+    {
+      "from": "malware",
+      "rel": "communicates-with",
+      "to": "c2_domain"
+    },
+    {
+      "from": "c2_domain",
+      "rel": "resolves-to",
+      "to": "c2_ip"
+    }
+  ]
+}
