@@ -57,6 +57,26 @@ export default function Modal({
   const boxRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
 
+  /**
+   * `onClose` behind a ref so the effect below can run ONCE.
+   *
+   * It used to depend on `[onClose]`, and every caller passes an inline
+   * arrow: `onClose={() => setShowEnrichSettings(false)}`. A new function on
+   * every render of the parent means the effect tears down and sets up again
+   * on every render of the parent. Its cleanup calls `trigger.focus()`, which
+   * sends focus to whatever opened the box, that is OUTSIDE it; the new setup
+   * then finds no focus inside and puts it on the first field.
+   *
+   * The result was a dialog where only the first field could be typed into:
+   * click the second, focus was back on the first before the first keystroke.
+   * It hid for so long because the theft is invisible while you are already
+   * on the first field, which is where every dialog starts.
+   */
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  })
+
   useEffect(() => {
     openCount += 1
     // Element to hand focus back to: captured BEFORE any focus move.
@@ -77,7 +97,7 @@ export default function Modal({
         // stopPropagation: without it, a modal opened on top of another
         // would close both on a single Escape.
         e.stopPropagation()
-        onClose()
+        onCloseRef.current()
         return
       }
       if (e.key !== 'Tab' || !box) return
@@ -111,7 +131,9 @@ export default function Modal({
       // to <body>, so back to the very start of the interface.
       if (trigger && document.contains(trigger)) trigger.focus()
     }
-  }, [onClose])
+    // Empty on purpose: mount and unmount only. See the ref above for what
+    // depending on `onClose` here used to cost.
+  }, [])
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
