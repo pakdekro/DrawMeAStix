@@ -1,0 +1,95 @@
+name: Bug report
+description: Something behaves differently from what it says it does.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not report a **security** issue here. It goes privately
+        through [SECURITY.md](https://github.com/pakdekro/DrawMeAStix/blob/main/SECURITY.md),
+        which also draws the line between a security report and a normal bug.
+
+        [Troubleshooting](https://github.com/pakdekro/DrawMeAStix/wiki/Troubleshooting)
+        covers the failures that already have an explanation.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: And what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce it
+      description: |
+        Numbered steps if you can. If a particular bundle or document triggers
+        it, attach it, with anything real taken out first.
+      placeholder: |
+        1. Import the example bundle
+        2. Select two nodes and ...
+        3. The export dialog shows ...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The one shown in the status bar, at the bottom of the canvas.
+      placeholder: "1.1.2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Where it runs
+      description: |
+        This matters more than it looks. Several defects only appear behind the
+        project's own Content-Security-Policy and are invisible when the files
+        are served by a bare static server.
+      options:
+        - app.drawmeastix.io
+        - Self-hosted, the project's Docker image or nginx.conf
+        - Self-hosted, my own web server and my own headers
+        - The Vite dev server (npm run dev)
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      description: |
+        Also worth more than it looks: image export was broken on Firefox alone
+        for a while, because of a property Chromium fills in and Firefox does
+        not.
+      placeholder: "Firefox 141, Chromium 139..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: |
+        Anything red in the browser console, and any Content-Security-Policy
+        violation it reports. Paste it as text rather than as a screenshot, so
+        it can be searched for.
+      render: text
+
+  - type: checkboxes
+    id: sidecar
+    attributes:
+      label: Enrichment
+      options:
+        - label: The enrichment sidecar is involved in this
+          required: false
+
+  - type: textarea
+    id: anything
+    attributes:
+      label: Anything else

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Reporting a security issue
+    url: https://github.com/pakdekro/DrawMeAStix/blob/main/SECURITY.md
+    about: Privately, and not as a public issue. The file also says what counts as one.
+  - name: Troubleshooting
+    url: https://github.com/pakdekro/DrawMeAStix/wiki/Troubleshooting
+    about: The failures that already have an explanation, runtime ones especially.
+  - name: Documentation
+    url: https://github.com/pakdekro/DrawMeAStix/wiki
+    about: Self-hosting, exporting, importing into OpenCTI, and how the pieces fit.

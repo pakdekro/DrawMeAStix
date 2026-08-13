@@ -135,6 +135,16 @@ Sidecar settings are read from the environment. Every variable is documented, wi
 - **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`…), referencing the issue (`#12`).
 - **One issue, one pull request.**
 
+## Contributing
+
+[CONTRIBUTING.md](CONTRIBUTING.md) has what you need installed, the checks to
+run, and the one step that trips everybody up on a fresh clone. The
+[wiki page](https://github.com/pakdekro/DrawMeAStix/wiki/Contributing) is the
+long version, for when a check has gone red and you want to know what it was
+proving.
+
+Taking part means agreeing to the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Reporting a security issue
 
 Privately, please: see [SECURITY.md](SECURITY.md). The interesting attack

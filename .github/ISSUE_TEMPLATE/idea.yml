@@ -1,0 +1,45 @@
+name: Idea
+description: Something the tool should do, or should do differently.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Three commitments shape what fits and what does not, so they are worth
+        knowing before you write:
+
+        - **The investigation stays on the machine.** No account, no server-side
+          copy, no telemetry. Anything that needs a backend to hold case data is
+          out of scope.
+        - **No language model, anywhere.** The tool helps you write STIX, it
+          does not write it for you.
+        - **The enrichment sidecar discovers, it does not judge.** Facts about
+          an observable belong there; reputation and scoring belong in the
+          platform you import into.
+
+        An idea that does not fit is still worth filing. Say so and we can talk
+        about it.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: |
+        What you were trying to do, and where the tool got in the way. This part
+        is more useful than the solution: it is the part that cannot be guessed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you have in mind
+      description: If you have a shape in mind. Leave it empty if you do not.
+
+  - type: textarea
+    id: today
+    attributes:
+      label: What you do today instead
+      description: |
+        The workaround, even an ugly one. It says how much the problem costs and
+        often shows a smaller fix than the one being asked for.
