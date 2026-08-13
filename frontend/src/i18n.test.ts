@@ -57,9 +57,10 @@ const ALL = {
 };
 
 /**
- * Test files are set aside: their labels are in French like everything else
- * that addresses the developer, and they reach no screen at all. The case
- * did not come up as long as no test was written in TSX.
+ * Test files are set aside. Their labels are written in English now like
+ * everything else, but the older suites still carry French ones and are not
+ * being rewritten; either way a `describe` reaches no screen. The case did
+ * not come up as long as no test was written in TSX.
  */
 const SOURCES = Object.fromEntries(
   Object.entries(ALL).filter(

@@ -130,7 +130,7 @@ Sidecar settings are read from the environment. Every variable is documented, wi
 
 ## Conventions
 
-- **Language.** Everything a reader meets is in **English**: the interface, the documentation, and the code comments. No i18n layer either: English is written in place, so there is nothing to maintain twice. Two things stay in French, on purpose: commit messages, and the test descriptions, which only ever surface in the output of a test run. Golden-vector fixtures keep their accented names as well; they are there to exercise JCS canonicalisation on non-ASCII, and translating them would remove what the test checks.
+- **Language.** **English, everywhere**: the interface, the documentation, the code comments, the commit messages and the test descriptions. No i18n layer either: English is written in place, so there is nothing to maintain twice. The project was written in French to begin with and the rule widened in steps, so `git log` still holds French messages and some suites still have French test descriptions. They are not being rewritten; what gets touched gets translated. Golden-vector fixtures are the one deliberate exception and keep their accented names: they are there to exercise JCS canonicalisation on non-ASCII, and translating them would remove what the test checks.
 - **Branches**: `feat/<issue>-<slug>`, `fix/<issue>-<slug>`.
 - **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`…), referencing the issue (`#12`).
 - **One issue, one pull request.**

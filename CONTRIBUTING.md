@@ -76,18 +76,25 @@ you are unsure what a message should look like.
 
 ## Language
 
-Everything a reader meets is in English: the interface, the documentation, and
-the code comments. There is no i18n layer, so English is written in place and
-there is nothing to maintain twice.
+English, everywhere: the interface, the documentation, the code comments, the
+commit messages and the test descriptions. There is no i18n layer, so English is
+written in place and there is nothing to maintain twice.
 
-Three things stay as they are on purpose: test descriptions, which only ever
-surface in the output of a test run, commit messages, and the golden-vector
-fixtures, which keep their accented names because they exist to exercise JCS
-canonicalisation on non-ASCII.
+The project started in French and the rule widened in steps, so `git log` still
+holds French messages and some suites still have French `describe` labels. They
+are not being rewritten. Write yours in English and translate what you touch.
 
-`frontend/src/i18n.test.ts` enforces the rest, up to a point. It reads `.tsx`
-files only and keys on accented characters, so an unaccented French label passes
-untouched. One survived that way for months.
+The golden-vector fixtures are the one deliberate exception and keep their
+accented names (`Opération Héron`, `Δοκιμή Unicode`, `ПлохойСофт`): they exist
+to exercise JCS canonicalisation on non-ASCII, and translating them would delete
+the thing under test.
+
+`frontend/src/i18n.test.ts` enforces part of this, and it is worth knowing which
+part. It keys on **accented letters**, so French written without accents goes
+straight through: an audit crossing the system French and English dictionaries
+turned up 25 such strings at once, one of which had been travelling inside an
+exported STIX bundle. That audit cannot become a test, it carries a 63% false
+positive rate. Read the interface now and then.
 
 ## Reporting a security issue
 
