@@ -8,6 +8,13 @@
  * It only reads what can REACH THE SCREEN: comments are stripped, leaving
  * only the JSX text and the string literals. A French comment has nothing
  * to fear, and that is deliberate.
+ *
+ * What it CANNOT do, and it matters more than what it can: it keys on
+ * accented letters. French without an accent goes straight through. That is
+ * how "Mon CERT" sat in the export dialog, under everyone's eyes, while this
+ * test reported all clear. No heuristic separates unaccented French from
+ * English without guessing, so the guard is a net with a known mesh rather
+ * than a proof. Read the interface now and then.
  */
 
 import { describe, expect, it } from "vitest";
@@ -16,12 +23,38 @@ import { describe, expect, it } from "vitest";
  * Sources read through Vite rather than `node:fs`: the frontend tsconfig
  * does not carry the Node types, and adding a dependency for a convention
  * test would be paying a lot for one guard rail.
+ *
+ * The `.ts` modules count as much as the components. They were left out at
+ * first, on the assumption that a string reaching the screen came from a
+ * component, which is false: the lint messages, the narrative and the
+ * markdown export all live in plain modules. The build scripts are read too,
+ * for what they print into a terminal.
  */
-const ALL_TSX = import.meta.glob("./**/*.tsx", {
-  query: "?raw",
-  import: "default",
-  eager: true,
-}) as Record<string, string>;
+// The options have to be written out at each call: Vite parses this at build
+// time and demands an inline object literal, so a shared constant fails with
+// "Expected the second argument to be an object literal".
+const ALL = {
+  ...(import.meta.glob("./**/*.tsx", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  }) as Record<string, string>),
+  ...(import.meta.glob("./**/*.ts", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  }) as Record<string, string>),
+  ...(import.meta.glob("../*.mjs", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  }) as Record<string, string>),
+  ...(import.meta.glob("../scripts/*.mjs", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  }) as Record<string, string>),
+};
 
 /**
  * Test files are set aside: their labels are in French like everything else
@@ -29,7 +62,9 @@ const ALL_TSX = import.meta.glob("./**/*.tsx", {
  * did not come up as long as no test was written in TSX.
  */
 const SOURCES = Object.fromEntries(
-  Object.entries(ALL_TSX).filter(([file]) => !file.endsWith(".test.tsx")),
+  Object.entries(ALL).filter(
+    ([file]) => !file.endsWith(".test.tsx") && !file.endsWith(".test.ts"),
+  ),
 );
 
 /** Strips line and block comments, the only source of false positives. */
@@ -60,7 +95,14 @@ function accentedStrings(source: string): string[] {
   for (const line of text.split("\n")) {
     if (line.trim().startsWith("//")) continue;
     const patterns = [
-      new RegExp(`>([^<>{}]*${ACCENT}[^<>{}]*)<`, "g"), // JSX text
+      new RegExp(`>([^<>{}]*${ACCENT}[^<>{}]*)<`, "g"), // JSX text on one line
+      // JSX text ALONE on its line, which the pattern above cannot see: it
+      // wants the surrounding angle brackets, and a label written under its
+      // <input /> has neither. That blind spot let "Inclure le récit" sit in
+      // the export dialog for months while this test reported all clear.
+      // Anything quoted, braced or tagged is excluded, so what is left is
+      // text a user reads.
+      new RegExp(`^\\s*([^<>{}'"\`()\\[\\];=]*${ACCENT}[^<>{}'"\`()\\[\\];=]*)\\s*$`, "g"),
       new RegExp(`'([^'\n]*${ACCENT}[^'\n]*)'`, "g"),
       new RegExp(`"([^"\n]*${ACCENT}[^"\n]*)"`, "g"),
       new RegExp("`([^`\n]*" + ACCENT + "[^`\n]*)`", "g"),
@@ -83,8 +125,15 @@ describe("interface en anglais", () => {
         offenders.push(`${file}: ${value}`);
       }
     }
-    // the corpus must not be empty, or the test passes by reading nothing
-    expect(Object.keys(SOURCES).length).toBeGreaterThan(20);
+    // The corpus must not be empty, or the test passes by reading nothing.
+    // Each family is checked on its own: a glob that stops matching is
+    // silent, and the total would stay well above the floor while a whole
+    // extension quietly left the net.
+    const files = Object.keys(SOURCES);
+    expect(files.length).toBeGreaterThan(20);
+    expect(files.filter((f) => f.endsWith(".tsx")).length).toBeGreaterThan(20);
+    expect(files.filter((f) => f.endsWith(".ts")).length).toBeGreaterThan(10);
+    expect(files.filter((f) => f.endsWith(".mjs")).length).toBeGreaterThan(1);
     expect(offenders).toEqual([]);
   });
 
@@ -92,6 +141,9 @@ describe("interface en anglais", () => {
     // Without this check, a broken detector would pass for healthy code.
     expect(accentedStrings('<p>Aucun résultat</p>')).toContain("Aucun résultat");
     expect(accentedStrings("const m = 'Opération annulée'")).toContain("Opération annulée");
+    // Le cas qui était passé entre les mailles : du texte JSX seul sur sa
+    // ligne, sans balise autour de lui.
+    expect(accentedStrings("        Inclure le récit\n")).toContain("Inclure le récit");
   });
 
   it("ne se déclenche ni sur un commentaire ni sur une plage de regex", () => {

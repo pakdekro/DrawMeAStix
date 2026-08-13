@@ -165,7 +165,7 @@ export default function ExportDialog({ investigation, onClose, onExported }: Pro
       </p>
       <label>Author (`created_by_ref` identity, optional)</label>
       <input
-        placeholder="Mon CERT"
+        placeholder="My CERT"
         value={author}
         onChange={(e) => setAuthor(e.target.value)}
       />

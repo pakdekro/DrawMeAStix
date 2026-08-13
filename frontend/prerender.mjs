@@ -36,6 +36,13 @@ const vite = await createServer({
   server: { middlewareMode: true },
   appType: 'custom',
   logLevel: 'warn',
+  // Dependency discovery off. Opening a server starts the client dependency
+  // scanner in the background; we close the server as soon as the module is
+  // loaded, and esbuild then threw "The server is being restarted or closed"
+  // across dozens of red lines. The build still succeeded, but it read as
+  // broken, which is a poor first contact with the repository. Nothing here
+  // serves a client: this server exists to transform one TSX and then die.
+  optimizeDeps: { noDiscovery: true, include: [] },
 })
 let module
 try {
@@ -48,7 +55,7 @@ for (const { built, route, render, min } of PAGES) {
   const source = join(dist, built)
   const shell = readFileSync(source, 'utf8')
   if (!shell.includes(ROOT)) {
-    throw new Error(`prerender: pas de #root vide dans dist/${built} - le contenu n'aurait nulle part où aller`)
+    throw new Error(`prerender: no empty #root in dist/${built}, the content would have nowhere to go`)
   }
 
   const body = module[render]()
