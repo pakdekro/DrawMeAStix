@@ -31,6 +31,7 @@ import type { DetectedIoc } from '../ioc'
 import { patternFromObservable } from '../pattern'
 import type { EntitySnapshot } from '../store'
 import type { NoteRow, RelationshipRow } from '../stix/types'
+import { commonRelationships } from '../stix/relationships'
 import { applyBulkPatch, type BulkPatch } from '../bulk'
 import { entityKey } from '../entityKey'
 import { MINIMAP_BREAKPOINT, loadLayout, saveLayout, type PanelLayout } from '../panels'
@@ -1428,16 +1429,6 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       const first = selected[0]
       if (!first || selected.some((s) => s.id === other.id)) return
 
-      /** Verbs valid for EVERY type in the list towards `to`. */
-      const commonVerbs = async (from: string[], to: string) => {
-        const perType = await Promise.all(
-          [...new Set(from)].map((tp) => api.allowedRelationships(tp, to)),
-        )
-        return perType
-          .map((r) => r.relationships)
-          .reduce((acc, list) => acc.filter((v) => list.includes(v)))
-      }
-
       const label = (list: Entity[]) => {
         if (list.length === 1) return list[0].name
         const types = new Set(list.map((e) => e.stix_type))
@@ -1447,7 +1438,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
 
       try {
         const types = selected.map((s) => s.stix_type)
-        const forward = await commonVerbs(types, other.stix_type)
+        const forward = commonRelationships(types.map((tp) => [tp, other.stix_type]))
         if (forward.length > 0) {
           setPending({
             source: first,
@@ -1460,13 +1451,12 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
           return
         }
 
-        const backward = await commonVerbs([other.stix_type], first.stix_type)
-        const reverseOk =
-          backward.length > 0 &&
-          (await Promise.all(
-            [...new Set(types)].map((tp) => api.allowedRelationships(other.stix_type, tp)),
-          )).every((r) => r.relationships.length > 0)
-        if (reverseOk) {
+        // Same rule the other way round. It used to read the verbs off the
+        // first selected object alone while `pairs` covered the whole
+        // selection, so a mixed selection could be offered a verb that was
+        // illegal for part of it (#234).
+        const backward = commonRelationships(types.map((tp) => [other.stix_type, tp]))
+        if (backward.length > 0) {
           setPending({
             source: other,
             target: first,

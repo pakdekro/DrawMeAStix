@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
 import { buildBundle, ExportError, msTime, stixConfidence, stixTime } from "./bundle";
 import golden from "./golden-bundle.json";
 import { importBundle } from "./importer";
-import { allowedRelationships } from "./relationships";
+import { allowedRelationships, commonRelationships } from "./relationships";
 import type { EntityRow, ExportOptions, InvestigationState } from "./types";
 
 const STATE = golden.state as unknown as InvestigationState;
@@ -462,6 +462,41 @@ describe("matrice de relations", () => {
 
   it("type inconnu : liste vide", () => {
     expect(allowedRelationships("threat-actor", "yeti")).toEqual([]);
+  });
+});
+
+describe("verbs common to a whole batch (#234)", () => {
+  it("keeps only what every pair accepts", () => {
+    // infrastructure accepts communicates-with towards a url, but only
+    // consists-of towards an email address. Offering communicates-with for
+    // the pair would create the first relationship then throw on the second.
+    expect(allowedRelationships("infrastructure", "url")).toContain("communicates-with");
+    expect(allowedRelationships("infrastructure", "email-addr")).not.toContain(
+      "communicates-with",
+    );
+    expect(
+      commonRelationships([
+        ["infrastructure", "url"],
+        ["infrastructure", "email-addr"],
+      ]),
+    ).toEqual(["consists-of"]);
+  });
+
+  it("a single pair is its own list of verbs", () => {
+    expect(commonRelationships([["indicator", "ipv4-addr"]])).toEqual(["based-on"]);
+  });
+
+  it("one incompatible pair empties the list", () => {
+    expect(
+      commonRelationships([
+        ["threat-actor", "malware"],
+        ["threat-actor", "ipv4-addr"],
+      ]),
+    ).toEqual([]);
+  });
+
+  it("no pair means no verb, never every verb", () => {
+    expect(commonRelationships([])).toEqual([]);
   });
 });
 

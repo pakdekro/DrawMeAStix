@@ -126,6 +126,26 @@ const MATRIX: Record<string, Record<string, string[]>> = {
  * first, `related-to` last (SDO ↔ SDO only).
  * Empty list if either type is unknown.
  */
+/**
+ * Verbs legal for EVERY pair at once, in the order of the first pair.
+ *
+ * This is what a batch link needs: offering a verb that only some of the
+ * selected objects accept means the creation starts, succeeds on the
+ * compatible pairs, then throws on the first one that is not, leaving the
+ * analyst with half the relationships created and no way to tell which
+ * (#234). The reverse direction used to derive its verbs from the FIRST
+ * selected object alone, which is exactly how that happened.
+ *
+ * Empty list if there is no pair, so a caller cannot read "no constraint"
+ * as "everything is allowed".
+ */
+export function commonRelationships(pairs: [string, string][]): string[] {
+  if (pairs.length === 0) return [];
+  return pairs
+    .map(([source, target]) => allowedRelationships(source, target))
+    .reduce((acc, list) => acc.filter((verb) => list.includes(verb)));
+}
+
 export function allowedRelationships(sourceType: string, targetType: string): string[] {
   if (
     !(SDO_TYPES.has(sourceType) || SCO_TYPES.has(sourceType)) ||
