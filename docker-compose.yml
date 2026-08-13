@@ -1,7 +1,17 @@
+# Both images are built here and published nowhere, so `pull_policy: build`
+# is on each of them. Without it, `docker compose pull` reads the `image:`
+# name, looks for it on Docker Hub, and fails with "pull access denied for
+# drawmeastix, repository does not exist or may require 'docker login'".
+#
+# `docker compose up` never hit this, which is why it went unnoticed: it
+# builds what it cannot pull. Deployment tools do hit it, because they pull
+# before they start. The message accuses your credentials, when the image
+# simply does not exist anywhere but on the machine that builds it.
 services:
   drawmeastix:
     build: .
     image: drawmeastix:latest
+    pull_policy: build
     ports:
       - "8000:80"
     restart: unless-stopped
@@ -15,6 +25,7 @@ services:
   enricher:
     build: ./enricher
     image: drawmeastix-enricher:latest
+    pull_policy: build
     ports:
       - "8001:8001"
     restart: unless-stopped
