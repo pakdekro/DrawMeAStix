@@ -24,7 +24,7 @@ export function loadAttackDataset(): Promise<AttackDataset> {
   cache ??= fetch("/attack-dataset.json").then((r) => {
     if (!r.ok) {
       cache = null;
-      throw new Error(`dataset ATT&CK indisponible (${r.status})`);
+      throw new Error(`ATT&CK dataset unavailable (${r.status})`);
     }
     return r.json() as Promise<AttackDataset>;
   });

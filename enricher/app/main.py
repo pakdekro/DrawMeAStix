@@ -128,7 +128,7 @@ def enrich(req: EnrichRequest) -> EnrichResponse:
         # remote source saturated (#124): the message is written for the
         # analyst and describes only the state of the source, nothing of the
         # host. 503 rather than 502: nothing is broken, it needs a retry.
-        config.logger.info("enricher %s : source indisponible (%s)", req.enricher, exc)
+        config.logger.info("enricher %s: source unavailable (%s)", req.enricher, exc)
         raise HTTPException(503, str(exc)) from exc
     except ToolError as exc:
         # the detail (the tool's stderr) goes to the server logs, not to the

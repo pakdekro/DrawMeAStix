@@ -30,7 +30,7 @@ export function attackPatternId(args: { name?: string; x_mitre_id?: string }): s
     return id("attack-pattern", { x_mitre_id: mitre });
   }
   if (args.name === undefined) {
-    throw new Error("name ou x_mitre_id requis");
+    throw new Error("name or x_mitre_id required");
   }
   return id("attack-pattern", { name: norm(args.name) });
 }

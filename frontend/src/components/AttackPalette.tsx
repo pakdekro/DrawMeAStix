@@ -38,7 +38,7 @@ export default function AttackPalette({ onPick }: { onPick: (entry: AttackEntry)
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      {failed && <p className="hint">Dataset ATT&amp;CK indisponible.</p>}
+      {failed && <p className="hint">ATT&amp;CK dataset unavailable.</p>}
       {query.trim().length >= 2 && dataset && results.length === 0 && (
         <p className="hint">No results.</p>
       )}

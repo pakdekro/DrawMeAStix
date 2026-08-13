@@ -95,7 +95,7 @@ export const TYPE_FIELDS: Record<string, FieldDef[]> = {
   'attack-pattern': [
     {
       key: 'x_mitre_id',
-      label: 'ID MITRE ATT&CK',
+      label: 'MITRE ATT&CK ID',
       type: 'text',
       placeholder: 'T1566',
       help: 'Used as the deduplication key on import when filled in',

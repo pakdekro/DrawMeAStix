@@ -31,7 +31,7 @@ export class StoreError extends Error {
     public status: number,
     public detail: unknown,
   ) {
-    super(typeof detail === "string" ? detail : `Erreur (${status})`);
+    super(typeof detail === "string" ? detail : `Error (${status})`);
     this.name = "StoreError";
   }
 }
@@ -229,7 +229,7 @@ async function getInvestigationOr404(
   const row = (await reqAsPromise(stores.investigations.get(iid))) as
     | InvestigationRow
     | undefined;
-  if (row === undefined) throw new StoreError(404, "investigation inconnue");
+  if (row === undefined) throw new StoreError(404, "unknown investigation");
   return row;
 }
 
@@ -648,7 +648,7 @@ export async function updateRelationship(
       | RelationshipRow
       | undefined;
     if (row === undefined || row.investigation_id !== iid) {
-      throw new StoreError(404, "relation inconnue");
+      throw new StoreError(404, "unknown relationship");
     }
     const next: RelationshipRow = { ...row };
     if (patch.rel_type !== undefined) {
@@ -692,7 +692,7 @@ export async function deleteRelationship(
       | RelationshipRow
       | undefined;
     if (row === undefined || row.investigation_id !== iid) {
-      throw new StoreError(404, "relation inconnue");
+      throw new StoreError(404, "unknown relationship");
     }
     stores.relationships.delete(rid);
     touch(stores, await getInvestigationOr404(stores, iid));
@@ -734,7 +734,7 @@ export async function createNote(iid: string, body: NoteCreateBody): Promise<Not
     }
     const kind = body.kind ?? "note";
     if (kind === "opinion" && body.opinion_value == null) {
-      throw new StoreError(422, "une opinion doit avoir une opinion_value");
+      throw new StoreError(422, "an opinion must carry an opinion_value");
     }
     const ts = now();
     const row: NoteRow = {
@@ -797,7 +797,7 @@ export async function deleteNote(iid: string, nid: string): Promise<NoteRow> {
   return tx(["investigations", "notes"], "readwrite", async (stores) => {
     const row = (await reqAsPromise(stores.notes.get(nid))) as NoteRow | undefined;
     if (row === undefined || row.investigation_id !== iid) {
-      throw new StoreError(404, "note inconnue");
+      throw new StoreError(404, "unknown note");
     }
     stores.notes.delete(nid);
     touch(stores, await getInvestigationOr404(stores, iid));
@@ -828,7 +828,7 @@ export async function pinNote(
     await getInvestigationOr404(stores, iid);
     const row = (await reqAsPromise(stores.notes.get(nid))) as NoteRow | undefined;
     if (row === undefined || row.investigation_id !== iid) {
-      throw new StoreError(404, "note inconnue");
+      throw new StoreError(404, "unknown note");
     }
     stores.notes.put({
       ...row,
@@ -893,7 +893,7 @@ export async function updateCapture(
     await getInvestigationOr404(stores, iid);
     const row = (await reqAsPromise(stores.captures.get(cid))) as CaptureRow | undefined;
     if (row === undefined || row.investigation_id !== iid) {
-      throw new StoreError(404, "capture inconnue");
+      throw new StoreError(404, "unknown screenshot");
     }
     const next: CaptureRow = {
       ...row,
@@ -911,7 +911,7 @@ export async function deleteCapture(iid: string, cid: string): Promise<void> {
     await getInvestigationOr404(stores, iid);
     const row = (await reqAsPromise(stores.captures.get(cid))) as CaptureRow | undefined;
     if (row === undefined || row.investigation_id !== iid) {
-      throw new StoreError(404, "capture inconnue");
+      throw new StoreError(404, "unknown screenshot");
     }
     stores.captures.delete(cid);
   });
@@ -1134,7 +1134,7 @@ function asBackup(data: unknown): BackupFile {
     );
   }
   if (!Array.isArray(file.investigations)) {
-    throw new StoreError(422, "sauvegarde illisible : liste d'investigations absente");
+    throw new StoreError(422, "unreadable backup: no investigation list");
   }
   return file as BackupFile;
 }

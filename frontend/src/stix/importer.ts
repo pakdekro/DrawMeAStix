@@ -254,10 +254,10 @@ export function importBundle(
     if (NON_ENTITY_TYPES.has(stixType)) continue;
     // Our own tool identity, the one that signs the extension definition:
     // plumbing, not an identity the analyst placed. Counting it would show
-    // "identity (auteur)" counted twice to someone who filled in only one.
+    // "identity (author)" counted twice to someone who filled in only one.
     if (stixId === TOOL_IDENTITY_ID) continue;
     if (stixType === "identity" && authorRefs.has(stixId)) {
-      skip("identity (auteur)");
+      skip("identity (author)");
       continue;
     }
     if (!SDO_TYPES.has(stixType) && !SCO_TYPES.has(stixType)) {

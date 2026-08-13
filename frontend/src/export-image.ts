@@ -97,7 +97,7 @@ export async function captureGraph(
 ): Promise<string> {
   if (nodes.length === 0) throw new Error('The graph is empty.')
   const viewport = document.querySelector<HTMLElement>('.react-flow__viewport')
-  if (!viewport) throw new Error('Canvas introuvable.')
+  if (!viewport) throw new Error('Canvas not found.')
 
   const { toPng, toJpeg } = await import('html-to-image')
   const bounds = getNodesBounds(nodes)

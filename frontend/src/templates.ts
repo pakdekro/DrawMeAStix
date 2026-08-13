@@ -74,16 +74,16 @@ export const BUILTIN_TEMPLATES: ScenarioTemplate[] = [
  */
 export function validateTemplate(tpl: ScenarioTemplate): string[] {
   const problems: string[] = [];
-  if (!tpl.name) problems.push("nom manquant");
+  if (!tpl.name) problems.push("missing name");
   const byKey = new Map<string, TemplateSlot>();
   for (const slot of tpl.slots ?? []) {
     if (byKey.has(slot.key)) problems.push(`slot en double : ${slot.key}`);
     byKey.set(slot.key, slot);
     if (!SDO_TYPES.has(slot.type) && !SCO_TYPES.has(slot.type)) {
-      problems.push(`slot ${slot.key} : type inconnu « ${slot.type} »`);
+      problems.push(`slot ${slot.key}: unknown type "${slot.type}"`);
     }
   }
-  if (byKey.size === 0) problems.push("aucun slot");
+  if (byKey.size === 0) problems.push("no slot");
   for (const rel of tpl.relations ?? []) {
     const from = byKey.get(rel.from);
     const to = byKey.get(rel.to);

@@ -478,7 +478,7 @@ describe("correction du verbe d'une relation (#164)", () => {
     });
     const other = await createInvestigation("Ailleurs");
     await expect(updateRelationship(other.id, rel.id, { rel_type: "related-to" })).rejects.toThrow(
-      /inconnue/,
+      /unknown/,
     );
   });
 

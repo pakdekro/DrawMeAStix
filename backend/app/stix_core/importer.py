@@ -126,7 +126,7 @@ def import_bundle(
     """Create an investigation from a bundle. Returns (investigation_id, report)."""
     objects = bundle.get("objects")
     if not isinstance(objects, list) or bundle.get("type") != "bundle":
-        raise ValueError("ce fichier n'est pas un bundle STIX (type=bundle, objects=[...])")
+        raise ValueError("this file is not a STIX bundle (type=bundle, objects=[...])")
 
     report = ImportReport()
     ts = now()
@@ -163,12 +163,12 @@ def import_bundle(
             continue  # handled elsewhere, or meta
         # Our own tool identity, the one that signs the extension
         # definition: plumbing, not an identity the analyst put there.
-        # Counting it would show "identity (auteur) x2" to someone
+        # Counting it would show "identity (author) x2" to someone
         # who only filled in one.
         if stix_id == TOOL_IDENTITY_ID:
             continue
         if stix_type == "identity" and stix_id in author_refs:
-            report.skip("identity (auteur)")
+            report.skip("identity (author)")
             continue
         if stix_type not in SDO_TYPES | SCO_TYPES:
             report.skip(stix_type)

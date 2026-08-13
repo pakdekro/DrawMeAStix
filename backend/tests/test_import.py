@@ -22,7 +22,7 @@ def test_roundtrip_preserves_fingerprint(db):
     assert report.relationships == 2
     assert report.notes == 2
     # the author identity does not become an entity on the canvas
-    assert report.skipped == {"identity (auteur)": 1}
+    assert report.skipped == {"identity (author)": 1}
 
     _, second_fp, _ = build_bundle(db2, iid2, export_opts(author_name="Mon CERT", tlp="amber"))
     assert second_fp == first_fp

@@ -39,7 +39,7 @@ def attack_pattern_id(name: str | None = None, x_mitre_id: str | None = None) ->
     if mitre_id:
         return _id("attack-pattern", {"x_mitre_id": mitre_id})
     if name is None:
-        raise ValueError("name ou x_mitre_id requis")
+        raise ValueError("name or x_mitre_id required")
     return _id("attack-pattern", {"name": name.lower().strip()})
 
 
@@ -68,7 +68,7 @@ def file_id(hashes: dict | None = None, name: str | None = None) -> str:
     if name is not None:
         data["name"] = name
     if not data:
-        raise ValueError("file : hashes ou name requis")
+        raise ValueError("file: hashes or name required")
     return _id("file", data)
 
 

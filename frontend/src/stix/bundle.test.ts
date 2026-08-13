@@ -46,7 +46,7 @@ describe("roundtrip export → import → export", () => {
     expect(report.entities).toBe(13); // 14 in store minus the candidate, not exported
     expect(report.relationships).toBe(7);
     expect(report.notes).toBe(3);
-    expect(report.skipped).toEqual({ "identity (auteur)": 1 });
+    expect(report.skipped).toEqual({ "identity (author)": 1 });
   });
 });
 
@@ -97,11 +97,11 @@ describe("définition d'extension jointe au bundle", () => {
   });
 
   it("l'import ne compte pas l'identité de l'outil comme un auteur", async () => {
-    // It is ours: counting it would report "identity (auteur)" twice to
+    // It is ours: counting it would report "identity (author)" twice to
     // someone who filled in only one.
     const { bundle } = await buildBundle(STATE, EXPORTS[0].opts);
     const { report } = importBundle(bundle as never);
-    expect(report.skipped).toEqual({ "identity (auteur)": 1 });
+    expect(report.skipped).toEqual({ "identity (author)": 1 });
   });
 });
 

@@ -86,7 +86,7 @@ def enrich(stix_type: str, value: str) -> EnrichResponse:
         notes.append(
             Note(
                 target_ref=SOURCE_REF,
-                content=f"AS{asn} - {row['name']} (registre {registry}{allocated}).",
+                content=f"AS{asn} - {row['name']} (registry {registry}{allocated}).",
             )
         )
 
