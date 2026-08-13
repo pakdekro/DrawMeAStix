@@ -5,6 +5,57 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
+## 1.2.0 - 13 August 2026
+
+- **Served over plain HTTP under anything but localhost, the application now
+  refuses to start and explains itself.** Browsers restrict
+  `crypto.randomUUID` and `crypto.subtle` to secure contexts. The first mints
+  the identifier of every investigation, entity, relationship and note; the
+  second computes the fingerprint that tells an export from the state it was
+  taken of. Without them nothing can be recorded and nothing can be exported,
+  so the tool was not degraded, it was unusable. It used to say so through
+  `crypto.randomUUID is not a function`, thrown at the first click, well after
+  the operator believed the deployment had worked. It now checks before
+  mounting and shows what is missing, why, and the two ways out: TLS in front
+  of the container, or a tunnel to localhost. No server-side setting can help,
+  because a reverse proxy hands the container plain HTTP even when the browser
+  is on HTTPS, so only the browser can answer the question.
+- **The guide and "Your data" rendered in the system font**, and they are the
+  two pages meant to be read by someone who does not know the tool. The font
+  declarations lived in the application bundle alone, so since those pages
+  became entry points of their own they asked for IBM Plex and loaded none of
+  it.
+- **Linking several objects at once could create half the relationships and
+  then fail.** In the reverse direction the offered verbs were derived from the
+  first selected object alone, so a mixed selection could be offered a verb
+  that was legal for part of it. The creation went ahead pair by pair, wrote
+  the compatible ones, threw on the first one that was not, and left no way to
+  tell what had landed. Both directions now keep only the verbs every pair
+  accepts, so the option disappears before it can be chosen.
+- **`docker compose pull` failed** with `pull access denied for drawmeastix`.
+  Both images are built here and published to no registry, but they carry an
+  image name, and pull went looking for it on Docker Hub. `docker compose up`
+  never hit this because it builds what it cannot pull, which is why it
+  survived: deployment tools hit it, because they pull before they start.
+- The build no longer prints a wall of red errors on its way to succeeding. The
+  pre-render opened a Vite server and closed it while the dependency scanner
+  was still running.
+- **Twenty-seven French strings** reached the screen, mostly on error paths.
+  They were invisible to the guard, which keys on accented letters, and they
+  were found by crossing the system French and English dictionaries. One of
+  them had been travelling inside exported STIX bundles, written into the
+  content of an enrichment note. The guard now reads the plain modules and the
+  build scripts too, not only the components, and its own documentation says
+  what it cannot prove.
+- A code of conduct, a contributing guide, issue templates and a pull request
+  template. The bug template asks how the instance is served and under which
+  browser, which is not paperwork: the last two export defects were visible
+  only behind the project's own Content-Security-Policy and only under Firefox
+  respectively.
+- The language rule is English everywhere now, commit messages and test
+  descriptions included. Nothing is rewritten backwards, and the documents say
+  so rather than describing a tree that does not exist.
+
 ## 1.1.2 - 12 August 2026
 
 - **An investigation holding a pasted screenshot could not be exported as an
