@@ -42,6 +42,8 @@ Then open **http://localhost:8000**. There is nothing to configure and no accoun
 
 Any static host works too: `cd frontend && npm run build`, then serve `frontend/dist/`.
 
+> **Serve it over HTTPS, or reach it through localhost.** Browsers restrict the Web Crypto functions this tool is built on to secure contexts, so an instance opened at `http://192.168.1.10:8000` from another machine cannot record or export anything. `localhost` counts as secure even without TLS, which is why the quick start above works; anything else needs a reverse proxy terminating TLS in front of the container, or a tunnel (`ssh -L 8000:localhost:8000 you@the-host`). The application says so on its own front page rather than failing at the first click, and the container behind the proxy keeps receiving plain HTTP, which is expected.
+
 > **Backups are your job.** Investigations live in the IndexedDB of one browser profile on one machine. Export the bundle (a single JSON file) to archive, to share, or to move to another workstation. Importing it restores the investigation identically, fingerprint included. **The export *is* the save file.**
 
 ### Optional: the enrichment sidecar

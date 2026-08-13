@@ -3027,3 +3027,42 @@ input.checkbox {
     justify-content: flex-start;
   }
 }
+
+/* ---- Secure context refusal ----
+   Shown instead of the application when the browser withholds Web Crypto.
+   Styled with the theme tokens alone: this page has to render on an origin
+   where nothing else of the application will ever start. */
+
+.insecure-context {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 16px;
+  width: 100%;
+}
+
+.insecure-context h1 {
+  font-size: 1.4rem;
+  margin: 0 0 16px;
+}
+
+.insecure-context p,
+.insecure-context li {
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.insecure-context ul {
+  padding-left: 20px;
+}
+
+.insecure-context li {
+  margin-bottom: 16px;
+}
+
+.insecure-context code {
+  font-family: var(--mono);
+  background: var(--panel);
+  padding: 1px 5px;
+  border-radius: 3px;
+  word-break: break-all;
+}
