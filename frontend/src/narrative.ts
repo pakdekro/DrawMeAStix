@@ -55,6 +55,12 @@ const SINGULAR: Record<string, string> = {
   'email-addr': 'the email address',
   file: 'the file',
   'autonomous-system': 'the autonomous system',
+  'mac-addr': 'the MAC address',
+  mutex: 'the mutex',
+  directory: 'the directory',
+  software: 'the software',
+  'user-account': 'the account',
+  'x509-certificate': 'the certificate',
 }
 
 // "the domains", "the IPs"... : for a group sharing one type.
@@ -78,6 +84,12 @@ const PLURAL: Record<string, string> = {
   'email-addr': 'the email addresses',
   file: 'the files',
   'autonomous-system': 'the autonomous systems',
+  'mac-addr': 'the MAC addresses',
+  mutex: 'the mutexes',
+  directory: 'the directories',
+  software: 'the software', // uncountable, like malware above
+  'user-account': 'the accounts',
+  'x509-certificate': 'the certificates',
 }
 
 const VERB: Record<string, string> = {
@@ -114,7 +126,9 @@ const TYPE_ORDER = [
   'campaign', 'intrusion-set', 'threat-actor',
   'malware', 'tool', 'attack-pattern',
   'infrastructure', 'vulnerability', 'identity', 'location',
-  'domain-name', 'url', 'ipv4-addr', 'ipv6-addr', 'email-addr', 'file', 'autonomous-system',
+  'domain-name', 'url', 'ipv4-addr', 'ipv6-addr', 'email-addr', 'mac-addr',
+  'x509-certificate', 'file', 'directory', 'mutex', 'software', 'user-account',
+  'autonomous-system',
 ]
 
 const singular = (e: NarrEntity) => `${SINGULAR[e.stix_type] ?? ''} ${e.name}`.trim()

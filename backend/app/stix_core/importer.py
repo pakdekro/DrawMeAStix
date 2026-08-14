@@ -53,6 +53,19 @@ def _sco_name(obj: dict) -> str | None:
         return obj.get("name") or next(iter(hashes.values()), None)
     if obj["type"] == "autonomous-system":
         return obj.get("name") or f"AS{obj.get('number', '?')}"
+    # Observables whose readable half is not called `value`. The property
+    # picked here is the one the builder reads back out of the node name, so
+    # that an import → export roundtrip lands on the same identifier.
+    if obj["type"] in ("mutex", "software"):
+        return obj.get("name")
+    if obj["type"] == "directory":
+        return obj.get("path")
+    if obj["type"] == "user-account":
+        return obj.get("account_login") or obj.get("user_id") or obj.get("display_name")
+    if obj["type"] == "x509-certificate":
+        # The serial comes first: the builder only reads the name as a
+        # fingerprint when nothing identifying was filled in.
+        return obj.get("serial_number") or next(iter(obj.get("hashes", {}).values()), None)
     return None
 
 
@@ -94,6 +107,13 @@ def _entity_properties(obj: dict) -> dict:
         props["file_name"] = obj["name"]
     if obj["type"] == "autonomous-system" and obj.get("name"):
         props["as_name"] = obj["name"]
+    # The readable half of these two lives in the entity name from here on.
+    # Leaving a copy in the properties lets the two drift apart the moment the
+    # node is renamed, and the builder reads the name, never the copy.
+    if obj["type"] == "directory":
+        props.pop("path", None)
+    if obj["type"] == "user-account":
+        props.pop("account_login", None)
     if obj["type"] == "attack-pattern" and not props.get("x_mitre_id"):
         mitre = next(
             (

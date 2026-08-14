@@ -1582,6 +1582,14 @@ input.checkbox {
   font-size: 12px;
 }
 
+/* Isolation line in the scenario form (#82): reassurance or warning, always
+   present, and tall enough to hold the two lines the warning usually takes.
+   Letting it grow and shrink resized a dialog that is centred vertically, so
+   every field above it moved while it was being filled in. */
+.tpl-isolation {
+  min-height: 2.8em;
+}
+
 /* isolation warning in the scenario form (#82) -
    same amber as .lint-warn */
 .tpl-warn {

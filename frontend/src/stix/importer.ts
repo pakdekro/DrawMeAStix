@@ -134,6 +134,26 @@ function scoName(obj: StixLike): string | null {
     const number = typeof obj.number === "number" ? obj.number : "?";
     return asText(obj.name) ?? `AS${number}`;
   }
+  // Observables whose readable half is not called `value`. The property picked
+  // here is the one the builder reads back out of the node name, so that an
+  // import → export roundtrip lands on the same identifier.
+  if (obj.type === "mutex" || obj.type === "software") return asText(obj.name) ?? null;
+  if (obj.type === "directory") return asText(obj.path) ?? null;
+  if (obj.type === "user-account") {
+    return asText(obj.account_login) ?? asText(obj.user_id) ?? asText(obj.display_name) ?? null;
+  }
+  if (obj.type === "x509-certificate") {
+    const hashes =
+      typeof obj.hashes === "object" && obj.hashes !== null && !Array.isArray(obj.hashes)
+        ? (obj.hashes as Record<string, unknown>)
+        : {};
+    // The serial comes first: the builder only reads the name as a fingerprint
+    // when nothing identifying was filled in, and a certificate carrying both
+    // must come back with the same identity it arrived with.
+    return (
+      asText(obj.serial_number) ?? Object.values(hashes).map(asText).find(Boolean) ?? null
+    );
+  }
   return null;
 }
 
@@ -164,6 +184,11 @@ function entityProperties(obj: StixLike): Record<string, JsonValue> {
   if (obj.type === "autonomous-system" && objName) {
     props.as_name = objName;
   }
+  // The readable half of these two lives in the entity name from here on.
+  // Leaving a copy in the properties lets the two drift apart the moment the
+  // node is renamed, and the builder reads the name, never the copy.
+  if (obj.type === "directory") delete props.path;
+  if (obj.type === "user-account") delete props.account_login;
   if (obj.type === "attack-pattern" && !props.x_mitre_id) {
     const mitre = asArray(obj.external_references)
       .filter((r): r is StixLike => typeof r === "object" && r !== null)

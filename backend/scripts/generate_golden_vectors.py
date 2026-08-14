@@ -142,6 +142,53 @@ SCO_CASES: list[tuple[type, str, dict]] = [
         },
     ),
     (stix2.AutonomousSystem, "autonomous-system", {"number": 64496}),
+    (stix2.MACAddress, "mac-addr", {"value": "00:1a:2b:3c:4d:5e"}),
+    (stix2.Mutex, "mutex", {"name": "Global\\MsWinZonesCacheCounterMutexA"}),
+    (stix2.Directory, "directory", {"path": "C:\\Windows\\Temp"}),
+    (stix2.Software, "software", {"name": "Apache HTTP Server"}),
+    (
+        # Every contributing property of a software at once: adding one to a
+        # node that already exists changes its identifier, which is the whole
+        # point of pinning it here.
+        stix2.Software,
+        "software",
+        {
+            "name": "Apache HTTP Server",
+            "cpe": "cpe:2.3:a:apache:http_server:2.4.49:*:*:*:*:*:*:*",
+            "vendor": "Apache",
+            "version": "2.4.49",
+        },
+    ),
+    (stix2.UserAccount, "user-account", {"account_login": "jdoe"}),
+    (
+        stix2.UserAccount,
+        "user-account",
+        {
+            "account_type": "windows-domain",
+            "user_id": "S-1-5-21-3623811015-3361044348-30300820-1013",
+            "account_login": "jdoe",
+        },
+    ),
+    (
+        stix2.X509Certificate,
+        "x509-certificate",
+        {"serial_number": "36:f7:d4:2e:1a:00:00:00:00:0b"},
+    ),
+    (
+        stix2.X509Certificate,
+        "x509-certificate",
+        {"hashes": {"SHA-256": "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f"}},
+    ),
+    (
+        # Both halves present: the fingerprint does NOT win on its own, the two
+        # travel together into the identifier.
+        stix2.X509Certificate,
+        "x509-certificate",
+        {
+            "hashes": {"SHA-1": "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"},
+            "serial_number": "36:f7:d4:2e:1a:00:00:00:00:0b",
+        },
+    ),
 ]
 
 

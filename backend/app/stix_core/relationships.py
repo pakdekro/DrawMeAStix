@@ -36,6 +36,17 @@ SCO_TYPES = frozenset({
     "email-addr",
     "file",
     "autonomous-system",
+    # Second batch: the observables of the spec whose identity rests on
+    # properties of their own. The ones left out do so on purpose -
+    # `email-message` and `network-traffic` derive their id from the id of
+    # another object, and `process` has no contributing property at all, so
+    # the spec gives it a random UUID and re-importing it would duplicate it.
+    "mac-addr",
+    "mutex",
+    "directory",
+    "software",
+    "user-account",
+    "x509-certificate",
 })
 
 ALL_TYPES = SDO_TYPES | SCO_TYPES

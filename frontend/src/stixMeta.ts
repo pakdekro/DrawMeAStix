@@ -29,6 +29,16 @@ const TYPE_META: Record<string, TypeMeta> = {
   'email-addr': { label: 'Email', color: '#c08bb0', kind: 'sco' }, // mauve
   file: { label: 'File', color: '#9a8fb5', kind: 'sco' }, // violet
   'autonomous-system': { label: 'AS', color: '#5fb0b0', kind: 'sco' }, // cyan-teal
+  // The second batch shares one muted taupe. Six more hues in a palette that
+  // already holds eighteen would say "these differ" louder than they differ:
+  // they are host-side observables, read by their label, and none of them is
+  // the thing the eye hunts for on a graph.
+  'mac-addr': { label: 'MAC', color: '#9a9086', kind: 'sco' },
+  mutex: { label: 'Mutex', color: '#9a9086', kind: 'sco' },
+  directory: { label: 'Directory', color: '#9a9086', kind: 'sco' },
+  software: { label: 'Software', color: '#9a9086', kind: 'sco' },
+  'user-account': { label: 'Account', color: '#9a9086', kind: 'sco' },
+  'x509-certificate': { label: 'Certificate', color: '#9a9086', kind: 'sco' },
 }
 
 export const SDO_ORDER = [
@@ -53,6 +63,12 @@ export const SCO_ORDER = [
   'email-addr',
   'file',
   'autonomous-system',
+  'mac-addr',
+  'directory',
+  'mutex',
+  'software',
+  'user-account',
+  'x509-certificate',
 ]
 
 export function typeMeta(stixType: string): TypeMeta {

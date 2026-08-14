@@ -261,8 +261,8 @@ describe("export / import via le store", () => {
   it("import du bundle golden puis ré-export : empreinte préservée", async () => {
     const ex = golden.exports[0];
     const { investigation, report } = await importBundle(ex.bundle);
-    expect(report.entities).toBe(13);
-    expect(investigation.entity_count).toBe(13);
+    expect(report.entities).toBe(20);
+    expect(investigation.entity_count).toBe(20);
     const rebuilt = await exportBundle(investigation.id, ex.opts);
     expect(rebuilt.fingerprint).toBe(ex.fingerprint);
   });
@@ -497,6 +497,40 @@ describe("correction du verbe d'une relation (#164)", () => {
     // expected: it is no longer the same assertion, so no longer the same id
     expect(idOf(after)).not.toBe(idOf(before));
     expect(after.fingerprint).not.toBe(before.fingerprint);
+  });
+});
+
+describe("forme canonique d'un observable à la saisie", () => {
+  it("une MAC est rangée en minuscules à deux-points, quelle que soit la frappe", async () => {
+    // Found in the E2E run: typed in capitals, the node showed one spelling and
+    // the export wrote another, so the same address entered twice made two
+    // nodes that only collapse into one object at export.
+    const inv = await createInvestigation("Op MAC", "");
+    const typed = await createEntity(inv.id, {
+      stix_type: "mac-addr",
+      name: "00:1A:2B:3C:4D:5E",
+    });
+    const dashed = await createEntity(inv.id, {
+      stix_type: "mac-addr",
+      name: "00-1A-2B-3C-4D-5E",
+    });
+    expect(typed.name).toBe("00:1a:2b:3c:4d:5e");
+    expect(dashed.name).toBe("00:1a:2b:3c:4d:5e");
+  });
+
+  it("le renommage passe par la même forme", async () => {
+    const inv = await createInvestigation("Op MAC", "");
+    const mac = await createEntity(inv.id, { stix_type: "mac-addr", name: "00:1a:2b:3c:4d:5e" });
+    const renamed = await updateEntity(inv.id, mac.id, { name: "AA:BB:CC:DD:EE:FF" });
+    expect(renamed.name).toBe("aa:bb:cc:dd:ee:ff");
+  });
+
+  it("les autres observables gardent leur casse", async () => {
+    // Only the MAC has a spelling the schema mandates. A domain in capitals is
+    // still the same domain, and rewriting it would be us editing the analyst.
+    const inv = await createInvestigation("Op MAC", "");
+    const dom = await createEntity(inv.id, { stix_type: "domain-name", name: "Evil[.]Example" });
+    expect(dom.name).toBe("Evil.Example");
   });
 });
 

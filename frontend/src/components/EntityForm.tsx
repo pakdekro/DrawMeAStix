@@ -6,6 +6,7 @@ import {
   requiredFilled,
   toFormValues,
   toProperties,
+  valuePlaceholder,
 } from '../entityFields'
 import { hashWarning, mitreIdWarning, valueWarning } from '../ioc'
 import { typeMeta } from '../stixMeta'
@@ -133,7 +134,7 @@ export default function EntityForm({
         autoFocus={autoFocus}
         stixType={stixType}
         value={name}
-        placeholder={meta.kind === 'sco' ? 'e.g. 198.51.100.7, evil.example…' : 'Name'}
+        placeholder={meta.kind === 'sco' ? valuePlaceholder(stixType) : 'Name'}
         onChange={setName}
         onPick={applySuggestion}
         onEnter={submit}

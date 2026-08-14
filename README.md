@@ -100,7 +100,7 @@ Exports are **conformant STIX 2.1**: every bundle is validated against the offic
 
 **Merge behaviour on import** is the platform's business, not the format's: whether an existing field is updated, overwritten or merged comes down to its configuration. That is why the export lets you pick a `confidence` and an author, and never writes an empty field, so it cannot degrade existing data anywhere.
 
-> Interoperability verified against a real **OpenCTI** (7.26): creation, re-import idempotence, no overwrite of a field by a lower confidence, multi-valued field merging. Other platforms have not been tested; the format, however, is the same for everyone.
+> Interoperability verified against a real **OpenCTI** (7.26): creation, re-import idempotence, no overwrite of a field by a lower confidence, multi-valued field merging, and the identifiers of every observable recomputed identically on the platform side. Other platforms have not been tested; the format, however, is the same for everyone.
 
 ## Development
 

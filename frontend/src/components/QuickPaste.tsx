@@ -22,7 +22,7 @@ export default function QuickPaste({
   return (
     <Modal title="Paste IOCs" onClose={onCancel}>
       <p className="hint">
-        IPs, domains, URLs, emails, hashes, AS numbers - defanged or not
+        IPs, domains, URLs, emails, hashes, MAC addresses, AS numbers - defanged or not
         (hxxp, [.]…). A single IOC lands on the canvas; several go through
         the triage tray.
       </p>

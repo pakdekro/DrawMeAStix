@@ -54,4 +54,43 @@ describe("patternFromObservable", () => {
   it("type non couvert : null", () => {
     expect(patternFromObservable("threat-actor", "APT28")).toBeNull();
   });
+
+  // Without these, the canonical bridge would build an indicator with no
+  // pattern for the whole second batch, and the export would refuse it.
+  it("second batch: each type patterns on the property that identifies it", () => {
+    expect(patternFromObservable("mac-addr", "00:1A:2B:3C:4D:5E")).toBe(
+      "[mac-addr:value = '00:1a:2b:3c:4d:5e']",
+    );
+    expect(patternFromObservable("mutex", "Global\\Zeus")).toBe(
+      "[mutex:name = 'Global\\\\Zeus']",
+    );
+    expect(patternFromObservable("directory", "C:\\Windows\\Temp")).toBe(
+      "[directory:path = 'C:\\\\Windows\\\\Temp']",
+    );
+    expect(patternFromObservable("user-account", "jdoe")).toBe(
+      "[user-account:account_login = 'jdoe']",
+    );
+  });
+
+  it("software : le CPE l'emporte, il ne vise qu'une version", () => {
+    const cpe = "cpe:2.3:a:apache:http_server:2.4.49:*:*:*:*:*:*:*";
+    expect(patternFromObservable("software", "Apache HTTP Server", { cpe })).toBe(
+      `[software:cpe = '${cpe}']`,
+    );
+    expect(patternFromObservable("software", "Apache HTTP Server")).toBe(
+      "[software:name = 'Apache HTTP Server']",
+    );
+  });
+
+  it("x509-certificate : lu comme le builder le lit", () => {
+    const sha1 = "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3";
+    // A node named after its fingerprint must not yield a pattern on a serial
+    // number the exported certificate does not carry.
+    expect(patternFromObservable("x509-certificate", sha1.toUpperCase())).toBe(
+      `[x509-certificate:hashes.'SHA-1' = '${sha1}']`,
+    );
+    expect(patternFromObservable("x509-certificate", "36:f7:d4:zz")).toBe(
+      "[x509-certificate:serial_number = '36:f7:d4:zz']",
+    );
+  });
 });

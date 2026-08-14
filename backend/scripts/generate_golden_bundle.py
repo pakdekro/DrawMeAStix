@@ -83,6 +83,34 @@ ENTITIES = [
     ("e14", "email-addr", "phish@evil.example", {},
      "confirmed", "import", 360.0, 560.0,
      "2026-07-20T10:10:00.000Z", "2026-07-20T10:10:00.000Z"),
+    # Second batch of observables. Typed UPPERCASE on purpose: both builders
+    # must lower it, or the schema rejects the export and the two ports drift.
+    ("e15", "mac-addr", "00:1A:2B:3C:4D:5E", {},
+     "confirmed", "manual", 600.0, 560.0,
+     "2026-07-20T10:15:00.000Z", "2026-07-20T10:15:00.000Z"),
+    ("e16", "mutex", "Global\\MsWinZonesCacheCounterMutexA", {},
+     "confirmed", "manual", 840.0, 560.0,
+     "2026-07-20T10:20:00.000Z", "2026-07-20T10:20:00.000Z"),
+    ("e17", "directory", "C:\\Windows\\Temp", {},
+     "confirmed", "manual", 120.0, 720.0,
+     "2026-07-20T10:25:00.000Z", "2026-07-20T10:25:00.000Z"),
+    ("e18", "software", "Apache HTTP Server", {"vendor": "Apache", "version": "2.4.49"},
+     "confirmed", "manual", 360.0, 720.0,
+     "2026-07-20T10:30:00.000Z", "2026-07-20T10:30:00.000Z"),
+    ("e19", "user-account", "jdoe",
+     {"account_type": "windows-domain", "user_id": "S-1-5-21-1013", "display_name": "Jane Doe"},
+     "confirmed", "manual", 600.0, 720.0,
+     "2026-07-20T10:35:00.000Z", "2026-07-20T10:35:00.000Z"),
+    # Named by its serial, with a subject alongside
+    ("e20", "x509-certificate", "36:f7:d4:2e:1a:00:00:00:00:0b",
+     {"subject": "CN=evil.example"},
+     "confirmed", "manual", 840.0, 720.0,
+     "2026-07-20T10:40:00.000Z", "2026-07-20T10:40:00.000Z"),
+    # Named by its fingerprint: the node name has to be read as a hash, since
+    # the spec gives a certificate no name to hold it.
+    ("e21", "x509-certificate", SHA256, {},
+     "confirmed", "manual", 120.0, 880.0,
+     "2026-07-20T10:45:00.000Z", "2026-07-20T10:45:00.000Z"),
 ]
 
 # (id, source_id, target_id, rel_type, description, start_time, stop_time, created_at)
@@ -97,6 +125,9 @@ RELATIONSHIPS = [
     ("r6", "e9", "e8", "resolves-to", "", None, None, "2026-07-20T11:25:00.000Z"),
     ("r7", "e1", "e5", "targets", "", None, None, "2026-07-20T11:30:00.000Z"),
     ("r8", "e2", "e7", "exploits", "", None, None, "2026-07-20T11:35:00.000Z"),
+    # An indicator over one of the new observables: the SRO path has to see
+    # them too, not just the object builder.
+    ("r9", "e3", "e20", "based-on", "", None, None, "2026-07-20T11:40:00.000Z"),
 ]
 
 # (id, entity_id, kind, content, opinion_value, created_at, updated_at)

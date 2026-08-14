@@ -92,14 +92,25 @@ export default function TemplateDialog({
             .join(', ')}
         </p>
       )}
-      {isolated.length > 0 && (
-        <p className="hint tpl-warn">
-          <Icon name="warning" size={13} /> {isolated.length === 1 ? 'Will stay unlinked' : 'Will stay unlinked'}:{' '}
-          {isolated.map((e) => e.name).join(', ')}.
-          {connectors.length > 0 &&
-            ` Fill in "${connectors.join('" or "')}" to link ${isolated.length === 1 ? 'it' : 'them'} automatically - otherwise, link by hand on the canvas.`}
-        </p>
-      )}
+      {/*
+        Always rendered, in both states. A block that appears and disappears
+        changes the height of a box that is centred vertically, so the fields
+        ABOVE it slide out from under the cursor while the analyst is still
+        typing into them. Found while running the second batch of observables
+        through the interface: half the form was filled into the wrong fields.
+      */}
+      <p className={`hint tpl-isolation${isolated.length > 0 ? ' tpl-warn' : ''}`}>
+        {isolated.length > 0 ? (
+          <>
+            <Icon name="warning" size={13} /> Will stay unlinked:{' '}
+            {isolated.map((e) => e.name).join(', ')}.
+            {connectors.length > 0 &&
+              ` Fill in "${connectors.join('" or "')}" to link ${isolated.length === 1 ? 'it' : 'them'} automatically - otherwise, link by hand on the canvas.`}
+          </>
+        ) : (
+          'Everything you fill in will come out linked.'
+        )}
+      </p>
       {error && <p className="error-banner">{error}</p>}
       <div className="actions">
         <button onClick={onCancel}>Cancel</button>

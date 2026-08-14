@@ -29,6 +29,7 @@ from stix2.canonicalization.Canonicalize import canonicalize
 from stix2.utils import format_datetime, parse_into_datetime
 
 from app.stix_core import ids
+from app.stix_core.relationships import SCO_TYPES
 
 # Fixed UUID (picked once and for all) naming the Draw Me A STIX extension.
 STIXIT_EXTENSION_ID = "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d"
@@ -270,9 +271,16 @@ def _sdo_id(stix_type: str, name: str, props: dict) -> str:
     raise ValueError(f"unsupported type: {stix_type}")
 
 
-_SCO_INTERNAL_KEYS = frozenset(
-    {"value", "number", "as_name", "hashes", "file_name", "tlp", "confidence"}
-)
+_SCO_INTERNAL_KEYS = frozenset({
+    "value", "number", "as_name", "hashes", "file_name", "tlp", "confidence",
+    "path",  # directory
+    "cpe", "swid", "vendor", "version",  # software
+    "account_login", "account_type", "user_id", "display_name",  # user-account
+    "serial_number", "subject", "issuer",  # x509-certificate
+})
+
+# Hex fingerprint lengths, as `hashes-type.json` names the algorithms.
+_FINGERPRINT_ALGOS = {32: "MD5", 40: "SHA-1", 64: "SHA-256", 128: "SHA-512"}
 
 
 def _custom_sco_props(props: dict) -> tuple[dict, list[str]]:
@@ -331,6 +339,51 @@ def _build_sco(entity: sqlite3.Row, props: dict, marking: str | None = None) -> 
                 id=ids.file_id(hashes or None, file_name),
                 name=file_name,
                 hashes=hashes or None,
+                **common,
+            )
+        case "mac-addr":
+            # The OASIS schema wants lowercase, colon-delimited; tools print
+            # MAC addresses in either case.
+            return stix2.MACAddress(value=value.lower(), **common)
+        case "mutex":
+            return stix2.Mutex(name=value, **common)
+        case "directory":
+            return stix2.Directory(path=value, **common)
+        case "software":
+            return stix2.Software(
+                name=value,
+                **{k: props[k] for k in ("cpe", "swid", "vendor", "version") if props.get(k)},
+                **common,
+            )
+        case "user-account":
+            # The node name is the login: the readable half of an account.
+            return stix2.UserAccount(
+                account_login=value,
+                **{k: props[k] for k in ("account_type", "user_id", "display_name")
+                   if props.get(k)},
+                **common,
+            )
+        case "x509-certificate":
+            hashes = dict(props.get("hashes") or {})
+            serial = (props.get("serial_number") or "").strip() or None
+            if not hashes and serial is None:
+                # Nothing identifying was typed, so the node name carries it: a
+                # certificate is quoted either by its fingerprint, recognisable
+                # on sight, or by its serial.
+                hex_only = "".join(c for c in value if c in "0123456789abcdefABCDEF")
+                algo = _FINGERPRINT_ALGOS.get(len(hex_only))
+                if algo is not None and re.fullmatch(r"[0-9a-fA-F:\s-]+", value):
+                    hashes[algo] = hex_only.lower()
+                else:
+                    serial = value
+            if not hashes and serial is None:
+                raise ExportError([
+                    f'x509-certificate "{value}": neither fingerprint nor serial number'
+                ])
+            return stix2.X509Certificate(
+                hashes=hashes or None,
+                serial_number=serial,
+                **{k: props[k] for k in ("subject", "issuer") if props.get(k)},
                 **common,
             )
     raise ValueError(f"unsupported SCO: {entity['stix_type']}")
@@ -517,8 +570,7 @@ def build_bundle(db: sqlite3.Connection, iid: str, opts) -> tuple[dict, str, lis
                 own_marking = TLP_MARKINGS[tlp].id
                 used_marking_ids.add(own_marking)
 
-            if entity["stix_type"] in ("ipv4-addr", "ipv6-addr", "domain-name", "url",
-                                       "email-addr", "file", "autonomous-system"):
+            if entity["stix_type"] in SCO_TYPES:
                 # Observables carry their marking, and IT ALONE: the 2.1 spec
                 # does not allow `created_by_ref` on a SCO.
                 #

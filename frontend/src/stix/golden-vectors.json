@@ -408,6 +408,86 @@
         "number": 64496
       },
       "expected": "autonomous-system--9ad79ee3-2fde-5015-b0cc-7a96404effca"
+    },
+    {
+      "type": "mac-addr",
+      "props": {
+        "value": "00:1a:2b:3c:4d:5e"
+      },
+      "expected": "mac-addr--8bbba7bb-0054-556b-a740-4d38221678a8"
+    },
+    {
+      "type": "mutex",
+      "props": {
+        "name": "Global\\MsWinZonesCacheCounterMutexA"
+      },
+      "expected": "mutex--3d345bd5-920b-5a87-8413-0edcc320f430"
+    },
+    {
+      "type": "directory",
+      "props": {
+        "path": "C:\\Windows\\Temp"
+      },
+      "expected": "directory--65bf9886-c2fc-5ab1-b872-66a740617647"
+    },
+    {
+      "type": "software",
+      "props": {
+        "name": "Apache HTTP Server"
+      },
+      "expected": "software--16a3672b-897e-552c-8d46-ce2fbb83618d"
+    },
+    {
+      "type": "software",
+      "props": {
+        "name": "Apache HTTP Server",
+        "cpe": "cpe:2.3:a:apache:http_server:2.4.49:*:*:*:*:*:*:*",
+        "vendor": "Apache",
+        "version": "2.4.49"
+      },
+      "expected": "software--3ffacae1-a9e7-5ce8-a6b7-379f0e587939"
+    },
+    {
+      "type": "user-account",
+      "props": {
+        "account_login": "jdoe"
+      },
+      "expected": "user-account--bc11eaab-cfd6-5ad8-bf02-2386bf690e12"
+    },
+    {
+      "type": "user-account",
+      "props": {
+        "account_type": "windows-domain",
+        "user_id": "S-1-5-21-3623811015-3361044348-30300820-1013",
+        "account_login": "jdoe"
+      },
+      "expected": "user-account--8457101e-008f-5397-8255-b3f632cbc7ab"
+    },
+    {
+      "type": "x509-certificate",
+      "props": {
+        "serial_number": "36:f7:d4:2e:1a:00:00:00:00:0b"
+      },
+      "expected": "x509-certificate--84f8b36d-fa8f-51d9-adc5-fe24ed7f579e"
+    },
+    {
+      "type": "x509-certificate",
+      "props": {
+        "hashes": {
+          "SHA-256": "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f"
+        }
+      },
+      "expected": "x509-certificate--02c74237-f6bc-5e2e-bcbe-e9bf3d69ac64"
+    },
+    {
+      "type": "x509-certificate",
+      "props": {
+        "hashes": {
+          "SHA-1": "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
+        },
+        "serial_number": "36:f7:d4:2e:1a:00:00:00:00:0b"
+      },
+      "expected": "x509-certificate--58e3d08f-de13-51d5-af74-5c5a1ab6a287"
     }
   ]
 }

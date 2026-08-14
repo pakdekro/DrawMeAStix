@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
 import { buildBundle, ExportError, msTime, stixConfidence, stixTime } from "./bundle";
 import golden from "./golden-bundle.json";
 import { importBundle } from "./importer";
-import { allowedRelationships, commonRelationships } from "./relationships";
+import { allowedRelationships, commonRelationships, SCO_TYPES } from "./relationships";
 import type { EntityRow, ExportOptions, InvestigationState } from "./types";
 
 const STATE = golden.state as unknown as InvestigationState;
@@ -43,8 +43,8 @@ describe("roundtrip export → import → export", () => {
 
   it("le rapport d'import compte juste", () => {
     const { report } = importBundle(EXPORTS[0].bundle as never);
-    expect(report.entities).toBe(13); // 14 in store minus the candidate, not exported
-    expect(report.relationships).toBe(7);
+    expect(report.entities).toBe(20); // 21 in store minus the candidate, not exported
+    expect(report.relationships).toBe(8);
     expect(report.notes).toBe(3);
     expect(report.skipped).toEqual({ "identity (author)": 1 });
   });
@@ -138,17 +138,10 @@ describe("invariants de l'empreinte", () => {
 });
 
 describe("marquage TLP des observables (#210)", () => {
-  const scoTypes = new Set([
-    "ipv4-addr",
-    "ipv6-addr",
-    "domain-name",
-    "url",
-    "email-addr",
-    "file",
-    "autonomous-system",
-  ]);
+  // Read from the matrix rather than copied: a hand-kept list stops covering
+  // the observables added after it was written, and says nothing when it does.
   const observables = (objects: Record<string, unknown>[]) =>
-    objects.filter((o) => scoTypes.has(o.type as string));
+    objects.filter((o) => SCO_TYPES.has(o.type as string));
 
   it("un observable porte le marquage de l'export", async () => {
     // Measured on OpenCTI before the fix: a platform that ingests objects one

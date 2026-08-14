@@ -190,6 +190,97 @@
         "position_y": 560.0,
         "created_at": "2026-07-20T10:10:00.000Z",
         "updated_at": "2026-07-20T10:10:00.000Z"
+      },
+      {
+        "id": "e15",
+        "investigation_id": "inv-1",
+        "stix_type": "mac-addr",
+        "name": "00:1A:2B:3C:4D:5E",
+        "properties": "{}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 600.0,
+        "position_y": 560.0,
+        "created_at": "2026-07-20T10:15:00.000Z",
+        "updated_at": "2026-07-20T10:15:00.000Z"
+      },
+      {
+        "id": "e16",
+        "investigation_id": "inv-1",
+        "stix_type": "mutex",
+        "name": "Global\\MsWinZonesCacheCounterMutexA",
+        "properties": "{}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 840.0,
+        "position_y": 560.0,
+        "created_at": "2026-07-20T10:20:00.000Z",
+        "updated_at": "2026-07-20T10:20:00.000Z"
+      },
+      {
+        "id": "e17",
+        "investigation_id": "inv-1",
+        "stix_type": "directory",
+        "name": "C:\\Windows\\Temp",
+        "properties": "{}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 120.0,
+        "position_y": 720.0,
+        "created_at": "2026-07-20T10:25:00.000Z",
+        "updated_at": "2026-07-20T10:25:00.000Z"
+      },
+      {
+        "id": "e18",
+        "investigation_id": "inv-1",
+        "stix_type": "software",
+        "name": "Apache HTTP Server",
+        "properties": "{\"vendor\": \"Apache\", \"version\": \"2.4.49\"}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 360.0,
+        "position_y": 720.0,
+        "created_at": "2026-07-20T10:30:00.000Z",
+        "updated_at": "2026-07-20T10:30:00.000Z"
+      },
+      {
+        "id": "e19",
+        "investigation_id": "inv-1",
+        "stix_type": "user-account",
+        "name": "jdoe",
+        "properties": "{\"account_type\": \"windows-domain\", \"user_id\": \"S-1-5-21-1013\", \"display_name\": \"Jane Doe\"}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 600.0,
+        "position_y": 720.0,
+        "created_at": "2026-07-20T10:35:00.000Z",
+        "updated_at": "2026-07-20T10:35:00.000Z"
+      },
+      {
+        "id": "e20",
+        "investigation_id": "inv-1",
+        "stix_type": "x509-certificate",
+        "name": "36:f7:d4:2e:1a:00:00:00:00:0b",
+        "properties": "{\"subject\": \"CN=evil.example\"}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 840.0,
+        "position_y": 720.0,
+        "created_at": "2026-07-20T10:40:00.000Z",
+        "updated_at": "2026-07-20T10:40:00.000Z"
+      },
+      {
+        "id": "e21",
+        "investigation_id": "inv-1",
+        "stix_type": "x509-certificate",
+        "name": "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f",
+        "properties": "{}",
+        "status": "confirmed",
+        "source": "manual",
+        "position_x": 120.0,
+        "position_y": 880.0,
+        "created_at": "2026-07-20T10:45:00.000Z",
+        "updated_at": "2026-07-20T10:45:00.000Z"
       }
     ],
     "relationships": [
@@ -280,6 +371,17 @@
         "start_time": null,
         "stop_time": null,
         "created_at": "2026-07-20T11:35:00.000Z"
+      },
+      {
+        "id": "r9",
+        "investigation_id": "inv-1",
+        "source_id": "e3",
+        "target_id": "e20",
+        "rel_type": "based-on",
+        "description": "",
+        "start_time": null,
+        "stop_time": null,
+        "created_at": "2026-07-20T11:40:00.000Z"
       }
     ],
     "notes": [
@@ -327,7 +429,7 @@
       },
       "bundle": {
         "type": "bundle",
-        "id": "bundle--3990f8ec-11f2-58df-a18a-88bcd69706f7",
+        "id": "bundle--818ad828-32fa-5087-9794-de87850e5dd1",
         "objects": [
           {
             "type": "identity",
@@ -670,6 +772,140 @@
             }
           },
           {
+            "type": "mac-addr",
+            "spec_version": "2.1",
+            "id": "mac-addr--8bbba7bb-0054-556b-a740-4d38221678a8",
+            "value": "00:1a:2b:3c:4d:5e",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e15",
+                "position_x": 600.0,
+                "position_y": 560.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "mutex",
+            "spec_version": "2.1",
+            "id": "mutex--3d345bd5-920b-5a87-8413-0edcc320f430",
+            "name": "Global\\MsWinZonesCacheCounterMutexA",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e16",
+                "position_x": 840.0,
+                "position_y": 560.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "directory",
+            "spec_version": "2.1",
+            "id": "directory--65bf9886-c2fc-5ab1-b872-66a740617647",
+            "path": "C:\\Windows\\Temp",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e17",
+                "position_x": 120.0,
+                "position_y": 720.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "software",
+            "spec_version": "2.1",
+            "id": "software--8ce4bcab-8b17-531c-ac37-630370c1820b",
+            "name": "Apache HTTP Server",
+            "vendor": "Apache",
+            "version": "2.4.49",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e18",
+                "position_x": 360.0,
+                "position_y": 720.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "user-account",
+            "spec_version": "2.1",
+            "id": "user-account--4473b3de-f022-537b-97c8-f654e9ee7dcf",
+            "user_id": "S-1-5-21-1013",
+            "account_login": "jdoe",
+            "account_type": "windows-domain",
+            "display_name": "Jane Doe",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e19",
+                "position_x": 600.0,
+                "position_y": 720.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "x509-certificate",
+            "spec_version": "2.1",
+            "id": "x509-certificate--84f8b36d-fa8f-51d9-adc5-fe24ed7f579e",
+            "serial_number": "36:f7:d4:2e:1a:00:00:00:00:0b",
+            "subject": "CN=evil.example",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e20",
+                "position_x": 840.0,
+                "position_y": 720.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "x509-certificate",
+            "spec_version": "2.1",
+            "id": "x509-certificate--02c74237-f6bc-5e2e-bcbe-e9bf3d69ac64",
+            "hashes": {
+              "SHA-256": "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f"
+            },
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e21",
+                "position_x": 120.0,
+                "position_y": 880.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
             "type": "relationship",
             "spec_version": "2.1",
             "id": "relationship--bfbc59e6-e280-5140-8631-a32e99405f8a",
@@ -771,6 +1007,20 @@
             ]
           },
           {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--ec17020a-2b85-550b-9728-27c9ebdff775",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:40:00.000Z",
+            "modified": "2026-07-20T11:40:00.000Z",
+            "relationship_type": "based-on",
+            "source_ref": "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+            "target_ref": "x509-certificate--84f8b36d-fa8f-51d9-adc5-fe24ed7f579e",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
             "type": "note",
             "spec_version": "2.1",
             "id": "note--99344a10-1887-5dfc-ae15-29db322107c6",
@@ -843,6 +1093,13 @@
               "autonomous-system--9ad79ee3-2fde-5015-b0cc-7a96404effca",
               "url--0651761a-87d4-5024-a463-6169da5fc2bc",
               "email-addr--e9c7461d-4c69-5b9b-9de9-2e64d776257f",
+              "mac-addr--8bbba7bb-0054-556b-a740-4d38221678a8",
+              "mutex--3d345bd5-920b-5a87-8413-0edcc320f430",
+              "directory--65bf9886-c2fc-5ab1-b872-66a740617647",
+              "software--8ce4bcab-8b17-531c-ac37-630370c1820b",
+              "user-account--4473b3de-f022-537b-97c8-f654e9ee7dcf",
+              "x509-certificate--84f8b36d-fa8f-51d9-adc5-fe24ed7f579e",
+              "x509-certificate--02c74237-f6bc-5e2e-bcbe-e9bf3d69ac64",
               "relationship--bfbc59e6-e280-5140-8631-a32e99405f8a",
               "relationship--1ece966d-9a01-5eec-89dd-afd4c0562898",
               "relationship--1bfae382-15e5-5d2f-b524-b91148ba046e",
@@ -850,6 +1107,7 @@
               "relationship--863b6a73-089f-5224-aead-aa30d5c1435e",
               "relationship--65c78d32-a411-5302-89d5-defe99eab7f2",
               "relationship--d3179231-0d81-5f46-be66-6b85dec147f8",
+              "relationship--ec17020a-2b85-550b-9728-27c9ebdff775",
               "note--99344a10-1887-5dfc-ae15-29db322107c6",
               "note--6cbc7ee6-5e32-57cf-bd8c-ad4f25afa0ae",
               "opinion--a36a1dfb-6773-5c5e-b159-c79dd0024ecc"
@@ -860,7 +1118,7 @@
           }
         ]
       },
-      "fingerprint": "sha256:44effc307b0c8daa860723af63ec49ec96875b5d772755478da52008d04fa167",
+      "fingerprint": "sha256:5611c86f5ada312c4535259b48883046289919286a2203959555d26433280844",
       "warnings": [
         "relationship uses skipped: one end is not exported (candidate entity?)"
       ]
@@ -876,7 +1134,7 @@
       },
       "bundle": {
         "type": "bundle",
-        "id": "bundle--401c7993-fb77-5d76-8843-e0f099ddec1d",
+        "id": "bundle--0c095d4f-6325-5aff-bd10-f070c4cdb2d4",
         "objects": [
           {
             "type": "identity",
@@ -1152,6 +1410,119 @@
                 "position_x": 360.0,
                 "position_y": 560.0,
                 "source": "import"
+              }
+            }
+          },
+          {
+            "type": "mac-addr",
+            "spec_version": "2.1",
+            "id": "mac-addr--8bbba7bb-0054-556b-a740-4d38221678a8",
+            "value": "00:1a:2b:3c:4d:5e",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e15",
+                "position_x": 600.0,
+                "position_y": 560.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "mutex",
+            "spec_version": "2.1",
+            "id": "mutex--3d345bd5-920b-5a87-8413-0edcc320f430",
+            "name": "Global\\MsWinZonesCacheCounterMutexA",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e16",
+                "position_x": 840.0,
+                "position_y": 560.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "directory",
+            "spec_version": "2.1",
+            "id": "directory--65bf9886-c2fc-5ab1-b872-66a740617647",
+            "path": "C:\\Windows\\Temp",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e17",
+                "position_x": 120.0,
+                "position_y": 720.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "software",
+            "spec_version": "2.1",
+            "id": "software--8ce4bcab-8b17-531c-ac37-630370c1820b",
+            "name": "Apache HTTP Server",
+            "vendor": "Apache",
+            "version": "2.4.49",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e18",
+                "position_x": 360.0,
+                "position_y": 720.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "user-account",
+            "spec_version": "2.1",
+            "id": "user-account--4473b3de-f022-537b-97c8-f654e9ee7dcf",
+            "user_id": "S-1-5-21-1013",
+            "account_login": "jdoe",
+            "account_type": "windows-domain",
+            "display_name": "Jane Doe",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e19",
+                "position_x": 600.0,
+                "position_y": 720.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "x509-certificate",
+            "spec_version": "2.1",
+            "id": "x509-certificate--84f8b36d-fa8f-51d9-adc5-fe24ed7f579e",
+            "serial_number": "36:f7:d4:2e:1a:00:00:00:00:0b",
+            "subject": "CN=evil.example",
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e20",
+                "position_x": 840.0,
+                "position_y": 720.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "x509-certificate",
+            "spec_version": "2.1",
+            "id": "x509-certificate--02c74237-f6bc-5e2e-bcbe-e9bf3d69ac64",
+            "hashes": {
+              "SHA-256": "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f"
+            },
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e21",
+                "position_x": 120.0,
+                "position_y": 880.0,
+                "source": "manual"
               }
             }
           },
@@ -1229,6 +1600,16 @@
             "target_ref": "vulnerability--eb9df705-bde1-52ed-99dc-00d5bab90129"
           },
           {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--ec17020a-2b85-550b-9728-27c9ebdff775",
+            "created": "2026-07-20T11:40:00.000Z",
+            "modified": "2026-07-20T11:40:00.000Z",
+            "relationship_type": "based-on",
+            "source_ref": "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+            "target_ref": "x509-certificate--84f8b36d-fa8f-51d9-adc5-fe24ed7f579e"
+          },
+          {
             "type": "grouping",
             "spec_version": "2.1",
             "id": "grouping--4aed7025-576f-5822-b980-423b2e808e25",
@@ -1251,18 +1632,26 @@
               "autonomous-system--9ad79ee3-2fde-5015-b0cc-7a96404effca",
               "url--0651761a-87d4-5024-a463-6169da5fc2bc",
               "email-addr--e9c7461d-4c69-5b9b-9de9-2e64d776257f",
+              "mac-addr--8bbba7bb-0054-556b-a740-4d38221678a8",
+              "mutex--3d345bd5-920b-5a87-8413-0edcc320f430",
+              "directory--65bf9886-c2fc-5ab1-b872-66a740617647",
+              "software--8ce4bcab-8b17-531c-ac37-630370c1820b",
+              "user-account--4473b3de-f022-537b-97c8-f654e9ee7dcf",
+              "x509-certificate--84f8b36d-fa8f-51d9-adc5-fe24ed7f579e",
+              "x509-certificate--02c74237-f6bc-5e2e-bcbe-e9bf3d69ac64",
               "relationship--bfbc59e6-e280-5140-8631-a32e99405f8a",
               "relationship--1ece966d-9a01-5eec-89dd-afd4c0562898",
               "relationship--1bfae382-15e5-5d2f-b524-b91148ba046e",
               "relationship--bbbacdb4-dfb1-5bee-a264-95bcaed6ef02",
               "relationship--863b6a73-089f-5224-aead-aa30d5c1435e",
               "relationship--65c78d32-a411-5302-89d5-defe99eab7f2",
-              "relationship--d3179231-0d81-5f46-be66-6b85dec147f8"
+              "relationship--d3179231-0d81-5f46-be66-6b85dec147f8",
+              "relationship--ec17020a-2b85-550b-9728-27c9ebdff775"
             ]
           }
         ]
       },
-      "fingerprint": "sha256:4e3d88746c955df3842acdacdf377ae2e2aca356bce9d92ec657c20f0ace6e34",
+      "fingerprint": "sha256:ac0cfcc5cebdea8b8fced3090c3e4cde1fe979f9a026aa9ace81e56c779667af",
       "warnings": [
         "relationship uses skipped: one end is not exported (candidate entity?)"
       ]
@@ -1278,7 +1667,7 @@
       },
       "bundle": {
         "type": "bundle",
-        "id": "bundle--46008231-8e18-5236-aeeb-8bb869b6fdb7",
+        "id": "bundle--45b6b65b-8389-5f4b-957d-3791d1272dc5",
         "objects": [
           {
             "type": "identity",
@@ -1627,6 +2016,140 @@
             }
           },
           {
+            "type": "mac-addr",
+            "spec_version": "2.1",
+            "id": "mac-addr--8bbba7bb-0054-556b-a740-4d38221678a8",
+            "value": "00:1a:2b:3c:4d:5e",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e15",
+                "position_x": 600.0,
+                "position_y": 560.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "mutex",
+            "spec_version": "2.1",
+            "id": "mutex--3d345bd5-920b-5a87-8413-0edcc320f430",
+            "name": "Global\\MsWinZonesCacheCounterMutexA",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e16",
+                "position_x": 840.0,
+                "position_y": 560.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "directory",
+            "spec_version": "2.1",
+            "id": "directory--65bf9886-c2fc-5ab1-b872-66a740617647",
+            "path": "C:\\Windows\\Temp",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e17",
+                "position_x": 120.0,
+                "position_y": 720.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "software",
+            "spec_version": "2.1",
+            "id": "software--8ce4bcab-8b17-531c-ac37-630370c1820b",
+            "name": "Apache HTTP Server",
+            "vendor": "Apache",
+            "version": "2.4.49",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e18",
+                "position_x": 360.0,
+                "position_y": 720.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "user-account",
+            "spec_version": "2.1",
+            "id": "user-account--4473b3de-f022-537b-97c8-f654e9ee7dcf",
+            "user_id": "S-1-5-21-1013",
+            "account_login": "jdoe",
+            "account_type": "windows-domain",
+            "display_name": "Jane Doe",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e19",
+                "position_x": 600.0,
+                "position_y": 720.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "x509-certificate",
+            "spec_version": "2.1",
+            "id": "x509-certificate--84f8b36d-fa8f-51d9-adc5-fe24ed7f579e",
+            "serial_number": "36:f7:d4:2e:1a:00:00:00:00:0b",
+            "subject": "CN=evil.example",
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e20",
+                "position_x": 840.0,
+                "position_y": 720.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
+            "type": "x509-certificate",
+            "spec_version": "2.1",
+            "id": "x509-certificate--02c74237-f6bc-5e2e-bcbe-e9bf3d69ac64",
+            "hashes": {
+              "SHA-256": "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f"
+            },
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ],
+            "extensions": {
+              "extension-definition--4a3b8e1c-6f2d-4b9a-8c5e-1d2f3a4b5c6d": {
+                "extension_type": "property-extension",
+                "local_id": "e21",
+                "position_x": 120.0,
+                "position_y": 880.0,
+                "source": "manual"
+              }
+            }
+          },
+          {
             "type": "relationship",
             "spec_version": "2.1",
             "id": "relationship--bfbc59e6-e280-5140-8631-a32e99405f8a",
@@ -1735,6 +2258,21 @@
             ]
           },
           {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--ec17020a-2b85-550b-9728-27c9ebdff775",
+            "created_by_ref": "identity--61400248-00d0-534d-b950-9b500734f82b",
+            "created": "2026-07-20T11:40:00.000Z",
+            "modified": "2026-07-20T11:40:00.000Z",
+            "relationship_type": "based-on",
+            "source_ref": "indicator--b043e4db-c04c-5577-a531-8e844948b163",
+            "target_ref": "x509-certificate--84f8b36d-fa8f-51d9-adc5-fe24ed7f579e",
+            "confidence": 75,
+            "object_marking_refs": [
+              "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            ]
+          },
+          {
             "type": "note",
             "spec_version": "2.1",
             "id": "note--99344a10-1887-5dfc-ae15-29db322107c6",
@@ -1810,6 +2348,13 @@
               "autonomous-system--9ad79ee3-2fde-5015-b0cc-7a96404effca",
               "url--0651761a-87d4-5024-a463-6169da5fc2bc",
               "email-addr--e9c7461d-4c69-5b9b-9de9-2e64d776257f",
+              "mac-addr--8bbba7bb-0054-556b-a740-4d38221678a8",
+              "mutex--3d345bd5-920b-5a87-8413-0edcc320f430",
+              "directory--65bf9886-c2fc-5ab1-b872-66a740617647",
+              "software--8ce4bcab-8b17-531c-ac37-630370c1820b",
+              "user-account--4473b3de-f022-537b-97c8-f654e9ee7dcf",
+              "x509-certificate--84f8b36d-fa8f-51d9-adc5-fe24ed7f579e",
+              "x509-certificate--02c74237-f6bc-5e2e-bcbe-e9bf3d69ac64",
               "relationship--bfbc59e6-e280-5140-8631-a32e99405f8a",
               "relationship--1ece966d-9a01-5eec-89dd-afd4c0562898",
               "relationship--1bfae382-15e5-5d2f-b524-b91148ba046e",
@@ -1817,6 +2362,7 @@
               "relationship--863b6a73-089f-5224-aead-aa30d5c1435e",
               "relationship--65c78d32-a411-5302-89d5-defe99eab7f2",
               "relationship--d3179231-0d81-5f46-be66-6b85dec147f8",
+              "relationship--ec17020a-2b85-550b-9728-27c9ebdff775",
               "note--99344a10-1887-5dfc-ae15-29db322107c6",
               "note--6cbc7ee6-5e32-57cf-bd8c-ad4f25afa0ae",
               "opinion--a36a1dfb-6773-5c5e-b159-c79dd0024ecc"
@@ -1828,7 +2374,7 @@
           }
         ]
       },
-      "fingerprint": "sha256:1ec2308b40c870cb1de41e51b0aee4458e2636bee1d6f00847adf998efe2a33e",
+      "fingerprint": "sha256:e0094abedee123806565862d027290ebd2ab8e0f637e1cc4f25fd536908f77f7",
       "warnings": [
         "relationship uses skipped: one end is not exported (candidate entity?)"
       ]

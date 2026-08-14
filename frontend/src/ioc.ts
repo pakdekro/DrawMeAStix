@@ -29,6 +29,24 @@ export function refang(value: string): string {
   return out;
 }
 
+/**
+ * The stored form of an observable's value: refanged, plus the per-type
+ * canonicalisation the OASIS schema demands.
+ *
+ * A MAC address is the one type with a mandated spelling - lowercase,
+ * colon-delimited. Left as typed, the canvas showed one form and the export
+ * wrote another, and the same address entered twice in two cases made two
+ * nodes that only collapse into one object at export time, with a warning the
+ * analyst reads long after.
+ */
+export function canonicalObservable(stixType: string, value: string): string {
+  const refanged = refang(value);
+  if (stixType === "mac-addr" && /^([0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/i.test(refanged)) {
+    return refanged.toLowerCase().replace(/-/g, ":");
+  }
+  return refanged;
+}
+
 /* -- type detection (#31: smart paste) --------------------------------------- */
 
 export interface DetectedIoc {
@@ -96,6 +114,16 @@ export function detectIoc(token: string): DetectedIoc | null {
   }
   if (isIpv4(t)) {
     return { stix_type: "ipv4-addr", name: t, properties: {} };
+  }
+  // Before IPv6, the other colon-separated hex. Six groups are not a valid
+  // address so the order is belt and braces, but it states the intent. Stored
+  // lowercase with colons, the only form the OASIS schema accepts.
+  if (/^([0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/i.test(t)) {
+    return {
+      stix_type: "mac-addr",
+      name: t.toLowerCase().replace(/-/g, ":"),
+      properties: {},
+    };
   }
   if (isIpv6(t)) {
     return { stix_type: "ipv6-addr", name: t, properties: {} };

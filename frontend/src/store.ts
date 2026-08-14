@@ -10,7 +10,7 @@
  * vectors consume.
  */
 
-import { refang } from "./ioc";
+import { canonicalObservable } from "./ioc";
 import { announceChange } from "./sync";
 import { lintInvestigation } from "./lint";
 import { buildBundle, ExportError } from "./stix/bundle";
@@ -351,8 +351,11 @@ export async function createEntity(iid: string, body: EntityCreateBody): Promise
       id: newId(),
       investigation_id: iid,
       stix_type: body.stix_type,
-      // automatic refang: never a "hxxp://evil[.]com" in the store (#30)
-      name: SCO_TYPES.has(body.stix_type) ? refang(body.name) : body.name,
+      // automatic refang: never a "hxxp://evil[.]com" in the store (#30), plus
+      // the canonical spelling of the types that have one
+      name: SCO_TYPES.has(body.stix_type)
+        ? canonicalObservable(body.stix_type, body.name)
+        : body.name,
       properties: JSON.stringify(body.properties ?? {}),
       status: body.status ?? "confirmed",
       source: body.source ?? "manual",
@@ -388,7 +391,11 @@ export async function updateEntity(
       ...row,
       ...(patch.stix_type != null ? { stix_type: patch.stix_type } : {}),
       ...(patch.name != null
-        ? { name: SCO_TYPES.has(stixType) ? refang(patch.name) : patch.name }
+        ? {
+            name: SCO_TYPES.has(stixType)
+              ? canonicalObservable(stixType, patch.name)
+              : patch.name,
+          }
         : {}),
       ...(patch.properties != null ? { properties: JSON.stringify(patch.properties) } : {}),
       ...(patch.status != null ? { status: patch.status } : {}),

@@ -64,6 +64,26 @@ describe("détection (collage intelligent)", () => {
     expect(detectIoc("AS64496")?.properties.number).toBe(64496);
   });
 
+  it("mac-addr : deux séparateurs, une seule forme stockée", () => {
+    // Stored lowercase with colons, the only form the OASIS schema accepts,
+    // so the identifier is computed on the shape that will be exported.
+    expect(detectIoc("00:1A:2B:3C:4D:5E")).toEqual({
+      stix_type: "mac-addr",
+      name: "00:1a:2b:3c:4d:5e",
+      properties: {},
+    });
+    expect(detectIoc("00-1a-2b-3c-4d-5e")?.name).toBe("00:1a:2b:3c:4d:5e");
+  });
+
+  it("mac-addr : ne mange pas ce qui lui ressemble", () => {
+    expect(detectIoc("00:1a:2b:3c:4d")).toBeNull(); // five groups
+    expect(detectIoc("00:1a:2b:3c:4d:5e:6f")).toBeNull(); // seven
+    expect(detectIoc("0:1a:2b:3c:4d:5e")).toBeNull(); // a group of one digit
+    // An eight-group hextet string stays an IPv6: it is a valid address, and
+    // no MAC has eight groups.
+    expect(detectIoc("2001:0db8:85a3:0000:0000:8a2e:0370:7334")?.stix_type).toBe("ipv6-addr");
+  });
+
   it("ipv6 : formes valides acceptées", () => {
     const v6 = (t: string) => detectIoc(t)?.stix_type;
     expect(v6("2001:0db8:85a3:0000:0000:8a2e:0370:7334")).toBe("ipv6-addr"); // 8 groups

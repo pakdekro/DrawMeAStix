@@ -13,12 +13,15 @@
     },
     {
       "key": "account",
-      "type": "identity",
-      "label": "Compromised account / user",
-      "placeholder": "j.smith",
-      "prefill": {
-        "identity_class": "individual"
-      }
+      "type": "user-account",
+      "label": "Compromised account (login)",
+      "placeholder": "j.smith"
+    },
+    {
+      "key": "service",
+      "type": "infrastructure",
+      "label": "Affected service",
+      "placeholder": "Microsoft 365 mailbox, VPN portal"
     },
     {
       "key": "victim",
@@ -61,7 +64,12 @@
   "relations": [
     {
       "from": "actor",
-      "rel": "impersonates",
+      "rel": "compromises",
+      "to": "service"
+    },
+    {
+      "from": "service",
+      "rel": "consists-of",
       "to": "account"
     },
     {
@@ -98,11 +106,6 @@
       "from": "access_infra",
       "rel": "consists-of",
       "to": "src_ip"
-    },
-    {
-      "from": "account",
-      "rel": "related-to",
-      "to": "victim"
     }
   ]
 }

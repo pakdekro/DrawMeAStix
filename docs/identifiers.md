@@ -80,14 +80,36 @@ The contributing properties come from the `stix2` library's own definitions:
 | Type | Contributing properties |
 |---|---|
 | `autonomous-system` | `number` |
+| `directory` | `path` |
 | `domain-name` | `value` |
 | `email-addr` | `value` |
 | `file` | `hashes`, `name`, `parent_directory_ref`, `extensions` |
 | `ipv4-addr` | `value` |
 | `ipv6-addr` | `value` |
+| `mac-addr` | `value` |
+| `mutex` | `name` |
+| `software` | `name`, `cpe`, `swid`, `vendor`, `version` |
 | `url` | `value` |
+| `user-account` | `account_type`, `user_id`, `account_login` |
+| `x509-certificate` | `hashes`, `serial_number` |
 
-Observable values are **not** normalised: they go in as given.
+Three observables of the spec are missing from that table, and on purpose.
+`email-message` and `network-traffic` derive their identifier from the
+identifier of another object (`from_ref`, `src_ref`, `dst_ref`), so they cannot
+be created on their own the way a node is dropped on a canvas. `process` has no
+contributing property at all: the spec gives it a random UUID, so re-importing
+one would create a second, which is the one thing this whole page exists to
+prevent.
+
+Observable values go in as given, with a single exception: a MAC address is
+lowercased. The OASIS schema accepts no other form, so an address typed in
+capitals would have its identifier computed on a form the export could never
+carry.
+
+A `x509-certificate` has no `name` in the spec, so the node name stands in for
+whichever of the two identifying fields was left empty: read as a fingerprint
+when it is hexadecimal and of a hash's length, as the serial number otherwise.
+Anything typed in the fields wins over that reading.
 
 When a file carries several hashes, exactly one enters the identifier, chosen in
 the order `MD5`, `SHA-1`, `SHA-256`, `SHA-512`, and falling back to the first

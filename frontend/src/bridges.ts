@@ -60,6 +60,40 @@ const INFRASTRUCTURE_RECIPE: BridgeRecipe = {
   ],
 };
 
+/**
+ * Observables that describe what an actor's infrastructure is MADE OF rather
+ * than something it talks to: a certificate served by a C2, the software it
+ * runs, an account on it, the MAC of a box. The canonical detour is
+ * `consists-of`, where a network endpoint gets `communicates-with`.
+ *
+ * `mutex` and `directory` are deliberately absent: they are malware artefacts
+ * on a victim host, not infrastructure, and STIX 2.1 offers no relationship
+ * from a malware to either of them. They keep the indicator bridge, which is
+ * the honest route - inventing a link is what this whole file exists to avoid.
+ */
+const INFRASTRUCTURE_PARTS = new Set([
+  "mac-addr",
+  "software",
+  "user-account",
+  "x509-certificate",
+]);
+
+const INFRASTRUCTURE_PART_RECIPE: BridgeRecipe = {
+  key: "infrastructure-part",
+  label: "Infrastructure this observable is part of",
+  hint: "uses → infrastructure → consists-of",
+  bridgeType: "infrastructure",
+  defaultName: (_sdo, sco) => `Infrastructure - ${sco.name}`,
+  // No `infrastructure_types`: the C2 recipe knows what it is building, this
+  // one does not, and guessing would put an assertion in the bundle that the
+  // analyst never made.
+  bridgeProperties: () => ({}),
+  legs: [
+    { rel: "uses", from: "sdo", to: "bridge" },
+    { rel: "consists-of", from: "bridge", to: "sco" },
+  ],
+};
+
 const MALWARE_RECIPE: BridgeRecipe = {
   key: "malware",
   label: "A malware that drops this file",
@@ -117,6 +151,9 @@ export function findBridges(a: BridgeEndpoint, b: BridgeEndpoint): BridgeMatch |
   const recipes: BridgeRecipe[] = [];
   if (OPERATORS.has(sdo.stix_type) && NETWORK_SCOS.has(sco.stix_type)) {
     recipes.push(INFRASTRUCTURE_RECIPE);
+  }
+  if (OPERATORS.has(sdo.stix_type) && INFRASTRUCTURE_PARTS.has(sco.stix_type)) {
+    recipes.push(INFRASTRUCTURE_PART_RECIPE);
   }
   if (OPERATORS.has(sdo.stix_type) && sco.stix_type === "file") {
     recipes.push(MALWARE_RECIPE);

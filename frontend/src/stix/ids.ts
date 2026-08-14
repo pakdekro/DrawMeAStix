@@ -156,12 +156,18 @@ export function relationshipId(args: {
 /** Contributing properties per type (stix2/v21/observables.py). */
 const SCO_CONTRIBUTING: Record<string, readonly string[]> = {
   "autonomous-system": ["number"],
+  directory: ["path"],
   "domain-name": ["value"],
   "email-addr": ["value"],
   file: ["hashes", "name", "parent_directory_ref", "extensions"],
   "ipv4-addr": ["value"],
   "ipv6-addr": ["value"],
+  "mac-addr": ["value"],
+  mutex: ["name"],
+  software: ["name", "cpe", "swid", "vendor", "version"],
   url: ["value"],
+  "user-account": ["account_type", "user_id", "account_login"],
+  "x509-certificate": ["hashes", "serial_number"],
 };
 
 /** The stix2 lib's order of preference when several hashes are present. */

@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { fieldsFor, toFormValues, toProperties } from './entityFields'
+import { SCO_TYPES, SDO_TYPES } from './stix/relationships'
+import { SCO_ORDER, SDO_ORDER } from './stixMeta'
+
+describe('la palette montre exactement les types que la matrice connaît', () => {
+  // Declaring a type in the matrix and forgetting it here is silent: it never
+  // shows up in the palette, and anything that reaches the canvas some other
+  // way (import, paste) renders grey with its raw STIX type for a label.
+  it('aucun type oublié dans un sens ni dans l’autre', () => {
+    expect([...SCO_ORDER].sort()).toEqual([...SCO_TYPES].sort())
+    expect([...SDO_ORDER].sort()).toEqual([...SDO_TYPES].sort())
+  })
+})
 
 describe('champs communs SDO (#125)', () => {
   it('confiance et TLP proposés sur les SDO, pas sur les SCO', () => {

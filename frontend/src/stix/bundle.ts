@@ -182,6 +182,47 @@ function isBlank(value: JsonValue): boolean {
   return false;
 }
 
+/** A property read back as a non-empty trimmed string, or null. */
+function asTrimmedString(value: JsonValue | undefined): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
+/** Hex fingerprint lengths, as `hashes-type.json` names the algorithms. */
+const FINGERPRINT_ALGOS: Record<number, string> = {
+  32: "MD5",
+  40: "SHA-1",
+  64: "SHA-256",
+  128: "SHA-512",
+};
+
+/**
+ * What identifies a certificate node: its fingerprints, its serial, or both.
+ *
+ * A x509-certificate has no `name` in the spec, so the node name has to stand
+ * in when neither field was filled: a certificate gets quoted either by its
+ * fingerprint, recognisable on sight (hex, of one of four lengths), or by its
+ * serial. Exported here because the pattern generator has to read the node the
+ * same way the builder does, or the indicator would hunt for something the
+ * bundle never carries.
+ */
+export function x509Identity(
+  name: string,
+  props: Record<string, unknown>,
+): { hashes: Record<string, JsonValue>; serial: string | null } {
+  const hashes = { ...((props.hashes as Record<string, JsonValue> | undefined) ?? {}) };
+  let serial = asTrimmedString(props.serial_number as JsonValue | undefined);
+  const value = name.trim();
+  if (Object.keys(hashes).length === 0 && serial === null && value !== "") {
+    const hex = value.replace(/[^0-9a-fA-F]/g, "");
+    const algo = FINGERPRINT_ALGOS[hex.length];
+    if (algo !== undefined && /^[0-9a-fA-F:\s-]+$/.test(value)) hashes[algo] = hex.toLowerCase();
+    else serial = value;
+  }
+  return { hashes, serial };
+}
+
 export class ExportError extends Error {
   constructor(public problems: string[]) {
     super(problems.join("; "));
@@ -299,6 +340,22 @@ const SCO_INTERNAL_KEYS = new Set([
   "file_name",
   "tlp",
   "confidence",
+  // directory
+  "path",
+  // software
+  "cpe",
+  "swid",
+  "vendor",
+  "version",
+  // user-account
+  "account_login",
+  "account_type",
+  "user_id",
+  "display_name",
+  // x509-certificate
+  "serial_number",
+  "subject",
+  "issuer",
 ]);
 
 /**
@@ -384,6 +441,87 @@ function buildSco(e: EntityRow, props: Props, marking: string | null): StixObjec
       };
       if (hasHashes) obj.hashes = hashes;
       if (fileName != null) obj.name = fileName;
+      return obj;
+    }
+    case "mac-addr": {
+      // The OASIS schema wants lowercase, colon-delimited. Analysts copy MAC
+      // addresses out of tools that print them in either case, and an
+      // uppercase one would fail validation at export - after the id had
+      // already been computed on the other form.
+      const mac = value.toLowerCase();
+      return {
+        type: "mac-addr",
+        ...common,
+        id: scoId("mac-addr", { value: mac }),
+        value: mac,
+      };
+    }
+    case "mutex":
+      return {
+        type: "mutex",
+        ...common,
+        id: scoId("mutex", { name: value }),
+        name: value,
+      };
+    case "directory":
+      return {
+        type: "directory",
+        ...common,
+        id: scoId("directory", { path: value }),
+        path: value,
+      };
+    case "software": {
+      const contributing: Props = { name: value };
+      for (const key of ["cpe", "swid", "vendor", "version"] as const) {
+        const raw = props[key];
+        if (raw != null && !isBlank(raw)) contributing[key] = raw;
+      }
+      return {
+        type: "software",
+        ...common,
+        id: scoId("software", contributing),
+        ...contributing,
+      };
+    }
+    case "user-account": {
+      // The node name is the login: it is the readable half of an account,
+      // and the one an analyst has in front of them.
+      const contributing: Props = { account_login: value };
+      for (const key of ["account_type", "user_id"] as const) {
+        const raw = props[key];
+        if (raw != null && !isBlank(raw)) contributing[key] = raw;
+      }
+      const obj: StixObject = {
+        type: "user-account",
+        ...common,
+        id: scoId("user-account", contributing),
+        ...contributing,
+      };
+      if (props.display_name != null && !isBlank(props.display_name)) {
+        obj.display_name = props.display_name;
+      }
+      return obj;
+    }
+    case "x509-certificate": {
+      const { hashes, serial } = x509Identity(value, props);
+      const contributing: Props = {};
+      if (Object.keys(hashes).length > 0) contributing.hashes = hashes;
+      if (serial !== null) contributing.serial_number = serial;
+      if (Object.keys(contributing).length === 0) {
+        throw new ExportError([
+          `x509-certificate "${value}": neither fingerprint nor serial number`,
+        ]);
+      }
+      const obj: StixObject = {
+        type: "x509-certificate",
+        ...common,
+        id: scoId("x509-certificate", contributing),
+        ...contributing,
+      };
+      for (const key of ["subject", "issuer"] as const) {
+        const raw = props[key];
+        if (raw != null && !isBlank(raw)) obj[key] = raw;
+      }
       return obj;
     }
   }

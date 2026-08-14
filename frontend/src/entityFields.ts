@@ -173,6 +173,56 @@ export const TYPE_FIELDS: Record<string, FieldDef[]> = {
     { key: 'number', label: 'AS number', type: 'text', placeholder: '64500', required: true },
     { key: 'as_name', label: 'AS name', type: 'text' },
   ],
+  // `mac-addr`, `mutex` and `directory` are entirely carried by the node name
+  // (the address, the mutex name, the path): the spec gives them one
+  // identifying property and it is that one.
+  software: [
+    { key: 'vendor', label: 'Vendor', type: 'text', placeholder: 'Apache' },
+    { key: 'version', label: 'Version', type: 'text', placeholder: '2.4.49' },
+    {
+      key: 'cpe',
+      label: 'CPE',
+      type: 'text',
+      placeholder: 'cpe:2.3:a:apache:http_server:2.4.49:*:*:*:*:*:*:*',
+      help: 'Part of the deterministic identifier: filling it in later changes it',
+    },
+    { key: 'swid', label: 'SWID tag', type: 'text' },
+  ],
+  'user-account': [
+    {
+      key: 'user_id',
+      label: 'User ID',
+      type: 'text',
+      placeholder: 'S-1-5-21-…, 1001…',
+      help: 'Part of the deterministic identifier: filling it in later changes it',
+    },
+    {
+      key: 'account_type',
+      label: 'Account type',
+      type: 'select',
+      // STIX 2.1 `account-type-ov`. Open vocabulary, but a normalised one, and
+      // it contributes to the identifier, so it is offered rather than typed.
+      options: [
+        '', 'facebook', 'ldap', 'nis', 'openid', 'radius', 'skype', 'tacacs',
+        'twitter', 'unix', 'windows-local', 'windows-domain',
+      ],
+      help: 'Part of the deterministic identifier: filling it in later changes it',
+    },
+    { key: 'display_name', label: 'Display name', type: 'text', placeholder: 'Jane Doe' },
+  ],
+  'x509-certificate': [
+    {
+      key: 'serial_number',
+      label: 'Serial number',
+      type: 'text',
+      placeholder: '36:f7:d4:…',
+      help: 'Left empty, the node name is read as the serial number - or as a fingerprint when it is one',
+    },
+    { key: 'hash_sha256', label: 'SHA-256 fingerprint', type: 'text' },
+    { key: 'hash_sha1', label: 'SHA-1 fingerprint', type: 'text' },
+    { key: 'subject', label: 'Subject', type: 'text', placeholder: 'CN=example.com' },
+    { key: 'issuer', label: 'Issuer', type: 'text', placeholder: "CN=R3, O=Let's Encrypt" },
+  ],
 }
 
 /** Fields common to every SDO (#125, #132): sharing and interoperability. */
@@ -204,6 +254,27 @@ const SDO_COMMON_FIELDS: FieldDef[] = [
     ],
   },
 ]
+
+/**
+ * What the single mandatory field of an observable is asking for.
+ *
+ * The generic hint ("198.51.100.7, evil.example…") is right for the network
+ * observables and misleading for every other one: a software node is not asked
+ * for an IP address, and a certificate has no obvious "value" at all.
+ */
+const VALUE_PLACEHOLDER: Record<string, string> = {
+  'autonomous-system': 'AS64496',
+  'mac-addr': '00:1a:2b:3c:4d:5e',
+  mutex: 'Global\\MsWinZonesCacheCounterMutexA',
+  directory: 'C:\\Users\\Public\\Libraries',
+  software: 'Apache HTTP Server',
+  'user-account': 'j.smith',
+  'x509-certificate': 'fingerprint, or serial number',
+}
+
+export function valuePlaceholder(stixType: string): string {
+  return VALUE_PLACEHOLDER[stixType] ?? 'e.g. 198.51.100.7, evil.example…'
+}
 
 /** Fields shown for a type: its own + the SDO common ones (not for SCOs,
  * their markings are carried by the bundle container). */
@@ -268,7 +339,7 @@ export function toProperties(
       else delete props[key]
     }
   }
-  if (stixType === 'file') {
+  if (stixType === 'file' || stixType === 'x509-certificate') {
     const hashes: Record<string, string> = {}
     if (props.hash_md5) hashes['MD5'] = String(props.hash_md5)
     if (props.hash_sha1) hashes['SHA-1'] = String(props.hash_sha1)

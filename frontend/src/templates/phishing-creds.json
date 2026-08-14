@@ -41,6 +41,11 @@
       "label": "Hosting IP"
     },
     {
+      "key": "cert",
+      "type": "x509-certificate",
+      "label": "TLS certificate (fingerprint or serial)"
+    },
+    {
       "key": "victim",
       "type": "identity",
       "label": "Targeted organisation",
@@ -98,6 +103,11 @@
       "from": "infra",
       "rel": "consists-of",
       "to": "ip"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "cert"
     },
     {
       "from": "domain",
