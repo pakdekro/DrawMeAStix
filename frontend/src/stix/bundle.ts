@@ -331,32 +331,29 @@ function withExternalRef(extra: Props, sourceName: string, externalId: string): 
 /**
  * SCO properties the builder consumes: they come back out in another shape,
  * or not at all.
+ *
+ * Split per type rather than pooled. Pooled, a key one type consumes went
+ * unreported on every OTHER type: `display_name` is a real property of
+ * `email-addr`, and declaring it for `user-account` silenced the "not
+ * re-exported" notice on an imported address that carried one. The loss was
+ * the same as before, the notice about it was not.
  */
-const SCO_INTERNAL_KEYS = new Set([
-  "value",
-  "number",
-  "as_name",
-  "hashes",
-  "file_name",
-  "tlp",
-  "confidence",
-  // directory
-  "path",
-  // software
-  "cpe",
-  "swid",
-  "vendor",
-  "version",
-  // user-account
-  "account_login",
-  "account_type",
-  "user_id",
-  "display_name",
-  // x509-certificate
-  "serial_number",
-  "subject",
-  "issuer",
-]);
+const SCO_COMMON_INTERNAL = new Set(["value", "hashes", "tlp", "confidence"]);
+
+const SCO_INTERNAL_BY_TYPE: Record<string, readonly string[]> = {
+  "autonomous-system": ["number", "as_name"],
+  file: ["file_name"],
+  directory: ["path"],
+  software: ["cpe", "swid", "vendor", "version"],
+  "user-account": ["account_login", "account_type", "user_id", "display_name"],
+  "x509-certificate": ["serial_number", "subject", "issuer"],
+};
+
+function isInternalScoKey(stixType: string, key: string): boolean {
+  return (
+    SCO_COMMON_INTERNAL.has(key) || (SCO_INTERNAL_BY_TYPE[stixType]?.includes(key) ?? false)
+  );
+}
 
 /**
  * Properties of an observable imported from a third-party bundle, re-emitted as they are.
@@ -371,11 +368,11 @@ const SCO_INTERNAL_KEYS = new Set([
  * bundle - re-emitting it would manufacture dangling references, which is
  * worse than the loss being fixed.
  */
-function customScoProps(props: Props): { kept: Props; dropped: string[] } {
+function customScoProps(stixType: string, props: Props): { kept: Props; dropped: string[] } {
   const kept: Props = {};
   const dropped: string[] = [];
   for (const [k, v] of Object.entries(props)) {
-    if (SCO_INTERNAL_KEYS.has(k) || isBlank(v)) continue;
+    if (isInternalScoKey(stixType, k) || isBlank(v)) continue;
     if (k.startsWith("x_")) kept[k] = v;
     else dropped.push(k);
   }
@@ -392,7 +389,7 @@ function buildSco(e: EntityRow, props: Props, marking: string | null): StixObjec
     ...(marking !== null ? { object_marking_refs: [marking] } : {}),
     // The identifying keys come after this in each branch: they must never be
     // overwritten, and the id is computed separately.
-    ...customScoProps(props).kept,
+    ...customScoProps(e.stix_type, props).kept,
   };
   switch (e.stix_type) {
     case "ipv4-addr":
@@ -776,7 +773,7 @@ export async function buildBundle(
         // What we do not re-emit gets said out loud: without this message, an
         // observable enriched elsewhere grew poorer at every round trip with
         // nobody noticing.
-        const { dropped } = customScoProps(props);
+        const { dropped } = customScoProps(entity.stix_type, props);
         if (dropped.length > 0) {
           warnings.push(
             `${entity.stix_type} "${entity.name}": ${dropped.join(", ")} not re-exported ` +

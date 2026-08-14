@@ -136,6 +136,45 @@ describe("x509-certificate, which the spec gives no name at all", () => {
   });
 });
 
+describe("a property we do not model is reported, per type", () => {
+  /** Builds a confirmed entity out of a third-party observable. */
+  async function exportOf(obj: Record<string, unknown>) {
+    const { state } = importBundle({
+      type: "bundle",
+      id: "bundle--1",
+      objects: [obj],
+    } as never);
+    // imported without our layout extension, so it lands in the triage tray
+    state.entities = state.entities.map((e) => ({ ...e, status: "confirmed" as const }));
+    return buildBundle(state, OPTS);
+  }
+
+  it("display_name on an email-addr is reported", async () => {
+    // A real property of `email-addr`, which the builder does not model. It is
+    // ALSO one that the `user-account` branch consumes, and a pooled list of
+    // internal keys silenced the notice here.
+    const { bundle, warnings } = await exportOf({
+      type: "email-addr",
+      id: "email-addr--1",
+      value: "a@evil.example",
+      display_name: "Alice",
+    });
+    expect(bundle.objects.find((o) => o.type === "email-addr")?.display_name).toBeUndefined();
+    expect(warnings.join("\n")).toContain("display_name");
+  });
+
+  it("display_name on a user-account is not reported: the builder emits it", async () => {
+    const { bundle, warnings } = await exportOf({
+      type: "user-account",
+      id: "user-account--1",
+      account_login: "jdoe",
+      display_name: "Jane Doe",
+    });
+    expect(bundle.objects.find((o) => o.type === "user-account")?.display_name).toBe("Jane Doe");
+    expect(warnings.filter((w) => w.includes("not re-exported"))).toEqual([]);
+  });
+});
+
 describe("export → import → export keeps the identifier", () => {
   const cases: [string, string, Record<string, unknown>][] = [
     ["mac-addr", "00:1a:2b:3c:4d:5e", {}],

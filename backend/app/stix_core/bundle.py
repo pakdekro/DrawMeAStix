@@ -271,19 +271,30 @@ def _sdo_id(stix_type: str, name: str, props: dict) -> str:
     raise ValueError(f"unsupported type: {stix_type}")
 
 
-_SCO_INTERNAL_KEYS = frozenset({
-    "value", "number", "as_name", "hashes", "file_name", "tlp", "confidence",
-    "path",  # directory
-    "cpe", "swid", "vendor", "version",  # software
-    "account_login", "account_type", "user_id", "display_name",  # user-account
-    "serial_number", "subject", "issuer",  # x509-certificate
-})
+# Split per type rather than pooled: pooled, a key one type consumes went
+# unreported on every OTHER type. `display_name` is a real property of
+# `email-addr`, and declaring it for `user-account` silenced the
+# "not re-exported" notice on an imported address that carried one.
+_SCO_COMMON_INTERNAL = frozenset({"value", "hashes", "tlp", "confidence"})
+
+_SCO_INTERNAL_BY_TYPE: dict[str, frozenset[str]] = {
+    "autonomous-system": frozenset({"number", "as_name"}),
+    "file": frozenset({"file_name"}),
+    "directory": frozenset({"path"}),
+    "software": frozenset({"cpe", "swid", "vendor", "version"}),
+    "user-account": frozenset({"account_login", "account_type", "user_id", "display_name"}),
+    "x509-certificate": frozenset({"serial_number", "subject", "issuer"}),
+}
+
+
+def _is_internal_sco_key(stix_type: str, key: str) -> bool:
+    return key in _SCO_COMMON_INTERNAL or key in _SCO_INTERNAL_BY_TYPE.get(stix_type, ())
 
 # Hex fingerprint lengths, as `hashes-type.json` names the algorithms.
 _FINGERPRINT_ALGOS = {32: "MD5", 40: "SHA-1", 64: "SHA-256", 128: "SHA-512"}
 
 
-def _custom_sco_props(props: dict) -> tuple[dict, list[str]]:
+def _custom_sco_props(stix_type: str, props: dict) -> tuple[dict, list[str]]:
     """Properties of a third-party observable: re-emitted if `x_`, else reported.
 
     Only CUSTOM properties come back. A STIX property we do not model is
@@ -293,7 +304,7 @@ def _custom_sco_props(props: dict) -> tuple[dict, list[str]]:
     """
     kept, dropped = {}, []
     for k, v in props.items():
-        if k in _SCO_INTERNAL_KEYS or _is_blank(v):
+        if _is_internal_sco_key(stix_type, k) or _is_blank(v):
             continue
         if k.startswith("x_"):
             kept[k] = v
@@ -310,7 +321,7 @@ def _build_sco(entity: sqlite3.Row, props: dict, marking: str | None = None) -> 
     common: dict[str, Any] = {"extensions": ext, "allow_custom": True}
     if marking is not None:
         common["object_marking_refs"] = [marking]
-    common.update(_custom_sco_props(props)[0])
+    common.update(_custom_sco_props(entity["stix_type"], props)[0])
     match entity["stix_type"]:
         case "ipv4-addr":
             return stix2.IPv4Address(value=value, **common)
@@ -585,7 +596,7 @@ def build_bundle(db: sqlite3.Connection, iid: str, opts) -> tuple[dict, str, lis
                 # What we do not re-emit gets said: without this message, an
                 # observable enriched elsewhere got poorer on every roundtrip
                 # with nobody noticing.
-                _, dropped_props = _custom_sco_props(props)
+                _, dropped_props = _custom_sco_props(entity["stix_type"], props)
                 if dropped_props:
                     warnings.append(
                         f'{entity["stix_type"]} "{entity["name"]}": '

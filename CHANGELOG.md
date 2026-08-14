@@ -5,6 +5,17 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
+## Unreleased
+
+- **A property the builder does not model went unreported on an observable
+  again**, on the narrow set of names the six new types brought in. The list of
+  keys the builder consumes itself was pooled across every observable, so
+  declaring `display_name` for a user account silenced the "not re-exported"
+  notice on an imported email address that carried one. The loss was the same
+  as before, the notice about it was not, and that notice is the whole guard
+  against an observable enriched elsewhere growing poorer at every round trip.
+  The list is now read per type.
+
 ## 1.3.0 - 14 August 2026
 
 - **Six more observables**: MAC address, mutex, directory, software,
