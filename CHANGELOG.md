@@ -5,6 +5,55 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
+## 1.3.0 - 14 August 2026
+
+- **Six more observables**: MAC address, mutex, directory, software,
+  user account and X.509 certificate. STIX 2.1 defines eighteen of them and the
+  tool carried seven, which is why a compromised account had to be drawn as an
+  identity and a vulnerable product had nowhere to go but a description field.
+  Three of the spec's eighteen are still absent, deliberately: `email-message`
+  and `network-traffic` derive their identifier from the identifier of another
+  object, so they cannot be dropped on a canvas and named the way every other
+  node is, and `process` has no identifying property at all. The spec gives it a
+  random UUID, so importing the same process twice would create it twice, which
+  is exactly what this tool exists not to do. `docs/identifiers.md` says so
+  rather than leaving the gap unexplained.
+- The canonical bridges cover them. Dragging a link from an actor to any of the
+  six offers a detection indicator with its pattern already written, and a
+  certificate, an account, a MAC or a piece of software also offers the
+  infrastructure it is part of (`consists-of`, where a network endpoint gets
+  `communicates-with`). A mutex and a directory get only the indicator: they are
+  malware artefacts on a victim host, STIX offers no relationship from a malware
+  to either, and inventing one is what the bridges exist to avoid.
+- **A MAC address pasted into the canvas is now recognised** instead of landing
+  as free text, dashes or colons either way, and it is stored lowercase with
+  colons, the only form the OASIS schema accepts. Typed by hand in capitals it
+  is canonicalised the same way, so the canvas shows the spelling the export
+  will carry: otherwise the same address entered twice made two nodes that
+  collapse into one object only at export, behind a warning read far too late.
+- Each observable's mandatory field now says what it is asking for. The generic
+  hint ("198.51.100.7, evil.example…") was shown for every type, including the
+  ones it makes no sense for: a software node is not after an IP address, and a
+  certificate has no obvious "value" at all.
+- Four scenario templates make use of them: the TLS certificate of a phishing or
+  look-alike site, the vulnerable product and version behind an exploited
+  service, and the account compromise scenario, whose "compromised account" slot
+  was an `identity` standing in for something the format could not express and
+  is now a real `user-account`, hung off the affected service.
+- The graph read back as prose knows their names, the guide lists them, and the
+  export is validated against the six OASIS schemas like everything else.
+- **Verified against a real OpenCTI (7.26)**: the six types arrive with the
+  right observable type, carry their TLP, and the platform recomputes exactly
+  the identifiers we wrote. Importing the same bundle twice changes no count.
+  That last point was the one the tests could not prove on their own: OpenCTI
+  derives the identifier of an observable server-side, so `pycti` cannot stand
+  in as the oracle the way it does for the objects.
+- **The scenario dialog no longer moves while it is being filled in.** The
+  isolation warning appeared and disappeared as slots were filled, and the box
+  is centred vertically, so the fields above it slid out from under the cursor.
+  The line is now always present, saying either what will stay unlinked or that
+  everything will be linked, in a slot tall enough to hold both.
+
 ## 1.2.0 - 13 August 2026
 
 - **Served over plain HTTP under anything but localhost, the application now
