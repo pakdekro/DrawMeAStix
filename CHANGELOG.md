@@ -5,7 +5,46 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
-## Unreleased
+## 1.4.0 - 15 August 2026
+
+- **Eight hundred more adversary names are suggested.** ATT&CK knows 174
+  groups under MITRE's naming; an analyst reading a vendor report meets
+  "Storm-2603" or "UNC5221", finds nothing, and creates one more object whose
+  name, and therefore whose identifier, matches nobody else's. The MISP
+  threat-actor galaxy (CC0) fills that tail. It is arbitrated at build time
+  rather than merged blind: the two corpora disagree on where an actor ends,
+  MITRE folding UNC2452 into APT29 where the galaxy keeps it apart, so any
+  galaxy actor whose name or synonym ATT&CK already resolves is dropped whole,
+  along with names two actors both claim. 181 were dropped for that reason,
+  857 kept. They carry no MITRE number and say so in the list, and they are
+  offered only where a name is typed into a form: the ATT&CK palettes say
+  ATT&CK on screen and keep showing ATT&CK, and text extraction keeps matching
+  the smaller corpus, because a name found in prose is asserted rather than
+  offered.
+
+- **The shipped datasets get a weekly job.** ATT&CK, the actor aliases and the
+  countries are regenerated every Monday and land in a pull request when the
+  content moved, never in a direct commit: a corpus decides which spelling
+  analysts are offered, so the detection is automated and the decision stays
+  human. The tool went from ATT&CK 17 to 19.1 without anything saying so.
+
+- **Countries are suggested, so that two analysts write the same one.** A
+  `location` identifier is computed from the name, never from the country
+  code, so "FR", "France" and "French Republic" were three objects that no
+  platform would ever merge, ours included. The name field of a location now
+  offers the ISO 3166-1 list, reachable by code as much as by name: typing
+  "FR" offers France, and picking it fills the country code and forces the
+  type to Country. The list is 9 KB, loaded only once a location is typed, and
+  regenerated from the `iso-codes` package by
+  `backend/scripts/build_countries_dataset.py`.
+
+- **A vulnerability can be named in five more scenarios.** Ransomware,
+  defacement, watering hole, botnet DDoS and targeted espionage carry a CVE
+  slot, as the three scenarios built around exploitation already did. Two
+  relations follow it each time: the actor targets the flaw, and whatever
+  exploits it says so. It was added where the way in is an exploited flaw, and
+  nowhere else: a scenario that starts with a credential or with trust has no
+  business suggesting a CVE field.
 
 - **A scenario slot takes as many values as the case has.** A ransomware
   operator uses one tool, a C2 answers on one address: that was the shape of
@@ -19,6 +58,18 @@ this file is the one meant for people reading the code.
   resolves to which, and the six links of the product would be five lies and a
   truth. The form says so before generating, next to the isolation warning, and
   the pairing stays a click away on the canvas.
+
+- **The guide is fetched when it is opened**, rather than preloaded on every
+  first visit. Worth a line only because the measurement that prompted it was
+  wrong: the chunk that looked like the guide was React itself, and the real
+  saving is 13 KB out of 721, not the two fifths announced.
+
+- **`docs/identifiers.md` was undercounting the observables it leaves out**: it
+  said three, there are five. `artifact` was missing its reason, which is real
+  (its identity rests on the bytes), and `windows-registry-key` was missing
+  from the list entirely, which is worse, because it has no reason at all. Its
+  contributing properties would behave like every other type's. It is simply
+  not implemented, and the page now says so.
 
 - **A property the builder does not model went unreported on an observable
   again**, on the narrow set of names the six new types brought in. The list of
