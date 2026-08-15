@@ -122,6 +122,11 @@ uv run pytest         # IDs vs pycti, roundtrip, relationship matrix
 uv run python scripts/generate_golden_vectors.py   # after changing ID recipes
 uv run python scripts/generate_golden_bundle.py    # after changing the builder
 
+# Datasets shipped with the app (committed, regenerated weekly by CI)
+uv run python scripts/build_attack_dataset.py      # ATT&CK Enterprise
+uv run python scripts/build_actors_dataset.py      # actor aliases, after ATT&CK
+uv run python scripts/build_countries_dataset.py   # ISO 3166-1 (needs iso-codes)
+
 # Enrichment sidecar
 cd enricher
 uv sync

@@ -62,6 +62,31 @@ turns somebody's next re-import into a duplicate rather than an update. Say in
 the pull request which recipe changed and why. The wiki page has the commands
 and the two failure modes worth being careful about.
 
+## Shipped datasets
+
+`frontend/public/attack-dataset.json`, `actors-dataset.json` and
+`countries.json` are committed but generated, by three scripts under
+`backend/scripts/`. Same rule as the golden vectors: never edit them by hand.
+The `Datasets` workflow regenerates them every Monday and opens a pull request
+when the content moved, so most of the time you have nothing to do.
+
+They decide which spelling an analyst is offered, and our identifiers are
+computed from names, so a dataset is not decoration: it decides whether two
+people's objects merge. Two consequences worth knowing before touching them.
+
+**ATT&CK is authoritative on actor names.** The actor aliases come from the
+MISP galaxy, which disagrees with MITRE on where an actor ends: MITRE folds
+UNC2452 into APT29, the galaxy keeps it apart. `build_actors_dataset.py`
+therefore drops every galaxy actor whose name or synonym ATT&CK already
+resolves, rather than merging the two. `src/actors.test.ts` checks that
+property on the shipped file: if it fails after a regeneration, MITRE has
+adopted a name the galaxy also carries, and the arbitration did its job.
+
+**The corpora are not interchangeable.** The ATT&CK dataset feeds the palettes
+and text extraction; the actor aliases feed only the name fields. Extraction
+matches every name in its corpus against pasted prose, so a name that lands
+there is asserted rather than offered, which is a much higher bar.
+
 ## Conventions
 
 - **Branches**: `feat/<issue>-<slug>`, `fix/<issue>-<slug>`.
