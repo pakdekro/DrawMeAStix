@@ -107,6 +107,12 @@ const ICONS: Record<string, ReactNode> = {
     </>
   ),
   minus: <path d="M5 12h14" />,
+  plus: (
+    <>
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </>
+  ),
   'chevron-down': <path d="M6 9l6 6 6-6" />,
   'chevron-up': <path d="M6 15l6-6 6 6" />,
   // ruled notepad (working notes)

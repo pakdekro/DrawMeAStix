@@ -101,51 +101,112 @@ export function validateTemplate(tpl: ScenarioTemplate): string[] {
 }
 
 interface PlannedEntity {
+  /** unique in the plan: one entity per filled line of a slot */
   key: string;
+  /** the slot the line came from, shared by every line of that slot */
+  slotKey: string;
   stix_type: string;
   name: string;
   properties: Record<string, unknown>;
 }
 
+/** A relation of the template that was NOT drawn, and why. */
+export interface UnpairedRelation {
+  rel: string;
+  /** slot labels, ready to be shown */
+  from: string;
+  to: string;
+}
+
 export interface TemplatePlan {
   entities: PlannedEntity[];
   relations: { fromKey: string; rel: string; toKey: string }[];
+  unpaired: UnpairedRelation[];
+}
+
+/**
+ * What the analyst typed into one slot: a single line, or several (#6).
+ * A bare string is still accepted, so a caller that knows nothing of
+ * multi-line slots keeps working.
+ */
+export type SlotValues = Record<string, string | string[]>;
+
+/** Lines of a slot, in order and WITHOUT filtering: the hash of line n has to stay on line n. */
+function linesOf(value: string | string[] | undefined): string[] {
+  if (value === undefined) return [];
+  return Array.isArray(value) ? value : [value];
 }
 
 /**
  * Builds the creation plan: filled (or `fixed`) slots → entities carrying the
  * scenario labels (SDO only, SCOs have no labels in 2.1), plus the relations
  * whose two ends both exist.
+ *
+ * A slot holding several lines produces one entity per line, and the relations
+ * of the template fan out over them: three C2 addresses under one malware give
+ * three `communicates-with`. What is NOT produced is the cartesian product of
+ * two multi-line slots - two domains and three addresses do not tell anyone
+ * which one resolves to which, and the six relations that would come out of it
+ * are five lies and a truth. Those relations are reported in `unpaired` so the
+ * analyst hears about it before generating, in the spirit of #82.
  */
 export function buildPlan(
   tpl: ScenarioTemplate,
-  values: Record<string, string>,
-  hashes: Record<string, string> = {},
+  values: SlotValues,
+  hashes: SlotValues = {},
 ): TemplatePlan {
   const entities: PlannedEntity[] = [];
-  const present = new Set<string>();
+  const bySlot = new Map<string, PlannedEntity[]>();
 
   for (const slot of tpl.slots) {
-    const name = (slot.fixed ?? values[slot.key] ?? "").trim();
-    if (!name) continue;
-    const properties: Record<string, unknown> = { ...(slot.prefill ?? {}) };
-    if (tpl.labels?.length && SDO_TYPES.has(slot.type)) {
-      properties.labels = tpl.labels;
-    }
-    if (slot.type === "file") {
-      properties.file_name = name;
-      const hash = (hashes[slot.key] ?? "").trim();
-      if (hash) properties.hashes = { "SHA-256": hash };
-    }
-    present.add(slot.key);
-    entities.push({ key: slot.key, stix_type: slot.type, name, properties });
+    const lines = slot.fixed !== undefined ? [slot.fixed] : linesOf(values[slot.key]);
+    const hashLines = linesOf(hashes[slot.key]);
+    const rows: PlannedEntity[] = [];
+    const seen = new Set<string>();
+    lines.forEach((line, i) => {
+      const name = line.trim();
+      // a name typed twice in the same slot is one object: same deterministic
+      // id, so two nodes on the canvas for a single object in the bundle
+      if (!name || seen.has(name)) return;
+      seen.add(name);
+      const properties: Record<string, unknown> = { ...(slot.prefill ?? {}) };
+      if (tpl.labels?.length && SDO_TYPES.has(slot.type)) {
+        properties.labels = tpl.labels;
+      }
+      if (slot.type === "file") {
+        properties.file_name = name;
+        const hash = (hashLines[i] ?? "").trim();
+        if (hash) properties.hashes = { "SHA-256": hash };
+      }
+      rows.push({
+        key: `${slot.key}#${i}`,
+        slotKey: slot.key,
+        stix_type: slot.type,
+        name,
+        properties,
+      });
+    });
+    if (rows.length > 0) bySlot.set(slot.key, rows);
+    entities.push(...rows);
   }
 
-  const relations = tpl.relations
-    .filter((r) => present.has(r.from) && present.has(r.to))
-    .map((r) => ({ fromKey: r.from, rel: r.rel, toKey: r.to }));
+  const labelOf = (key: string) => tpl.slots.find((s) => s.key === key)?.label ?? key;
+  const relations: { fromKey: string; rel: string; toKey: string }[] = [];
+  const unpaired: UnpairedRelation[] = [];
+  for (const rel of tpl.relations) {
+    const from = bySlot.get(rel.from) ?? [];
+    const to = bySlot.get(rel.to) ?? [];
+    if (from.length === 0 || to.length === 0) continue;
+    if (from.length > 1 && to.length > 1) {
+      unpaired.push({ rel: rel.rel, from: labelOf(rel.from), to: labelOf(rel.to) });
+      continue;
+    }
+    for (const f of from) {
+      for (const t of to) relations.push({ fromKey: f.key, rel: rel.rel, toKey: t.key });
+    }
+  }
 
-  return { entities, relations };
+  return { entities, relations, unpaired };
 }
 
 export interface PlanIsolation {
@@ -167,8 +228,8 @@ export function planIsolation(tpl: ScenarioTemplate, plan: TemplatePlan): PlanIs
   const isolated = plan.entities.filter((e) => !linked.has(e.key));
   if (isolated.length === 0) return { isolated, connectors: [] };
 
-  const present = new Set(plan.entities.map((e) => e.key));
-  const isolatedKeys = new Set(isolated.map((e) => e.key));
+  const present = new Set(plan.entities.map((e) => e.slotKey));
+  const isolatedKeys = new Set(isolated.map((e) => e.slotKey));
   const labelOf = (key: string) => tpl.slots.find((s) => s.key === key)?.label ?? key;
   const connectors = new Set<string>();
   for (const rel of tpl.relations) {
@@ -180,11 +241,17 @@ export function planIsolation(tpl: ScenarioTemplate, plan: TemplatePlan): PlanIs
   return { isolated, connectors: [...connectors] };
 }
 
-/** Positions on a circle around a centre, to lay the subgraph out. */
+/**
+ * Positions on a circle around a centre, to lay the subgraph out.
+ *
+ * The radius follows the number of nodes: a fixed one was fine for the eight
+ * or so a scenario used to produce, and stacked them on top of each other as
+ * soon as a slot started holding several values (#6).
+ */
 export function circleLayout(
   count: number,
   center: { x: number; y: number },
-  radius = 240,
+  radius = Math.max(240, count * 26),
 ): { x: number; y: number }[] {
   if (count === 1) return [center];
   return Array.from({ length: count }, (_, i) => {

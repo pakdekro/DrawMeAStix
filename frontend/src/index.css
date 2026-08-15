@@ -442,6 +442,47 @@ label {
   font-size: 12px;
 }
 
+/* A slot holding several values (#6): one line per value. The lines only
+   appear when asked for, so a scenario filled in with one value per slot
+   looks exactly as it did before. */
+.tpl-line + .tpl-line {
+  margin-top: 4px;
+}
+
+.tpl-line-main {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tpl-line-main .suggest-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.tpl-line-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  color: var(--text-dim);
+  background: none;
+  border-color: var(--border);
+}
+
+.tpl-line-btn:hover {
+  color: var(--text);
+  background: var(--panel-2);
+}
+
+/* the "add a line" button sits at the far end of the label, which is a flex row */
+.tpl-add {
+  margin-left: auto;
+}
+
 .tpl-load {
   cursor: pointer;
 }
@@ -1585,9 +1626,11 @@ input.checkbox {
 /* Isolation line in the scenario form (#82): reassurance or warning, always
    present, and tall enough to hold the two lines the warning usually takes.
    Letting it grow and shrink resized a dialog that is centred vertically, so
-   every field above it moved while it was being filled in. */
+   every field above it moved while it was being filled in. Room was added
+   for the second notice, the relations left undrawn between two multi-valued
+   slots (#6). */
 .tpl-isolation {
-  min-height: 2.8em;
+  min-height: 3.6em;
 }
 
 /* isolation warning in the scenario form (#82) -

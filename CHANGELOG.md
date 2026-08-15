@@ -7,6 +7,19 @@ this file is the one meant for people reading the code.
 
 ## Unreleased
 
+- **A scenario slot takes as many values as the case has.** A ransomware
+  operator uses one tool, a C2 answers on one address: that was the shape of
+  the form, and it was the shape of nothing else. Every field now carries a
+  `+` that adds a line, and each line becomes its own object, with the
+  relations of the template following: three tools give three `uses`, two C2
+  addresses give two `communicates-with`. Two exceptions, both deliberate. A
+  name typed twice in the same slot is created once, since the two would carry
+  the same identifier anyway. And a relation whose two ends both hold several
+  values is left undrawn: two domains and three addresses do not say which
+  resolves to which, and the six links of the product would be five lies and a
+  truth. The form says so before generating, next to the isolation warning, and
+  the pairing stays a click away on the canvas.
+
 - **A property the builder does not model went unreported on an observable
   again**, on the narrow set of names the six new types brought in. The list of
   keys the builder consumes itself was pooled across every observable, so
