@@ -93,13 +93,23 @@ The contributing properties come from the `stix2` library's own definitions:
 | `user-account` | `account_type`, `user_id`, `account_login` |
 | `x509-certificate` | `hashes`, `serial_number` |
 
-Three observables of the spec are missing from that table, and on purpose.
+Five observables of the spec are missing from that table. Four for reasons, one
+for want of anyone asking.
+
 `email-message` and `network-traffic` derive their identifier from the
 identifier of another object (`from_ref`, `src_ref`, `dst_ref`), so they cannot
 be created on their own the way a node is dropped on a canvas. `process` has no
 contributing property at all: the spec gives it a random UUID, so re-importing
 one would create a second, which is the one thing this whole page exists to
-prevent.
+prevent. `artifact` rests its identity on `hashes` and `payload_bin`, that is
+to say on the bytes themselves, and a node named by a string has nothing to
+give it.
+
+`windows-registry-key` has no such obstacle. Its contributing properties are
+`key` and `values`, it would behave exactly like the thirteen above, and it is
+simply not implemented. Said plainly here because an earlier version of this
+page counted three missing observables instead of five, which read as a
+complete list of reasons when two types had never been mentioned at all.
 
 Observable values go in as given, with a single exception: a MAC address is
 lowercased. The OASIS schema accepts no other form, so an address typed in
