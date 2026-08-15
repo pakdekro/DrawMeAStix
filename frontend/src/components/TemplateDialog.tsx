@@ -4,7 +4,7 @@ import type { AttackEntry } from '../attack'
 import { buildPlan, planIsolation } from '../templates'
 import type { ScenarioTemplate, TemplatePlan } from '../templates'
 import { typeMeta } from '../stixMeta'
-import AttackSuggestInput from './AttackSuggest'
+import SuggestInput from './Suggest'
 import Icon from './Icon'
 import Modal from './Modal'
 
@@ -122,7 +122,7 @@ export default function TemplateDialog({
               // and removing one renumbers those below it in any case
               <div key={i} className="tpl-line">
                 <div className="tpl-line-main">
-                  <AttackSuggestInput
+                  <SuggestInput
                     stixType={slot.type}
                     placeholder={i === 0 ? (slot.placeholder ?? '') : ''}
                     value={value}

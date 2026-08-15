@@ -145,7 +145,13 @@ export function extractFromText(
   text: string,
   attack: AttackEntry[] = [],
 ): ExtractedCandidate[] {
-  const attackById = new Map(attack.map((e) => [e.id.toUpperCase(), e]));
+  // Only the entries that carry an ATT&CK number can be reached by one. This
+  // corpus is ATT&CK-only today, so the filter changes nothing; it is here so
+  // that an entry without a number, should one ever be passed in, is skipped
+  // rather than indexed under "UNDEFINED".
+  const attackById = new Map(
+    attack.filter((e) => e.id !== undefined).map((e) => [e.id!.toUpperCase(), e]),
+  );
   const sightings: Sighting[] = [];
   const seen = new Set<string>();
 

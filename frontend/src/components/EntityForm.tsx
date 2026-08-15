@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { AttackEntry } from '../attack'
+import type { Country } from '../countries'
 import {
   fieldOption,
   fieldsFor,
@@ -10,7 +11,7 @@ import {
 } from '../entityFields'
 import { hashWarning, mitreIdWarning, valueWarning } from '../ioc'
 import { typeMeta } from '../stixMeta'
-import AttackSuggestInput from './AttackSuggest'
+import SuggestInput from './Suggest'
 import Icon from './Icon'
 import PatternBuilder from './PatternBuilder'
 
@@ -127,16 +128,27 @@ export default function EntityForm({
     }))
   }
 
+  /**
+   * Picking a country fills the two fields that go with the name. The type is
+   * forced rather than merely defaulted: the spec asks for one of country,
+   * region or coordinates, and a country picked from the list that came out
+   * typed as a region would be wrong in the bundle and wrong in its id.
+   */
+  const applyCountry = (country: Country) => {
+    setValues((v) => ({ ...v, country: country.code, location_type: 'Country' }))
+  }
+
   return (
     <div>
       <label>{meta.kind === 'sco' ? 'Value' : 'Name'} *</label>
-      <AttackSuggestInput
+      <SuggestInput
         autoFocus={autoFocus}
         stixType={stixType}
         value={name}
         placeholder={meta.kind === 'sco' ? valuePlaceholder(stixType) : 'Name'}
         onChange={setName}
         onPick={applySuggestion}
+        onPickCountry={applyCountry}
         onEnter={submit}
       />
       <FieldWarning message={valueWarning(stixType, name)} />
