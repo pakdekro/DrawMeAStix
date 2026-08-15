@@ -2723,6 +2723,14 @@ input.checkbox {
   padding-bottom: 64px;
 }
 
+/* Shown while the guide chunk is fetched. It is one line and it is usually
+   gone before it is read, but an unstyled sentence pinned to the top left
+   corner reads as a broken page rather than as a page loading. */
+.guide-loading {
+  max-width: 780px;
+  padding: 48px 24px;
+}
+
 .guide-back {
   display: inline-flex;
   align-items: center;

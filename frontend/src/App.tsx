@@ -1,9 +1,19 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import InvestigationList from './components/InvestigationList'
 import SmallScreenNotice from './components/SmallScreenNotice'
-import StixGuide from './components/StixGuide'
 import Workspace from './components/Workspace'
 import { SMALL_SCREEN_QUERY, hasOptedIn, rememberOptIn } from './smallScreen'
+
+/**
+ * The guide is fetched when it is asked for.
+ *
+ * Imported statically it was 235 KB of the 599 KB of JavaScript every first
+ * visit downloaded, because Vite emits a `modulepreload` for it: two fifths of
+ * the initial payload, for a page most people never open from the list. Its
+ * pre-rendered twin at /guide is unaffected, it is built from its own entry
+ * point and ships as plain HTML.
+ */
+const StixGuide = lazy(() => import('./components/StixGuide'))
 
 /** Tiny hash router: #/ (list), #/guide (STIX help) or #/inv/<id>. */
 function parseHash(): { view: 'home' | 'guide' } | { view: 'workspace'; id: string } {
@@ -36,7 +46,13 @@ export default function App() {
   // The guide comes BEFORE the small-screen guard: it is prose, and prose
   // reads perfectly well on a phone. Handing a "come back on a desktop" card
   // to someone who came to read what an observable is would be absurd.
-  if (route.view === 'guide') return <StixGuide />
+  if (route.view === 'guide') {
+    return (
+      <Suspense fallback={<p className="hint guide-loading">Loading the guide...</p>}>
+        <StixGuide />
+      </Suspense>
+    )
+  }
 
   if (small && !optedIn) {
     return (
