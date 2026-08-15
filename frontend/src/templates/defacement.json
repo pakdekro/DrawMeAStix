@@ -18,6 +18,11 @@
       "label": "Defaced site"
     },
     {
+      "key": "cve",
+      "type": "vulnerability",
+      "label": "CMS / plugin flaw (if known)"
+    },
+    {
       "key": "page_url",
       "type": "url",
       "label": "Defaced page"
@@ -80,6 +85,11 @@
       "to": "country"
     },
     {
+      "from": "actor",
+      "rel": "targets",
+      "to": "cve"
+    },
+    {
       "from": "t1491_002",
       "rel": "targets",
       "to": "victim"
@@ -98,6 +108,11 @@
       "from": "site",
       "rel": "consists-of",
       "to": "ip"
+    },
+    {
+      "from": "site",
+      "rel": "has",
+      "to": "cve"
     },
     {
       "from": "victim",

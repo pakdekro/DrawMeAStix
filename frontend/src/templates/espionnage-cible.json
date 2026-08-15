@@ -37,6 +37,11 @@
       }
     },
     {
+      "key": "cve",
+      "type": "vulnerability",
+      "label": "Flaw exploited by the lure (if known)"
+    },
+    {
       "key": "c2_infra",
       "type": "infrastructure",
       "label": "C2 infrastructure"
@@ -110,6 +115,11 @@
       "to": "victim"
     },
     {
+      "from": "actor",
+      "rel": "targets",
+      "to": "cve"
+    },
+    {
       "from": "t1566_001",
       "rel": "targets",
       "to": "victim"
@@ -148,6 +158,11 @@
       "from": "backdoor",
       "rel": "targets",
       "to": "victim"
+    },
+    {
+      "from": "backdoor",
+      "rel": "exploits",
+      "to": "cve"
     },
     {
       "from": "c2_infra",

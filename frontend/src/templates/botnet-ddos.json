@@ -31,6 +31,11 @@
       }
     },
     {
+      "key": "cve",
+      "type": "vulnerability",
+      "label": "Flaw exploited to recruit (if known)"
+    },
+    {
       "key": "c2_domain",
       "type": "domain-name",
       "label": "C2 domain"
@@ -85,6 +90,11 @@
       "to": "victim"
     },
     {
+      "from": "actor",
+      "rel": "targets",
+      "to": "cve"
+    },
+    {
       "from": "t1498",
       "rel": "targets",
       "to": "victim"
@@ -113,6 +123,11 @@
       "from": "bot_malware",
       "rel": "beacons-to",
       "to": "c2"
+    },
+    {
+      "from": "bot_malware",
+      "rel": "exploits",
+      "to": "cve"
     },
     {
       "from": "c2_domain",

@@ -21,6 +21,12 @@
       }
     },
     {
+      "key": "cve",
+      "type": "vulnerability",
+      "label": "Flaw exploited to get in (if known)",
+      "placeholder": "CVE-2023-4966"
+    },
+    {
       "key": "tool",
       "type": "tool",
       "label": "Tool (access, exfil…)",
@@ -86,6 +92,11 @@
       "to": "victim"
     },
     {
+      "from": "actor",
+      "rel": "targets",
+      "to": "cve"
+    },
+    {
       "from": "t1486",
       "rel": "targets",
       "to": "victim"
@@ -104,6 +115,11 @@
       "from": "malware",
       "rel": "communicates-with",
       "to": "c2_domain"
+    },
+    {
+      "from": "malware",
+      "rel": "exploits",
+      "to": "cve"
     },
     {
       "from": "c2_domain",
