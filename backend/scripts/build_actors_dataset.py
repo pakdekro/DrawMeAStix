@@ -118,7 +118,7 @@ def main() -> None:
     contested = {s for s, owners in claims.items() if len(owners) > 1} | canonical
     ambiguous = 0
     entries = []
-    for k, actor in sorted(merged.items(), key=lambda kv: kv[1]["name"].lower()):
+    for actor in sorted(merged.values(), key=lambda a: a["name"].lower()):
         aliases = [a for a in actor["aliases"] if key(a) not in contested]
         ambiguous += len(actor["aliases"]) - len(aliases)
         entry = {"type": "intrusion-set", "name": actor["name"]}
