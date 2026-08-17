@@ -359,21 +359,41 @@ label {
 }
 
 /* connection handles (#83): quiet at rest, obvious when the node is
-   hovered - the "drag out a link" gesture is what we make discoverable */
+   hovered - the "drag out a link" gesture is what we make discoverable.
+
+   The handle element is the pointer target and draws nothing; its ::after
+   draws the shape. The two are deliberately different sizes, see the typed
+   handles further down for why. */
 .react-flow__handle {
   width: 8px;
   height: 8px;
-  /* `scale`, not transform: React Flow already centers the handle with a
-     translate that must not be overwritten */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.react-flow__handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* the handle itself is centred by a React Flow transform that must not be
+     overwritten, so the drawing is placed with its own `translate` and grown
+     with `scale`, both of which compose rather than replace it */
+  translate: -50% -50%;
+  background: var(--text-dim);
   transition:
     scale 0.12s ease,
     background-color 0.12s ease;
 }
 
 .react-flow__node:hover .react-flow__handle {
+  cursor: crosshair;
+}
+
+.react-flow__node:hover .react-flow__handle::after {
   scale: 1.6;
   background-color: var(--accent);
-  cursor: crosshair;
 }
 
 .suggest-wrap {
@@ -1755,19 +1775,15 @@ input.checkbox {
 }
 
 /* annotation handles: quiet but grabbable (test feedback: 6px was too
-   small to aim at) */
+   small to aim at, and enlarging the diamond was not enough on its own) */
 .annot-note .react-flow__handle,
 .annot-capture .react-flow__handle,
 .entity-node .annot-handle {
-  width: 10px;
-  height: 10px;
-  background: var(--text-dim);
-  border: 2px solid var(--bg);
   cursor: crosshair;
 }
 
-.annot-capture .react-flow__handle:hover,
-.entity-node .annot-handle:hover {
+.annot-capture .react-flow__handle:hover::after,
+.entity-node .annot-handle:hover::after {
   background: var(--accent);
 }
 
@@ -1883,29 +1899,42 @@ input.checkbox {
 }
 
 /* typed handles (#136): arrow = STIX flow (in at the top, out at the
-   bottom, the triangle follows the reading direction), diamond = annotation */
+   bottom, the triangle follows the reading direction), diamond = annotation.
+
+   Sizes come in pairs, and the pair is the point: the handle is the hitbox,
+   its ::after is the drawing. `clip-path` cuts the pointer target along with
+   the pixels, so a 12x7 triangle offered almost nothing to grab near its
+   tip, where it tapers to nothing. The drawing keeps its size, the target no
+   longer has to match it. */
 .entity-node .react-flow__handle-top,
 .entity-node .react-flow__handle-bottom {
+  width: 26px;
+  height: 16px;
+}
+
+.entity-node .react-flow__handle-top::after,
+.entity-node .react-flow__handle-bottom::after {
   width: 12px;
   height: 7px;
-  border: none;
-  border-radius: 0;
-  background: var(--text-dim);
   clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
-.entity-node .react-flow__handle-bottom {
+.entity-node .react-flow__handle-bottom::after {
   background: var(--accent);
 }
 
 .entity-node .annot-handle,
 .annot-note .react-flow__handle,
 .annot-capture .react-flow__handle {
+  width: 22px;
+  height: 22px;
+}
+
+.entity-node .annot-handle::after,
+.annot-note .react-flow__handle::after,
+.annot-capture .react-flow__handle::after {
   width: 10px;
   height: 10px;
-  border: none;
-  border-radius: 0;
-  background: var(--text-dim);
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 
