@@ -2,7 +2,15 @@
 
 import { describe, expect, it } from "vitest";
 
-import { detectIoc, detectIocs, hashWarning, mitreIdWarning, refang, valueWarning } from "./ioc";
+import {
+  AMBIGUOUS_EXTENSIONS,
+  detectIoc,
+  detectIocs,
+  hashWarning,
+  mitreIdWarning,
+  refang,
+  valueWarning,
+} from "./ioc";
 
 describe("refang", () => {
   it("URL défangée classique", () => {
@@ -105,6 +113,39 @@ describe("détection (collage intelligent)", () => {
     expect(detectIoc("2001:db8:zz::1")).toBeNull(); // non-hexadecimal hextet
     expect(detectIoc("12345::1")).toBeNull(); // hextet too long
     expect(detectIoc("2001:db8::/300")).toBeNull(); // prefix out of range
+  });
+
+  it("a file name is a file, not a domain", () => {
+    for (const name of ["setup.exe", "payload.dll", "rapport.docx", "invoice.pdf"]) {
+      expect(detectIoc(name)).toEqual({
+        stix_type: "file",
+        name,
+        properties: { file_name: name },
+      });
+    }
+    // the extension is matched case-insensitively, the name is kept as typed
+    expect(detectIoc("Setup.EXE")?.name).toBe("Setup.EXE");
+  });
+
+  it("a slash means a URL, and a path is nobody's file name", () => {
+    expect(detectIoc("http://evil.example/setup.exe")?.stix_type).toBe("url");
+    expect(detectIoc("evil.example/setup.exe")).toBeNull();
+    expect(detectIoc("C:\\Users\\x\\setup.exe")).toBeNull();
+  });
+
+  it("an extension a registry sells stays a domain", () => {
+    for (const ext of AMBIGUOUS_EXTENSIONS) {
+      expect(detectIoc(`invoice.${ext}`)?.stix_type).toBe("domain-name");
+    }
+  });
+
+  // The list of unambiguous extensions reads like something to complete, and
+  // completing it with a gTLD is how `invoice.zip` stops being the domain that
+  // phishing campaigns actually register.
+  it("the two lists never overlap", () => {
+    for (const ext of AMBIGUOUS_EXTENSIONS) {
+      expect(detectIoc(`x.${ext}`)?.stix_type, `${ext} is claimed as a file`).not.toBe("file");
+    }
   });
 });
 

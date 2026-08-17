@@ -102,6 +102,48 @@ function isIpv6(token: string): boolean {
   return all.length === 8 && all.every((g) => HEXTET_RE.test(g));
 }
 
+/* -- file names -------------------------------------------------------------- */
+
+/**
+ * Extensions no registry sells, so a token ending in one names a file and not
+ * a host.
+ *
+ * The prose sweep (extract.ts) already refuses these through a TLD allowlist,
+ * and its comment names `setup.exe` and `report.docx`. The IOC paste dropped
+ * that allowlist on purpose, to let an exotic TLD through, and paid for it
+ * with `payload.dll` classified as a domain. A domain carries a deterministic
+ * identifier derived from its value, so the mistake did not stop at a wrong
+ * label in the tray: it minted a bogus object that merges with every other
+ * analyst's `setup.exe` on import.
+ *
+ * A denylist rather than the prose allowlist, so the exotic TLDs the paste
+ * exists to accept keep coming through.
+ */
+const FILE_EXTENSIONS = new Set([
+  "exe", "dll", "sys", "ocx", "cpl", "scr", "msi", "jar", "bat", "vbs", "hta",
+  "lnk", "iso", "img", "bin", "dat", "tmp", "docx", "xlsx", "pptx", "pdf",
+  "rtf",
+]);
+
+/**
+ * Deliberately absent, because a registry does sell them: `zip` and `mov`
+ * became gTLDs in 2023, and malicious `.zip` domains are a phishing staple
+ * precisely because of the confusion. Same for `sh` (Saint Helena), `py`
+ * (Paraguay), `pl` (Poland), and above all `com`, which is both the largest
+ * TLD in the world and a DOS executable suffix. Guessing on those would break
+ * the cases an analyst cares about most, so they stay domains and the triage
+ * tray remains the net.
+ *
+ * Exported so a test can hold the line: the list above reads like an
+ * oversight waiting to be completed.
+ */
+export const AMBIGUOUS_EXTENSIONS = ["zip", "mov", "sh", "py", "pl", "com", "app"];
+
+// Ends in an extension, and holds none of the characters that would make it a
+// path, a URL or an address. The absence of a slash is what tells a file name
+// from a URL, which is the distinction this whole rule rests on.
+const FILE_NAME_RE = /^[^\s/\\:@]+\.([a-z0-9]{2,5})$/i;
+
 /** Classifies an already refanged token; null if not recognized. */
 export function detectIoc(token: string): DetectedIoc | null {
   const t = token.trim().replace(/[,;]$/, "");
@@ -143,6 +185,12 @@ export function detectIoc(token: string): DetectedIoc | null {
       name: t.toUpperCase(),
       properties: { number: Number(asn[1]) },
     };
+  }
+  // Before the domain rule, and only for the unambiguous extensions: what is
+  // left ambiguous falls through and stays a domain, as it always did.
+  const named = FILE_NAME_RE.exec(t);
+  if (named && FILE_EXTENSIONS.has(named[1].toLowerCase())) {
+    return { stix_type: "file", name: t, properties: { file_name: t } };
   }
   if (/^([a-z0-9_][a-z0-9_-]*\.)+[a-z]{2,}$/i.test(t)) {
     return { stix_type: "domain-name", name: t, properties: {} };

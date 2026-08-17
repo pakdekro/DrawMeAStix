@@ -78,6 +78,18 @@ describe("extraction de prose", () => {
     // attack.mitre.org comes in through the URL, not as a lone filtered domain
   });
 
+  // Prose used to drop them entirely: the TLD guardrail refused the domain and
+  // nothing else claimed them. Now that a known extension names a file, they
+  // reach the tray as what they are, and the analyst rejects them in one click
+  // if the report was only citing its own appendix.
+  it("a file name in prose reaches the tray as a file", () => {
+    const files = extractFromText(REPORT, ATTACK)
+      .filter((c) => c.stix_type === "file")
+      .map((c) => c.name);
+    expect(files).toContain("setup.exe");
+    expect(files).toContain("rapport-final.docx");
+  });
+
   it("dico ATT&CK : nom, alias, T-id cité ; alias court ignoré", () => {
     const found = byKey();
     // "APT28" (name) and "spearphishing link" (name, case-insensitive)
