@@ -97,11 +97,6 @@
     },
     {
       "from": "miner",
-      "rel": "exploits",
-      "to": "cve"
-    },
-    {
-      "from": "miner",
       "rel": "communicates-with",
       "to": "pool_domain"
     },

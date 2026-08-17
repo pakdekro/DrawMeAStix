@@ -160,11 +160,6 @@
       "to": "victim"
     },
     {
-      "from": "backdoor",
-      "rel": "exploits",
-      "to": "cve"
-    },
-    {
       "from": "c2_infra",
       "rel": "consists-of",
       "to": "c2_domain"

@@ -117,11 +117,6 @@
       "to": "c2_domain"
     },
     {
-      "from": "malware",
-      "rel": "exploits",
-      "to": "cve"
-    },
-    {
       "from": "c2_domain",
       "rel": "resolves-to",
       "to": "c2_ip"

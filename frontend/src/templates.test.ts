@@ -35,6 +35,30 @@ describe("templates embarqués", () => {
     };
     expect(validateTemplate(bad).join("\n")).toContain("illegal relationship");
   });
+
+  // `exploits` names the component that did the exploiting, which a template
+  // cannot know. It is legal from any malware, so it is easy to wire to the
+  // payload of the scenario, and wrong whenever that payload lands after the
+  // breach: a ransomware encryptor, a backdoor or a miner does not open the
+  // door it walks through. Only the scenarios whose payload IS the exploiting
+  // component keep it. `actor targets vulnerability` stays everywhere, since
+  // it holds whatever the phase and whatever component did the work.
+  it("only asserts `exploits` where the payload is what exploits the flaw", () => {
+    const exploiters = BUILTIN_TEMPLATES.filter((t) =>
+      t.relations.some((r) => r.rel === "exploits"),
+    ).map((t) => t.name);
+    expect(exploiters.sort()).toEqual(["Botnet / denial of service", "Watering hole"]);
+  });
+
+  it("every scenario carrying a flaw ties it to the actor", () => {
+    for (const tpl of BUILTIN_TEMPLATES) {
+      const flaws = tpl.slots.filter((s) => s.type === "vulnerability").map((s) => s.key);
+      for (const key of flaws) {
+        const anchored = tpl.relations.some((r) => r.to === key && r.rel === "targets");
+        expect(anchored, `${tpl.name}: ${key} is not tied to the actor`).toBe(true);
+      }
+    }
+  });
 });
 
 describe("plan de création", () => {
