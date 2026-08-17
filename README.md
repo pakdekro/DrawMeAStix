@@ -126,6 +126,7 @@ uv run python scripts/generate_golden_bundle.py    # after changing the builder
 uv run python scripts/build_attack_dataset.py      # ATT&CK Enterprise
 uv run python scripts/build_actors_dataset.py      # actor aliases, after ATT&CK
 uv run python scripts/build_countries_dataset.py   # ISO 3166-1 (needs iso-codes)
+                                                   # ISO_CODES_JSON overrides the path
 
 # Enrichment sidecar
 cd enricher
