@@ -21,6 +21,7 @@ import { countByType, typeMeta } from '../stixMeta'
 import type { CaptureItem, Entity, Investigation, NoteItem, Relationship } from '../types'
 import { compressImage } from '../annotations'
 import { NODE_H, NODE_W, findFreeSpot, type Rect } from '../placement'
+import { ARRANGEMENTS, arrange, type Arrangement } from '../layout'
 import { circleLayout, validateTemplate } from '../templates'
 import type { ScenarioTemplate, TemplatePlan } from '../templates'
 import { findBridges } from '../bridges'
@@ -271,11 +272,28 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
   const [showImageExport, setShowImageExport] = useState(false)
   // shortcuts cheat sheet (#190), opened with "?"
   const [showShortcuts, setShowShortcuts] = useState(false)
-  // positions from before the last re-layout, so one step undoes it
+  /**
+   * The analyst's own layout, kept aside the first time an arrangement runs.
+   *
+   * Captured ONCE, not on every arrangement. Arrangements are meant to be
+   * tried one after another - group by TLP, then by type, then by detection -
+   * and a backup rewritten each time would only ever restore the previous
+   * arrangement, never the graph the analyst had actually built. Cleared once
+   * it has been restored, so the button says something true about what it will
+   * do.
+   */
   const [layoutBackup, setLayoutBackup] = useState<Record<
     string,
     { x: number; y: number }
   > | null>(null)
+  const keepLayout = useCallback(
+    (current: { id: string; position: { x: number; y: number } }[]) => {
+      setLayoutBackup((kept) =>
+        kept ?? Object.fromEntries(current.map((nd) => [nd.id, { ...nd.position }])),
+      )
+    },
+    [],
+  )
   // Bumped when a re-layout has moved the nodes and the view has to follow.
   //
   // A `requestAnimationFrame` was doing this, and it fired before React had
@@ -891,6 +909,41 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     [showError],
   )
 
+  /**
+   * Annotations (#136) put back next to their anchor entity once the objects
+   * have moved: first free slot to its right, no overlap. Shared by both ways
+   * of rearranging the canvas, since only the objects differ between them.
+   */
+  const placeAnnotations = useCallback(
+    async (
+      entityPositions: Record<string, { x: number; y: number }>,
+      placed: Rect[],
+    ): Promise<Record<string, { x: number; y: number }>> => {
+      const out: Record<string, { x: number; y: number }> = { ...entityPositions }
+      for (const nd of nodes) {
+        if (nd.type !== 'annotNote' && nd.type !== 'annotCapture') continue
+        const size = {
+          w: nd.measured?.width ?? NODE_W,
+          h: nd.measured?.height ?? NODE_H,
+        }
+        const anchorId =
+          nd.type === 'annotNote' ? nd.data.note.entity_id : nd.data.capture.entity_ids[0]
+        const anchor = anchorId ? entityPositions[anchorId] : undefined
+        const preferred = anchor ? { x: anchor.x + NODE_W + 80, y: anchor.y } : nd.position
+        const pos = findFreeSpot(preferred, placed, size)
+        placed.push({ ...pos, ...size })
+        out[nd.id] = pos
+        if (nd.type === 'annotNote') {
+          api.pinNote(iid, nd.id.slice(NOTE_PREFIX.length), pos).catch(showError)
+        } else {
+          api.updateCapture(iid, nd.id.slice(CAPTURE_PREFIX.length), pos).catch(showError)
+        }
+      }
+      return out
+    },
+    [nodes, iid, showError],
+  )
+
   // "Re-layout": layered top→bottom layout via Dagre (loaded on demand).
   // Minimises crossings; we keep the previous positions so it can be undone.
   // Only touches the canvas (the tray's candidates stay put).
@@ -930,7 +983,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       if (g.hasNode(e.source) && g.hasNode(e.target)) g.setEdge(e.source, e.target)
     }
     dagre.layout(g)
-    setLayoutBackup(Object.fromEntries(nodes.map((nd) => [nd.id, { ...nd.position }])))
+    keepLayout(nodes)
 
     // 1) entities: Dagre positions (centre → top-left corner)
     const entityPositions: Record<string, { x: number; y: number }> = {}
@@ -944,27 +997,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       placed.push({ ...pos, w: width, h: height })
     }
 
-    // 2) annotations: right of their anchor (first linked entity), free slot
-    const newPositions: Record<string, { x: number; y: number }> = { ...entityPositions }
-    for (const nd of nodes) {
-      if (nd.type !== 'annotNote' && nd.type !== 'annotCapture') continue
-      const size = {
-        w: nd.measured?.width ?? NODE_W,
-        h: nd.measured?.height ?? NODE_H,
-      }
-      const anchorId =
-        nd.type === 'annotNote' ? nd.data.note.entity_id : nd.data.capture.entity_ids[0]
-      const anchor = anchorId ? entityPositions[anchorId] : undefined
-      const preferred = anchor ? { x: anchor.x + NODE_W + 80, y: anchor.y } : nd.position
-      const pos = findFreeSpot(preferred, placed, size)
-      placed.push({ ...pos, ...size })
-      newPositions[nd.id] = pos
-      if (nd.type === 'annotNote') {
-        api.pinNote(iid, nd.id.slice(NOTE_PREFIX.length), pos).catch(showError)
-      } else {
-        api.updateCapture(iid, nd.id.slice(CAPTURE_PREFIX.length), pos).catch(showError)
-      }
-    }
+    const newPositions = await placeAnnotations(entityPositions, placed)
 
     setNodes((ns) =>
       ns.map((nd) =>
@@ -977,9 +1010,51 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     // there and left the result running off the screen. Lowered for this one
     // call, so what the analyst can do by hand is unchanged.
     requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15, minZoom: 0.1 }))
-  }, [nodes, edges, iid, setNodes, fitView, showError])
+  }, [nodes, edges, iid, keepLayout, setNodes, fitView, placeAnnotations, showError])
 
-  const undoReorganize = useCallback(async () => {
+  /**
+   * "Group by type": the everyday button. One band per STIX type, in palette
+   * order, and no claim at all about the relationships - see layout.ts for why
+   * drawing them automatically was given up on.
+   */
+  const arrangeCanvas = useCallback(
+    async (kind: Arrangement) => {
+    const entityNodes = nodes.filter((nd) => nd.type === 'entity')
+    if (entityNodes.length === 0) return
+    keepLayout(nodes)
+
+    const sized = entityNodes.map((nd) => ({
+      id: nd.id,
+      stix_type: nd.data.entity.stix_type,
+      tlp: String(nd.data.entity.properties.tlp ?? ''),
+      w: nd.measured?.width ?? NODE_W,
+      h: nd.measured?.height ?? NODE_H,
+    }))
+    const relations = edges
+      .filter((e) => !e.id.startsWith('annot:'))
+      .map((e) => ({ source: e.source, target: e.target, rel_type: String(e.label ?? '') }))
+    const byId = new Map(sized.map((n) => [n.id, n]))
+    const entityPositions: Record<string, { x: number; y: number }> = {}
+    const placed: Rect[] = []
+    for (const { id, x, y } of arrange(kind, sized, relations)) {
+      entityPositions[id] = { x, y }
+      const size = byId.get(id)!
+      placed.push({ x, y, w: size.w, h: size.h })
+    }
+
+    const newPositions = await placeAnnotations(entityPositions, placed)
+    setNodes((ns) =>
+      ns.map((nd) => (newPositions[nd.id] ? { ...nd, position: newPositions[nd.id] } : nd)),
+    )
+    await api.savePositions(iid, entityPositions).catch(showError)
+    requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15, minZoom: 0.1 }))
+    },
+    [nodes, edges, iid, keepLayout, setNodes, fitView, placeAnnotations, showError],
+  )
+
+  /** Puts the objects back where the analyst had them, however many
+   *  arrangements have been tried since. */
+  const restoreLayout = useCallback(async () => {
     if (!layoutBackup) return
     const backup = layoutBackup
     setNodes((ns) =>
@@ -1967,13 +2042,15 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
   /**
    * Undoes the last deletion, or failing that the last repositioning.
    *
-   * The fallback to `undoReorganize` is not an elegance: without it, Ctrl+Z
-   * right after a "Re-layout" would do nothing while an "Undo" button sits
-   * there on screen. Ctrl+Z has to undo "the last thing".
+   * The fallback to `restoreLayout` is not an elegance: without it, Ctrl+Z
+   * right after an arrangement would do nothing while a "My layout" button
+   * sits there on screen. Ctrl+Z has to undo "the last thing" - and here the
+   * last thing is however many arrangements were tried in a row, since that
+   * is what the analyst thinks of as one detour.
    */
   const undo = useCallback(async () => {
     if (undoStack.length === 0) {
-      if (layoutBackup) void undoReorganize()
+      if (layoutBackup) void restoreLayout()
       else showInfo('Nothing to undo.')
       return
     }
@@ -2017,7 +2094,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     } catch (e) {
       showError(e)
     }
-  }, [undoStack, iid, reload, showInfo, showError, layoutBackup, undoReorganize])
+  }, [undoStack, iid, reload, showInfo, showError, layoutBackup, restoreLayout])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -2040,7 +2117,17 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       { label: 'Export STIX bundle…', hint: 'export', run: () => setShowExport(true) },
       { label: 'Export image / PDF / Markdown…', hint: 'share', run: () => setShowImageExport(true) },
       { label: 'Paste IOCs…', hint: 'import', run: openPaste },
-      { label: 'Re-layout the graph', hint: 'canvas', run: reorganize },
+      // every arrangement is searchable, so the menu is a shortcut and not the
+      // only door
+      ...ARRANGEMENTS.map((a) => ({
+        label: `Arrange the canvas: ${a.label.toLowerCase()}`,
+        hint: 'canvas',
+        run: () => arrangeCanvas(a.id),
+      })),
+      // Dagre stays reachable, one search away, for the times the structure is
+      // the question. It is not the button any more because on a real CTI
+      // graph it answers with a 5700px ribbon (layout.ts).
+      { label: 'Re-layout the graph by relationship', hint: 'canvas', run: reorganize },
       { label: 'Toggle the objects panel', hint: 'Ctrl B', run: toggleSidebar },
       { label: 'Toggle the inspector', hint: 'panel', run: toggleInspector },
       { label: 'Undo the last deletion', hint: 'Ctrl Z', run: () => void undo() },
@@ -2302,22 +2389,40 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
               >
                 <Icon name="search" size={15} />
               </button>
-              <button
-                className="rf-btn"
-                onClick={reorganize}
-                title="Re-layout the graph top to bottom (minimises crossings)"
+              {/* The button asks a question rather than promising a drawing:
+                  each entry lines the objects up in blocks that answer one,
+                  and the arranging of meaning stays the analyst's. */}
+              <TopbarMenu
+                label="Arrange"
+                icon={<Icon name="layout" size={15} />}
+                buttonClass="rf-btn"
               >
-                <Icon name="layout" size={15} />
-                Re-layout
-              </button>
+                {(close) =>
+                  ARRANGEMENTS.map((a) => (
+                    <button
+                      key={a.id}
+                      className="menu-item"
+                      onClick={() => {
+                        close()
+                        arrangeCanvas(a.id)
+                      }}
+                    >
+                      <span>
+                        {a.label}
+                        <em>{a.hint}</em>
+                      </span>
+                    </button>
+                  ))
+                }
+              </TopbarMenu>
               {layoutBackup && (
                 <button
                   className="rf-btn"
-                  onClick={undoReorganize}
-                  title="Restore the positions from before the re-layout"
+                  onClick={restoreLayout}
+                  title="Put the objects back where you had them, before the arrangements"
                 >
                   <Icon name="return" size={15} />
-                  Undo
+                  My layout
                 </button>
               )}
             </Panel>

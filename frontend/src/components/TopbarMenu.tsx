@@ -17,10 +17,13 @@ export default function TopbarMenu({
   label,
   icon,
   children,
+  /** the canvas reuses this menu with its own button skin (`rf-btn`) */
+  buttonClass = 'topbar-btn',
 }: {
   label: string
   icon: ReactNode
   children: (close: () => void) => ReactNode
+  buttonClass?: string
 }) {
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
@@ -44,7 +47,7 @@ export default function TopbarMenu({
   return (
     <div className="topbar-menu" ref={root}>
       <button
-        className={`topbar-btn${open ? ' on' : ''}`}
+        className={`${buttonClass}${open ? ' on' : ''}`}
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen((o) => !o)}
