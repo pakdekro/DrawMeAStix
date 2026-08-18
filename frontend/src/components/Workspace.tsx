@@ -2314,14 +2314,6 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
             </>
           )}
         </TopbarMenu>
-        <button
-          className={`topbar-icon${layout.right ? ' on' : ''}`}
-          title={layout.right ? 'Hide the inspector' : 'Show the inspector'}
-          aria-pressed={layout.right}
-          onClick={toggleInspector}
-        >
-          <Icon name="note" size={15} />
-        </button>
         <TopbarMenu label="Share" icon={<Icon name="image" size={15} />}>
           {(close) => (
             <button

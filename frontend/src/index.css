@@ -2603,8 +2603,26 @@ input.checkbox {
   color: var(--text);
 }
 
-.topbar-icon.on {
-  color: var(--accent);
+/* The collapsed inspector, reduced to its edge. Aligned to the top so the
+   chevron sits where the tab row's own chevron was: the panel folds and
+   unfolds from the same point, which is what makes it read as one thing. */
+.right-reopen {
+  width: 22px;
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 9px;
+  background: var(--panel);
+  border: 0;
+  border-left: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.right-reopen:hover {
+  background: var(--panel-2);
+  color: var(--text);
 }
 
 /* Below the threshold the top bar must stop growing: the palette shortcut

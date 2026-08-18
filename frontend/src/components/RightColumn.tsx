@@ -44,7 +44,29 @@ export default function RightColumn({
     if (focusInspector > 0) setTab('inspector')
   }, [focusInspector])
 
-  if (!open) return null
+  /**
+   * Collapsed, the column leaves a hand's width of itself behind.
+   *
+   * Reopening used to live in the top bar, wedged between "Import" and
+   * "Share" and drawn as a note: an I/O group is a strange place to keep a
+   * panel switch, and no icon reads as "the inspector". Here the door is
+   * where the room is - the same edge the chevron collapsed, in the same
+   * place the panel occupied - and the top bar goes back to being about
+   * getting data in and out.
+   */
+  if (!open) {
+    return (
+      <button
+        className="right-reopen"
+        aria-expanded={false}
+        aria-label="Show the inspector"
+        title="Show the inspector - it also reopens on its own when you select something"
+        onClick={onToggle}
+      >
+        <Icon name="chevron-down" size={14} style={{ transform: 'rotate(90deg)' }} />
+      </button>
+    )
+  }
 
   return (
     <div className="right-col">
