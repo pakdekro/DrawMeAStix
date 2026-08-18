@@ -1,6 +1,6 @@
 /**
  * Canvas arrangements: each one answers a question about where the
- * investigation stands, and the order of the bands is the answer.
+ * investigation stands, and the order of the clusters is the answer.
  */
 
 import { describe, expect, it } from "vitest";
@@ -20,37 +20,61 @@ const edge = (source: string, target: string, rel_type: string): ArrangeEdge => 
   rel_type,
 });
 
-/** ids grouped by the y they landed on, top band first. */
-const bands = (placed: { id: string; x: number; y: number }[]) => {
-  const rows = new Map<number, string[]>();
-  for (const p of placed) rows.set(p.y, [...(rows.get(p.y) ?? []), p.id]);
-  return [...rows.entries()].sort((a, b) => a[0] - b[0]).map(([, ids]) => ids);
-};
+/** ids in reading order: clusters left to right, rows of clusters top down. */
+const reading = (placed: { id: string; x: number; y: number }[]) =>
+  [...placed].sort((a, b) => a.y - b.y || a.x - b.x).map((p) => p.id);
 
-describe("arrange: geometry shared by every arrangement", () => {
-  it("stacks downwards and never sideways past five per row", () => {
+describe("arrange: the shape shared by every arrangement", () => {
+  it("draws a group as a near-square cluster, not as a row", () => {
+    // twelve in a line is a band again, and reads as one
     const nodes = Array.from({ length: 12 }, (_, i) => node(`n${i}`, "malware"));
     const placed = arrange("type", nodes, []);
-    const rows = bands(placed);
-    expect(rows.every((r) => r.length <= 5)).toBe(true);
-    // 12 over three rows reads as 4 + 4 + 4, not 5 + 5 + 2
-    expect(rows.map((r) => r.length)).toEqual([4, 4, 4]);
+    expect(new Set(placed.map((p) => p.x)).size).toBe(4);
+    expect(new Set(placed.map((p) => p.y)).size).toBe(3);
   });
 
-  it("left-aligns every band on the same axis", () => {
-    const placed = arrange("type", [node("a", "malware"), node("b", "url")], []);
-    expect(new Set(placed.map((p) => p.x))).toEqual(new Set([0]));
+  it("gives a single object a cluster of one", () => {
+    expect(arrange("type", [node("a", "malware")], [])).toEqual([{ id: "a", x: 0, y: 0 }]);
   });
 
-  it("leaves more room between two bands than between two rows", () => {
-    const rows = arrange(
+  it("leaves far more air between two clusters than inside one", () => {
+    const placed = arrange(
       "type",
-      [...Array.from({ length: 6 }, (_, i) => node(`m${i}`, "malware")), node("u", "url")],
+      [node("m1", "malware"), node("m2", "malware"), node("u", "url")],
       [],
     );
-    const ys = [...new Set(rows.map((p) => p.y))].sort((a, b) => a - b);
-    // two rows of malware, then the url band further down
-    expect(ys[1] - ys[0]).toBeLessThan(ys[2] - ys[1]);
+    const at = Object.fromEntries(placed.map((p) => [p.id, p]));
+    // edge to edge, not corner to corner: the node's own width is not air
+    const inside = at.m2.x - (at.m1.x + 230);
+    const between = at.u.x - (at.m2.x + 230);
+    expect(between).toBeGreaterThan(inside * 3);
+  });
+
+  it("never lets two objects overlap, whatever the cluster", () => {
+    const nodes = [
+      ...Array.from({ length: 9 }, (_, i) => node(`m${i}`, "malware")),
+      ...Array.from({ length: 7 }, (_, i) => node(`u${i}`, "url")),
+      ...Array.from({ length: 4 }, (_, i) => node(`t${i}`, "tool")),
+    ];
+    const at = arrange("type", nodes, []);
+    for (let i = 0; i < at.length; i++) {
+      for (let j = i + 1; j < at.length; j++) {
+        const [a, b] = [at[i], at[j]];
+        const hit = a.x < b.x + 230 && a.x + 230 > b.x && a.y < b.y + 63 && a.y + 63 > b.y;
+        expect(hit, `${a.id} covers ${b.id}`).toBe(false);
+      }
+    }
+  });
+
+  it("wraps into a new row of clusters rather than running off sideways", () => {
+    // eight groups of six: in one line that would be some 8000px across
+    const nodes = [
+      "malware", "tool", "indicator", "identity",
+      "url", "file", "domain-name", "ipv4-addr",
+    ].flatMap((t) => Array.from({ length: 6 }, (_, i) => node(`${t}${i}`, t)));
+    const at = arrange("type", nodes, []);
+    expect(Math.max(...at.map((p) => p.x))).toBeLessThan(3000);
+    expect(new Set(at.map((p) => p.y)).size).toBeGreaterThan(3);
   });
 
   it("an empty canvas is not a special case for the caller", () => {
@@ -75,12 +99,12 @@ describe("arrange: geometry shared by every arrangement", () => {
 describe("arrange: by type", () => {
   it("follows the palette order, objects then observables", () => {
     const nodes = [node("u", "url"), node("m", "malware"), node("a", "threat-actor")];
-    expect(bands(arrange("type", nodes, []))).toEqual([["a"], ["m"], ["u"]]);
+    expect(reading(arrange("type", nodes, []))).toEqual(["a", "m", "u"]);
   });
 
   it("keeps a type the palette does not know, at the end", () => {
     const nodes = [node("p", "process"), node("m", "malware")];
-    expect(bands(arrange("type", nodes, []))).toEqual([["m"], ["p"]]);
+    expect(reading(arrange("type", nodes, []))).toEqual(["m", "p"]);
   });
 });
 
@@ -92,24 +116,22 @@ describe("arrange: by detection", () => {
   ];
   const edges = [edge("ind", "covered", "indicates")];
 
-  it("puts what carries no indicator on top", () => {
-    expect(bands(arrange("indicators", nodes, edges))).toEqual([
-      ["bare"],
-      ["covered"],
-      ["ind"],
-    ]);
+  it("puts what carries no indicator first", () => {
+    expect(reading(arrange("indicators", nodes, edges))).toEqual(["bare", "covered", "ind"]);
   });
 
-  it("gives the indicators a band of their own", () => {
+  it("gives the indicators a cluster of their own", () => {
     // they are the detection, not a gap in it: lumping them with the uncovered
     // would make an investigation look worse the more work had been done on it
-    const [top] = bands(arrange("indicators", nodes, edges));
-    expect(top).not.toContain("ind");
+    expect(reading(arrange("indicators", nodes, edges))[0]).not.toBe("ind");
   });
 
   it("only `indicates` counts as coverage", () => {
     const other = [edge("ind", "covered", "related-to")];
-    expect(bands(arrange("indicators", nodes, other))[0].sort()).toEqual(["bare", "covered"]);
+    expect(reading(arrange("indicators", nodes, other)).slice(0, 2).sort()).toEqual([
+      "bare",
+      "covered",
+    ]);
   });
 });
 
@@ -122,26 +144,26 @@ describe("arrange: by TLP", () => {
       node("c", "url", "clear"),
       node("a", "url", "amber"),
     ];
-    expect(bands(arrange("tlp", nodes, []))).toEqual([["none"], ["c"], ["g"], ["a"], ["r"]]);
+    expect(reading(arrange("tlp", nodes, []))).toEqual(["none", "c", "g", "a", "r"]);
   });
 
   it("reads the old spelling of CLEAR as CLEAR", () => {
     const nodes = [node("w", "url", "white"), node("c", "url", "clear")];
-    expect(bands(arrange("tlp", nodes, []))).toEqual([["w", "c"]]);
+    // one cluster of two, side by side, not two clusters a gutter apart
+    expect(arrange("tlp", nodes, []).map((p) => p.x)).toEqual([0, 254]);
   });
 });
 
 describe("arrange: loose ends", () => {
-  it("puts what no relationship touches on top", () => {
+  it("puts what no relationship touches first", () => {
     const nodes = [node("linked", "malware"), node("orphan", "url"), node("other", "malware")];
     const edges = [edge("linked", "other", "uses")];
-    expect(bands(arrange("isolated", nodes, edges))).toEqual([["orphan"], ["linked", "other"]]);
+    expect(reading(arrange("isolated", nodes, edges))).toEqual(["orphan", "linked", "other"]);
   });
 
   it("a relationship in either direction counts as touched", () => {
     const nodes = [node("a", "malware"), node("b", "url")];
-    expect(bands(arrange("isolated", nodes, [edge("b", "a", "communicates-with")]))).toEqual([
-      ["a", "b"],
-    ]);
+    const at = arrange("isolated", nodes, [edge("b", "a", "communicates-with")]);
+    expect(at.map((p) => p.x)).toEqual([0, 254]); // one cluster, nothing left alone
   });
 });

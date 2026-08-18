@@ -17,9 +17,13 @@
  * arrangement of meaning stays the analyst's job - which is what it was in
  * practice anyway.
  *
- * Bands stack downwards rather than sitting side by side: a canvas scrolls
- * down comfortably and sideways badly, and stacking works the same from two
- * bands to fifteen, where columns stop working after three.
+ * Each group is drawn as a CLUSTER: a near-square block of its own, with air
+ * all around it. Full-width bands stacked on top of each other were the first
+ * try and they read badly - two rows of objects separated by a slightly bigger
+ * gap look like one list with a hiccup, not like two groups. Nothing on the
+ * canvas names a group, so its shape has to do the naming. And since these
+ * arrangements gave up on drawing the graph, the space a cluster costs is not
+ * a cost: no edge has to stay short any more.
  */
 
 import { SCO_ORDER, SDO_ORDER } from './stixMeta'
@@ -61,49 +65,70 @@ export const ARRANGEMENTS: { id: Arrangement; label: string; hint: string }[] = 
 
 /* -- geometry -------------------------------------------------------------- */
 
-/** Nodes per row inside a band, past which the block gets another row. */
-const PER_ROW = 5
-/** Gap between two neighbours, and between two rows of one band. */
+/** Gap between two neighbours inside a cluster. */
 const GAP = 24
-/** Gap between two bands. Wider on purpose: it is the only thing on screen
- *  saying where one group ends and the next begins. */
-const BAND_GAP = 72
+/**
+ * Air around a cluster: a full node's width, and deliberately far more than a
+ * design layout would ever spend. These arrangements gave up on drawing the
+ * graph, so no edge has to stay short, and the whitespace is doing the one job
+ * nothing else does - saying where a group ends. A timid gutter and the
+ * clusters read as one crowd again.
+ */
+const GUTTER = 230
+/** Width past which the next cluster starts a new row of clusters. */
+const ROW_WIDTH = 3200
 
-/** Splits into balanced rows of at most `max` (13 → 5 + 4 + 4, not 5 + 5 + 3). */
-function rowsOf(items: ArrangeNode[], max: number): ArrangeNode[][] {
-  const count = Math.ceil(items.length / max)
-  const per = Math.ceil(items.length / count)
-  const out: ArrangeNode[][] = []
-  for (let i = 0; i < items.length; i += per) out.push(items.slice(i, i + per))
-  return out
+/**
+ * One group as a block, near square, positions relative to its own corner.
+ *
+ * Square rather than a row: a group of twelve laid out in a line is a band
+ * again, and reads as one at a glance. Four by three reads as a pile.
+ */
+function cluster(group: ArrangeNode[]): { at: (Placement & { node: ArrangeNode })[]; w: number; h: number } {
+  const columns = Math.ceil(Math.sqrt(group.length))
+  const at: (Placement & { node: ArrangeNode })[] = []
+  let y = 0
+  let w = 0
+  for (let i = 0; i < group.length; i += columns) {
+    const row = group.slice(i, i + columns)
+    let x = 0
+    for (const node of row) {
+      at.push({ id: node.id, x, y, node })
+      x += node.w + GAP
+    }
+    w = Math.max(w, x - GAP)
+    y += Math.max(...row.map((n) => n.h)) + GAP
+  }
+  return { at, w, h: y - GAP }
 }
 
 /**
- * Stacks the bands, every one left-aligned on the same axis. Blocks sharing an
- * edge read as a list; centred ones read as a pyramid, which says something
- * about importance that is not meant.
+ * Lays the clusters out left to right in reading order, wrapping into a new
+ * row of clusters rather than running off sideways forever.
  */
-function stack(bands: ArrangeNode[][]): Placement[] {
+function spread(groups: ArrangeNode[][]): Placement[] {
   const out: Placement[] = []
+  let x = 0
   let y = 0
-  for (const band of bands) {
-    if (band.length === 0) continue
-    for (const row of rowsOf(band, PER_ROW)) {
-      let x = 0
-      for (const node of row) {
-        out.push({ id: node.id, x, y })
-        x += node.w + GAP
-      }
-      y += Math.max(...row.map((n) => n.h)) + GAP
+  let tallest = 0
+  for (const group of groups) {
+    if (group.length === 0) continue
+    const block = cluster(group)
+    if (x > 0 && x + block.w > ROW_WIDTH) {
+      x = 0
+      y += tallest + GUTTER
+      tallest = 0
     }
-    y += BAND_GAP - GAP
+    for (const p of block.at) out.push({ id: p.id, x: x + p.x, y: y + p.y })
+    x += block.w + GUTTER
+    tallest = Math.max(tallest, block.h)
   }
   return out
 }
 
 /* -- the groupings --------------------------------------------------------- */
 
-/** One band per STIX type, palette order; an unknown type lands at the end. */
+/** One cluster per STIX type, palette order; an unknown type lands at the end. */
 function byType(nodes: ArrangeNode[]): ArrangeNode[][] {
   const known = [...SDO_ORDER, ...SCO_ORDER]
   const present = [...new Set(nodes.map((n) => n.stix_type))]
@@ -159,12 +184,12 @@ export function arrange(
   if (nodes.length === 0) return []
   switch (kind) {
     case 'indicators':
-      return stack(byDetection(nodes, edges))
+      return spread(byDetection(nodes, edges))
     case 'tlp':
-      return stack(byTlp(nodes))
+      return spread(byTlp(nodes))
     case 'isolated':
-      return stack(byIsolation(nodes, edges))
+      return spread(byIsolation(nodes, edges))
     default:
-      return stack(byType(nodes))
+      return spread(byType(nodes))
   }
 }
