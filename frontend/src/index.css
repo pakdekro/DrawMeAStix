@@ -728,6 +728,14 @@ label {
   border-color: var(--accent);
 }
 
+/* How many enrichment endpoints are configured. A bare number next to a word
+   reads as "two of those"; the same number next to an icon read as nothing. */
+.topbar-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
 /* actions laid over the canvas (React Flow Panel): re-layout / undo */
 .rf-actions {
   display: flex;

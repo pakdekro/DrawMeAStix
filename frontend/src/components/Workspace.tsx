@@ -2255,14 +2255,6 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         >
           <Icon name="help" size={15} />
         </button>
-        <button
-          className="topbar-icon"
-          title="Enrichment endpoints"
-          onClick={() => setShowEnrichSettings(true)}
-        >
-          <Icon name="search" size={15} />
-          {endpoints.length > 0 ? ` ${endpoints.length}` : ''}
-        </button>
         <TopbarMenu label="Import" icon={<Icon name="import" size={15} />}>
           {(close) => (
             <>
@@ -2350,6 +2342,21 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         <button className="primary" onClick={() => setShowExport(true)}>
           <Icon name="export" size={15} />
           Export STIX
+        </button>
+        {/* Named, not pictured. It wore a magnifying glass, which says "search"
+            in every other piece of software on the analyst's screen, and this
+            button configures where enrichment requests are sent. No icon was
+            going to carry that, so the word does it.
+
+            Past the primary action on purpose: it is a setting, not a step of
+            the work, and the far right is where settings are looked for. */}
+        <button
+          className="topbar-btn"
+          title="Where enrichment requests are sent. Nothing leaves this browser until you add one."
+          onClick={() => setShowEnrichSettings(true)}
+        >
+          Enrichment
+          {endpoints.length > 0 && <span className="topbar-count">{endpoints.length}</span>}
         </button>
       </div>
       <div className="workspace">
