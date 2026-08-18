@@ -956,7 +956,11 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       ),
     )
     await api.savePositions(iid, entityPositions).catch(showError)
-    requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15 }))
+    // `minZoom` here, and not on the canvas: React Flow refuses to zoom out
+    // past 0.5 by default, so on any graph worth re-laying out the fit stopped
+    // short and left the result running off the screen. Lowered for this one
+    // call, so what the analyst can do by hand is unchanged.
+    requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15, minZoom: 0.1 }))
   }, [nodes, edges, iid, setNodes, fitView, showError])
 
   const undoReorganize = useCallback(async () => {
@@ -978,7 +982,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       }
     }
     await api.savePositions(iid, entityPositions).catch(showError)
-    requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15 }))
+    requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15, minZoom: 0.1 }))
   }, [layoutBackup, iid, setNodes, fitView, showError])
 
   // narrative data (#116): derived from the canvas nodes/edges, memoised so
