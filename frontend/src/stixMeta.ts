@@ -83,3 +83,39 @@ export const TLP_META: Record<string, { label: string; color: string }> = {
   amber: { label: 'TLP:AMBER', color: '#dca561' },
   red: { label: 'TLP:RED', color: '#c34043' },
 }
+
+/* -- per-type tally (status bar breakdown) --------------------------------- */
+
+export interface TypeCount {
+  stix_type: string
+  label: string
+  color: string
+  kind: 'sdo' | 'sco'
+  count: number
+}
+
+/**
+ * Objects per type, non-empty types only, in the order the palette lists
+ * them.
+ *
+ * That order is the point. Sorting by count would be the obvious choice and
+ * the wrong one: the reader has the palette on the left in this exact
+ * sequence, and a breakdown that reshuffles itself every time an object is
+ * added has to be re-read from the top each time. Here the eye lands where it
+ * already knows to look.
+ *
+ * A type absent from both orders (an imported bundle carrying something the
+ * palette does not offer) is not dropped, it lands at the end in alphabetical
+ * order. It would otherwise be counted in the total and in nothing else.
+ */
+export function countByType(entities: { stix_type: string }[]): TypeCount[] {
+  const counts = new Map<string, number>()
+  for (const entity of entities) {
+    counts.set(entity.stix_type, (counts.get(entity.stix_type) ?? 0) + 1)
+  }
+  const known = [...SDO_ORDER, ...SCO_ORDER]
+  const unknown = [...counts.keys()].filter((t) => !known.includes(t)).sort()
+  return [...known, ...unknown]
+    .filter((t) => counts.has(t))
+    .map((t) => ({ stix_type: t, ...typeMeta(t), count: counts.get(t)! }))
+}

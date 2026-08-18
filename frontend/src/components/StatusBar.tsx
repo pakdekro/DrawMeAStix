@@ -1,5 +1,7 @@
 import { memo } from 'react'
 
+import type { TypeCount } from '../stixMeta'
+
 /**
  * Status bar: the summary before the detail.
  *
@@ -70,8 +72,44 @@ function exportState(
   }
 }
 
+/**
+ * The type breakdown behind the object counter.
+ *
+ * A total is the right thing to show and the wrong thing to stop at: "24
+ * objects" says the investigation has weight, not what it is made of. The
+ * detail existed nowhere short of counting nodes by colour on the canvas.
+ *
+ * Opened on hover and on keyboard focus, not on click: it answers a question
+ * you have in passing, and a panel that has to be dismissed costs more than
+ * the answer is worth.
+ */
+function Breakdown({ types }: { types: TypeCount[] }) {
+  const sdo = types.filter((t) => t.kind === 'sdo')
+  const sco = types.filter((t) => t.kind === 'sco')
+  const section = (title: string, rows: TypeCount[]) =>
+    rows.length === 0 ? null : (
+      <>
+        <div className="breakdown-head">{title}</div>
+        {rows.map((t) => (
+          <div className="breakdown-row" key={t.stix_type}>
+            <i className="breakdown-dot" style={{ background: t.color }} />
+            <span className="breakdown-label">{t.label}</span>
+            <b>{t.count}</b>
+          </div>
+        ))}
+      </>
+    )
+  return (
+    <span className="breakdown" role="tooltip">
+      {section('Objects (SDO)', sdo)}
+      {section('Observables (SCO)', sco)}
+    </span>
+  )
+}
+
 function StatusBar({
   objects,
+  breakdown,
   relationships,
   candidates,
   notes,
@@ -81,6 +119,7 @@ function StatusBar({
   exportedStateAt,
 }: {
   objects: number
+  breakdown: TypeCount[]
   relationships: number
   candidates: number
   notes: number
@@ -93,8 +132,15 @@ function StatusBar({
 
   return (
     <div className="statusbar">
-      <span className="stat">
+      {/* One element, not a wrapper plus a stat: below 900px the bar hides
+          its secondary counters by nth-child, and an extra node there would
+          hide the wrong ones. */}
+      <span
+        className={`stat${breakdown.length > 0 ? ' has-breakdown' : ''}`}
+        tabIndex={breakdown.length > 0 ? 0 : undefined}
+      >
         <b>{objects}</b> object{objects === 1 ? '' : 's'}
+        {breakdown.length > 0 && <Breakdown types={breakdown} />}
       </span>
       <span className="stat">
         <b>{relationships}</b> relationship{relationships === 1 ? '' : 's'}

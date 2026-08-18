@@ -2138,6 +2138,92 @@ input.checkbox {
   color: var(--warning);
 }
 
+/* ---- Object counter: breakdown by type ---- */
+
+/* The counter is the only stat that opens something, so it says so with a
+   dotted underline: an underline proper would read as the link two stats
+   further right. */
+.stat.has-breakdown {
+  position: relative;
+  cursor: default;
+  outline: none;
+}
+
+.stat.has-breakdown > b {
+  border-bottom: 1px dotted var(--text-dim);
+}
+
+.stat.has-breakdown:hover,
+.stat.has-breakdown:focus-visible {
+  background: var(--panel-2);
+}
+
+.breakdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 40;
+  display: none;
+  min-width: 190px;
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-bottom: 5px;
+  padding: 7px 0;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  cursor: default;
+}
+
+/* Hover and keyboard focus both open it, and it stays open while the pointer
+   is inside: the panel scrolls when an imported bundle carries many types. */
+.stat.has-breakdown:hover .breakdown,
+.stat.has-breakdown:focus-within .breakdown {
+  display: block;
+}
+
+.breakdown-head {
+  padding: 6px 11px 3px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.breakdown-head:first-child {
+  padding-top: 0;
+}
+
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 11px;
+  line-height: 16px;
+}
+
+.breakdown-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* The count is pinned right, so the column reads as a column even when the
+   labels have nothing to do with each other. */
+.breakdown-label {
+  flex: 1;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.breakdown-row b {
+  color: var(--text-dim);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .stat.ok {
   color: var(--success);
 }

@@ -17,7 +17,7 @@ import { ApiError, api } from '../api'
 import { entryToCreation, loadAttackDataset } from '../attack'
 import type { AttackEntry } from '../attack'
 import { ACCEPT, pageAt, textFromFile } from '../extractors'
-import { typeMeta } from '../stixMeta'
+import { countByType, typeMeta } from '../stixMeta'
 import type { CaptureItem, Entity, Investigation, NoteItem, Relationship } from '../types'
 import { compressImage } from '../annotations'
 import { NODE_H, NODE_W, findFreeSpot, type Rect } from '../placement'
@@ -998,6 +998,9 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         })),
     [nodes],
   )
+  // the status bar's type breakdown: memoised here so the bar, which is
+  // memo()'d, does not re-render on every unrelated state change
+  const typeBreakdown = useMemo(() => countByType(narrativeEntities), [narrativeEntities])
   const narrativeRelations = useMemo<NarrRelation[]>(
     () =>
       edges
@@ -2353,6 +2356,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       )}
       <StatusBar
         objects={narrativeEntities.length}
+        breakdown={typeBreakdown}
         relationships={narrativeRelations.length}
         candidates={candidates.length}
         notes={notes.length}
