@@ -518,14 +518,63 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     })
   }, [nodes, query])
 
+  /**
+   * What the current selection touches, one hop out.
+   *
+   * A CTI graph is a star, and no automatic layout makes one readable (see
+   * layout.ts). What does make it readable is asking it: select an object and
+   * its neighbours light up, wherever the arrangement happened to put them.
+   *
+   * Derived, never stored: React Flow already marks the selected nodes, so
+   * reading it back beats keeping a second copy in state that can disagree.
+   */
+  const linked = useMemo(() => {
+    const selected = new Set(nodes.filter((nd) => nd.selected).map((nd) => nd.id))
+    if (selected.size === 0) return { nodes: new Set<string>(), edges: new Set<string>() }
+    const neighbours = new Set<string>()
+    const incident = new Set<string>()
+    for (const e of edges) {
+      const fromSelection = selected.has(e.source)
+      const toSelection = selected.has(e.target)
+      if (!fromSelection && !toSelection) continue
+      incident.add(e.id)
+      if (!fromSelection) neighbours.add(e.source)
+      if (!toSelection) neighbours.add(e.target)
+    }
+    return { nodes: neighbours, edges: incident }
+  }, [nodes, edges])
+
   const displayNodes = useMemo(() => {
-    if (!searchOpen || !query.trim()) return nodes
+    const searching = searchOpen && query.trim() !== ''
+    if (!searching && linked.nodes.size === 0) return nodes
     const hitIds = new Set(hits.map((n) => n.id))
-    return nodes.map((n) => ({
-      ...n,
-      className: hitIds.has(n.id) ? 'search-hit' : 'search-miss',
+    return nodes.map((n) => {
+      // the search verdict wins the opacity, the link adds its ring on top:
+      // a neighbour the search rejected must not come back from the dead
+      const touched = linked.nodes.has(n.id) || n.selected === true
+      const classes = [
+        searching ? (hitIds.has(n.id) ? 'search-hit' : 'search-miss') : '',
+        linked.nodes.has(n.id) ? 'linked' : '',
+        // the search already dims what it rejected; stacking a second opacity
+        // on top of it would push those nodes to nearly invisible
+        !searching && linked.nodes.size > 0 && !touched ? 'aside' : '',
+      ].filter(Boolean)
+      return classes.length === 0 ? n : { ...n, className: classes.join(' ') }
+    })
+  }, [nodes, hits, searchOpen, query, linked])
+
+  /**
+   * The relationships the selection is an end of, brought forward while the
+   * others step back. On a graph where thirty edges cross the screen, the ring
+   * around a neighbour says WHICH objects; only the edge says which link.
+   */
+  const displayEdges = useMemo(() => {
+    if (linked.edges.size === 0) return edges
+    return edges.map((e) => ({
+      ...e,
+      className: linked.edges.has(e.id) ? 'edge-linked' : 'edge-aside',
     }))
-  }, [nodes, hits, searchOpen, query])
+  }, [edges, linked])
 
   const centerOnHit = useCallback(
     (index: number) => {
@@ -2367,7 +2416,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         <div className="canvas-wrap">
           <ReactFlow
             nodes={displayNodes}
-            edges={edges}
+            edges={displayEdges}
             nodeTypes={nodeTypes}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
