@@ -21,7 +21,6 @@ import { countByType, typeMeta } from '../stixMeta'
 import type { CaptureItem, Entity, Investigation, NoteItem, Relationship } from '../types'
 import { compressImage } from '../annotations'
 import { NODE_H, NODE_W, findFreeSpot, type Rect } from '../placement'
-import { NODE_SEP, RANK_SEP, foldWideRanks } from '../layout'
 import { circleLayout, validateTemplate } from '../templates'
 import type { ScenarioTemplate, TemplatePlan } from '../templates'
 import { findBridges } from '../bridges'
@@ -277,6 +276,14 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     string,
     { x: number; y: number }
   > | null>(null)
+  // Bumped when a re-layout has moved the nodes and the view has to follow.
+  //
+  // A `requestAnimationFrame` was doing this, and it fired before React had
+  // committed the new positions: the fit then framed the PREVIOUS layout, and
+  // the freshly organised graph opened half off the screen. Clicking the
+  // button twice fixed it, which is exactly the kind of thing nobody reports.
+  // An effect runs after the commit, and after React Flow's own store has
+  // taken the new nodes, since a child's effects run before its parent's.
   // enlarged capture (#136) - null: no viewer open
   const [lightbox, setLightbox] = useState<CaptureItem | null>(null)
   const { screenToFlowPosition, getNodes, deleteElements, fitView, setCenter } = useReactFlow()
@@ -904,28 +911,37 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       return
     }
     const g = new dagre.graphlib.Graph()
-    g.setGraph({ rankdir: 'TB', nodesep: NODE_SEP, ranksep: RANK_SEP })
+    // `nodesep` is the gap between two neighbours on a rank, `ranksep` the drop
+    // from one rank to the next. A node being about four times wider than it is
+    // tall, equal values lay the graph out as a horizontal band; tightening the
+    // first and loosening the second buys height, which the canvas scrolls,
+    // against width, which it does not.
+    g.setGraph({ rankdir: 'TB', nodesep: 24, ranksep: 120 })
     g.setDefaultEdgeLabel(() => ({}))
-    for (const nd of entityNodes) g.setNode(nd.id, { width: NODE_W, height: NODE_H })
+    // The measured size, not the default footprint: a node is 230x63 on screen
+    // against the 260x88 we used to declare, so Dagre reserved a margin that
+    // does not exist and spread every rank by it.
+    const sizeOf = (nd: (typeof nodes)[number]) => ({
+      width: nd.measured?.width ?? NODE_W,
+      height: nd.measured?.height ?? NODE_H,
+    })
+    for (const nd of entityNodes) g.setNode(nd.id, sizeOf(nd))
     for (const e of edges) {
       if (g.hasNode(e.source) && g.hasNode(e.target)) g.setEdge(e.source, e.target)
     }
     dagre.layout(g)
     setLayoutBackup(Object.fromEntries(nodes.map((nd) => [nd.id, { ...nd.position }])))
 
-    // 1) entities: Dagre positions (centre → top-left corner), then the ranks
-    // too wide to read folded into several rows (layout.ts) - a CTI graph is
-    // shallow and broad, and left alone it lays out as a horizontal ribbon
-    const dagrePositions = entityNodes.flatMap((nd) => {
-      const p = g.node(nd.id)
-      if (!p) return []
-      return [{ id: nd.id, x: Math.round(p.x - NODE_W / 2), y: Math.round(p.y - NODE_H / 2) }]
-    })
+    // 1) entities: Dagre positions (centre → top-left corner)
     const entityPositions: Record<string, { x: number; y: number }> = {}
     const placed: Rect[] = []
-    for (const { id, x, y } of foldWideRanks(dagrePositions)) {
-      entityPositions[id] = { x, y }
-      placed.push({ x, y, w: NODE_W, h: NODE_H })
+    for (const nd of entityNodes) {
+      const p = g.node(nd.id)
+      if (!p) continue
+      const { width, height } = sizeOf(nd)
+      const pos = { x: Math.round(p.x - width / 2), y: Math.round(p.y - height / 2) }
+      entityPositions[nd.id] = pos
+      placed.push({ ...pos, w: width, h: height })
     }
 
     // 2) annotations: right of their anchor (first linked entity), free slot
@@ -958,7 +974,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     await api.savePositions(iid, entityPositions).catch(showError)
     // `minZoom` here, and not on the canvas: React Flow refuses to zoom out
     // past 0.5 by default, so on any graph worth re-laying out the fit stopped
-    // short and left the result running off the screen. Lowered for this one
+    // there and left the result running off the screen. Lowered for this one
     // call, so what the analyst can do by hand is unchanged.
     requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15, minZoom: 0.1 }))
   }, [nodes, edges, iid, setNodes, fitView, showError])
