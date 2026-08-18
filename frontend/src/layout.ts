@@ -33,6 +33,12 @@ export interface ArrangeNode {
   stix_type: string
   /** `properties.tlp`; empty when the object inherits the export's marking */
   tlp: string
+  /** where it came from: `manual`, `paste`, `import`, `doc:…`, `enrich:…` */
+  source: string
+  /** ATT&CK tactics of a technique, resolved from its `x_mitre_id` */
+  tactics: string[]
+  /** true when the validator has something to say about this object */
+  flagged: boolean
   w: number
   h: number
 }
@@ -49,7 +55,14 @@ export interface Placement {
   y: number
 }
 
-export type Arrangement = 'type' | 'indicators' | 'tlp' | 'isolated'
+export type Arrangement =
+  | 'type'
+  | 'indicators'
+  | 'tlp'
+  | 'isolated'
+  | 'source'
+  | 'lint'
+  | 'tactic'
 
 /** The menu, in the order it is shown. `hint` says what the bands mean. */
 export const ARRANGEMENTS: { id: Arrangement; label: string; hint: string }[] = [
@@ -61,6 +74,13 @@ export const ARRANGEMENTS: { id: Arrangement; label: string; hint: string }[] = 
   },
   { id: 'tlp', label: 'By TLP marking', hint: 'Unmarked first, then CLEAR to RED' },
   { id: 'isolated', label: 'Loose ends first', hint: 'Objects with no relationship on top' },
+  {
+    id: 'source',
+    label: 'By provenance',
+    hint: 'Machine-supplied first, hand-made last',
+  },
+  { id: 'lint', label: 'By validation', hint: 'What the export will complain about, first' },
+  { id: 'tactic', label: 'By ATT&CK tactic', hint: 'Kill chain order; techniques only' },
 ]
 
 /* -- geometry -------------------------------------------------------------- */
@@ -172,6 +192,83 @@ function byIsolation(nodes: ArrangeNode[], edges: ArrangeEdge[]): ArrangeNode[][
 }
 
 /**
+ * Where an object came from, as one word.
+ *
+ * The stored `source` carries a payload for two of its shapes (`doc:report.pdf`,
+ * `enrich:virustotal`), which would make one cluster per file and per enricher
+ * and defeat the point.
+ */
+function provenance(node: ArrangeNode): string {
+  const source = node.source || 'manual'
+  if (source.startsWith('doc:')) return 'document'
+  if (source.startsWith('enrich:')) return 'enrichment'
+  return source
+}
+
+/**
+ * Furthest from the analyst first: an enricher asserted it, a stranger's
+ * bundle carried it, a report mentioned it, you pasted it, you typed it. That
+ * ordering is the question the arrangement answers - what is in here on
+ * somebody else's word.
+ */
+const SOURCE_ORDER = ['enrichment', 'import', 'document', 'paste', 'manual']
+
+function bySource(nodes: ArrangeNode[]): ArrangeNode[][] {
+  const present = [...new Set(nodes.map(provenance))]
+  const unknown = present.filter((p) => !SOURCE_ORDER.includes(p)).sort()
+  return [...SOURCE_ORDER, ...unknown].map((p) => nodes.filter((n) => provenance(n) === p))
+}
+
+/** What the export will complain about, first. The status bar counts these
+ *  without ever saying which they are. */
+function byLint(nodes: ArrangeNode[]): ArrangeNode[][] {
+  return [nodes.filter((n) => n.flagged), nodes.filter((n) => !n.flagged)]
+}
+
+/**
+ * ATT&CK Enterprise matrix order. Hardcoded because the dataset carries the
+ * tactics of a technique but not the order of the tactics themselves; a tactic
+ * missing from this list still gets its cluster, at the end, so a dataset
+ * refresh adding one never drops techniques on the floor.
+ *
+ * `defense-impairment` and `stealth` are where `defense-evasion` used to be:
+ * ATT&CK split it in two, and the shipped dataset is on the new spelling.
+ */
+const TACTIC_ORDER = [
+  'reconnaissance',
+  'resource-development',
+  'initial-access',
+  'execution',
+  'persistence',
+  'privilege-escalation',
+  'defense-impairment',
+  'stealth',
+  'credential-access',
+  'discovery',
+  'lateral-movement',
+  'collection',
+  'command-and-control',
+  'exfiltration',
+  'impact',
+]
+
+/**
+ * Kill chain coverage. A technique sits in its FIRST tactic, so it appears
+ * once even when ATT&CK lists it under several; everything that is not a
+ * technique cannot be placed on the chain at all and lands in one cluster at
+ * the end rather than being scattered or dropped.
+ */
+function byTactic(nodes: ArrangeNode[]): ArrangeNode[][] {
+  const chained = nodes.filter((n) => n.tactics.length > 0)
+  const present = [...new Set(chained.map((n) => n.tactics[0]))]
+  const unknown = present.filter((t) => !TACTIC_ORDER.includes(t)).sort()
+  return [
+    ...[...TACTIC_ORDER, ...unknown].map((t) => chained.filter((n) => n.tactics[0] === t)),
+    nodes.filter((n) => n.tactics.length === 0),
+  ]
+}
+
+/**
  * Positions for one arrangement. Nodes keep the order they were handed in
  * within a band, which is the canvas order, so re-running an arrangement never
  * reshuffles what it already arranged.
@@ -189,6 +286,12 @@ export function arrange(
       return spread(byTlp(nodes))
     case 'isolated':
       return spread(byIsolation(nodes, edges))
+    case 'source':
+      return spread(bySource(nodes))
+    case 'lint':
+      return spread(byLint(nodes))
+    case 'tactic':
+      return spread(byTactic(nodes))
     default:
       return spread(byType(nodes))
   }

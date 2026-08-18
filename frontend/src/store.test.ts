@@ -53,6 +53,7 @@ import {
   restoreNote,
   restoreRelationship,
   savePositions,
+  saveLayoutBackup,
   saveScratchpad,
   updateRelationship,
   StoreError,
@@ -287,6 +288,33 @@ describe("notes de travail (#29)", () => {
     const after = await exportBundle(inv.id, { tlp: "none" });
     expect(after.fingerprint).toBe(before.fingerprint);
     expect(JSON.stringify(after.bundle)).not.toContain("TA-2024-X");
+  });
+});
+
+describe("layout kept aside before the arrangements", () => {
+  it("saved locally, never in the export, fingerprint intact", async () => {
+    const { inv } = await seed();
+    const before = await exportBundle(inv.id, { tlp: "none" });
+    const invBefore = await getInvestigation(inv.id);
+
+    await saveLayoutBackup(inv.id, { "node-TA-2024-X": { x: 42, y: 1337 } });
+
+    const reloaded = await getInvestigation(inv.id);
+    expect(reloaded.layout_backup?.["node-TA-2024-X"]).toEqual({ x: 42, y: 1337 });
+    expect(reloaded.updated_at).toBe(invBefore.updated_at); // no touch
+
+    const after = await exportBundle(inv.id, { tlp: "none" });
+    expect(after.fingerprint).toBe(before.fingerprint);
+    expect(JSON.stringify(after.bundle)).not.toContain("node-TA-2024-X");
+  });
+
+  it("null wipes it rather than storing an empty object", async () => {
+    // the button shows itself on the strength of this field: an empty object
+    // is truthy and would leave a "My layout" that restores nothing
+    const { inv } = await seed();
+    await saveLayoutBackup(inv.id, { a: { x: 1, y: 2 } });
+    await saveLayoutBackup(inv.id, null);
+    expect((await getInvestigation(inv.id)).layout_backup).toBeUndefined();
   });
 });
 

@@ -7,12 +7,20 @@ import { describe, expect, it } from "vitest";
 
 import { ARRANGEMENTS, arrange, type ArrangeEdge, type ArrangeNode } from "./layout";
 
-const node = (id: string, stix_type: string, tlp = ""): ArrangeNode => ({
+const node = (
+  id: string,
+  stix_type: string,
+  extra: Partial<ArrangeNode> = {},
+): ArrangeNode => ({
   id,
   stix_type,
-  tlp,
+  tlp: "",
+  source: "manual",
+  tactics: [],
+  flagged: false,
   w: 230,
   h: 63,
+  ...extra,
 });
 const edge = (source: string, target: string, rel_type: string): ArrangeEdge => ({
   source,
@@ -85,7 +93,7 @@ describe("arrange: the shape shared by every arrangement", () => {
     const nodes = [
       node("a", "threat-actor"),
       node("b", "indicator"),
-      node("c", "url", "amber"),
+      node("c", "url", { tlp: "amber" }),
       node("d", "process"),
     ];
     const edges = [edge("b", "c", "indicates")];
@@ -138,17 +146,17 @@ describe("arrange: by detection", () => {
 describe("arrange: by TLP", () => {
   it("unmarked first, then least to most restricted", () => {
     const nodes = [
-      node("r", "url", "red"),
+      node("r", "url", { tlp: "red" }),
       node("none", "url"),
-      node("g", "url", "green"),
-      node("c", "url", "clear"),
-      node("a", "url", "amber"),
+      node("g", "url", { tlp: "green" }),
+      node("c", "url", { tlp: "clear" }),
+      node("a", "url", { tlp: "amber" }),
     ];
     expect(reading(arrange("tlp", nodes, []))).toEqual(["none", "c", "g", "a", "r"]);
   });
 
   it("reads the old spelling of CLEAR as CLEAR", () => {
-    const nodes = [node("w", "url", "white"), node("c", "url", "clear")];
+    const nodes = [node("w", "url", { tlp: "white" }), node("c", "url", { tlp: "clear" })];
     // one cluster of two, side by side, not two clusters a gutter apart
     expect(arrange("tlp", nodes, []).map((p) => p.x)).toEqual([0, 254]);
   });
@@ -165,5 +173,87 @@ describe("arrange: loose ends", () => {
     const nodes = [node("a", "malware"), node("b", "url")];
     const at = arrange("isolated", nodes, [edge("b", "a", "communicates-with")]);
     expect(at.map((p) => p.x)).toEqual([0, 254]); // one cluster, nothing left alone
+  });
+});
+
+describe("arrange: by provenance", () => {
+  it("goes from furthest from the analyst to closest", () => {
+    const nodes = [
+      node("typed", "url", { source: "manual" }),
+      node("vt", "url", { source: "enrich:virustotal" }),
+      node("pasted", "url", { source: "paste" }),
+      node("bundle", "url", { source: "import" }),
+      node("report", "url", { source: "doc:report.pdf" }),
+    ];
+    expect(reading(arrange("source", nodes, []))).toEqual([
+      "vt",
+      "bundle",
+      "report",
+      "pasted",
+      "typed",
+    ]);
+  });
+
+  it("collapses the payload, one cluster per kind and not per file", () => {
+    // `doc:a.pdf` and `doc:b.pdf` are both "a report said so"
+    const nodes = [
+      node("a", "url", { source: "doc:a.pdf" }),
+      node("b", "url", { source: "doc:b.pdf" }),
+    ];
+    expect(arrange("source", nodes, []).map((p) => p.x)).toEqual([0, 254]);
+  });
+
+  it("an object without a source counts as hand-made", () => {
+    const nodes = [node("bare", "url", { source: "" }), node("typed", "url")];
+    expect(arrange("source", nodes, []).map((p) => p.x)).toEqual([0, 254]);
+  });
+});
+
+describe("arrange: by validation", () => {
+  it("puts what the export will complain about first", () => {
+    const nodes = [node("fine", "url"), node("broken", "url", { flagged: true })];
+    expect(reading(arrange("lint", nodes, []))).toEqual(["broken", "fine"]);
+  });
+
+  it("a clean investigation is one cluster, not an empty one and a full one", () => {
+    const nodes = [node("a", "url"), node("b", "url")];
+    expect(arrange("lint", nodes, []).map((p) => p.x)).toEqual([0, 254]);
+  });
+});
+
+describe("arrange: by ATT&CK tactic", () => {
+  const tech = (id: string, ...tactics: string[]) =>
+    node(id, "attack-pattern", { tactics });
+
+  it("follows the kill chain, not the alphabet", () => {
+    const nodes = [
+      tech("impact", "impact"),
+      tech("recon", "reconnaissance"),
+      tech("exec", "execution"),
+    ];
+    expect(reading(arrange("tactic", nodes, []))).toEqual(["recon", "exec", "impact"]);
+  });
+
+  it("places a technique once, under its first tactic", () => {
+    const nodes = [tech("dual", "persistence", "privilege-escalation"), tech("p", "persistence")];
+    const at = arrange("tactic", nodes, []);
+    expect(at).toHaveLength(2);
+    expect(at.map((p) => p.x)).toEqual([0, 254]); // same cluster
+  });
+
+  it("keeps a tactic the list does not know, at the end of the chain", () => {
+    // the dataset gains one and the technique must not vanish
+    const nodes = [tech("new", "quantum-tampering"), tech("recon", "reconnaissance")];
+    expect(reading(arrange("tactic", nodes, []))).toEqual(["recon", "new"]);
+  });
+
+  it("gathers what cannot be placed on the chain, after it", () => {
+    const nodes = [node("host", "domain-name"), tech("recon", "reconnaissance")];
+    expect(reading(arrange("tactic", nodes, []))).toEqual(["recon", "host"]);
+  });
+
+  it("an investigation without a single technique still arranges", () => {
+    const nodes = [node("a", "url"), node("b", "malware")];
+    expect(arrange("tactic", nodes, []).map((p) => p.x)).toEqual([0, 254]);
   });
 });

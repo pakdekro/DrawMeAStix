@@ -34,6 +34,10 @@ export const api = {
   deleteInvestigation: (id: string): Promise<void> => store.deleteInvestigation(id),
   saveScratchpad: (id: string, text: string): Promise<void> =>
     store.saveScratchpad(id, text),
+  saveLayoutBackup: (
+    id: string,
+    positions: Record<string, { x: number; y: number }> | null,
+  ): Promise<void> => store.saveLayoutBackup(id, positions),
 
   listEntities: (iid: string): Promise<Entity[]> =>
     store.listEntities(iid) as Promise<Entity[]>,

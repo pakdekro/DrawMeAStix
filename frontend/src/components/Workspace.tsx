@@ -286,14 +286,6 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     string,
     { x: number; y: number }
   > | null>(null)
-  const keepLayout = useCallback(
-    (current: { id: string; position: { x: number; y: number } }[]) => {
-      setLayoutBackup((kept) =>
-        kept ?? Object.fromEntries(current.map((nd) => [nd.id, { ...nd.position }])),
-      )
-    },
-    [],
-  )
   // Bumped when a re-layout has moved the nodes and the view has to follow.
   //
   // A `requestAnimationFrame` was doing this, and it fired before React had
@@ -310,6 +302,9 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [undoStack, setUndoStack] = useState<UndoAction[]>([])
   const [lintWarnings, setLintWarnings] = useState(0)
+  // ids the validator has something to say about: the count goes to the status
+  // bar, the ids to the "By validation" arrangement
+  const [lintFlagged, setLintFlagged] = useState<Set<string>>(new Set())
   const pushUndo = useCallback(
     (action: UndoPayload) =>
       setUndoStack((s) => [...s.slice(-(UNDO_DEPTH - 1)), { ...action, at: Date.now() }]),
@@ -380,6 +375,24 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     [],
   )
 
+  const keepLayout = useCallback(
+    (current: { id: string; position: { x: number; y: number } }[]) => {
+      setLayoutBackup((kept) => {
+        if (kept) return kept
+        const positions = Object.fromEntries(
+          current.map((nd) => [nd.id, { ...nd.position }]),
+        )
+        // to the database as well as to the state: it used to live only in
+        // memory, and a page reload turned a reversible detour into a
+        // permanent rearrangement. Written like the scratchpad, without
+        // touching updated_at - where the objects sit is not intel.
+        void api.saveLayoutBackup(iid, positions).catch(showError)
+        return positions
+      })
+    },
+    [iid, showError],
+  )
+
   /**
    * Another tab has written: this one is now working on a stale state, and a
    * bulk edit here would write back properties read before that.
@@ -443,6 +456,9 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       ])
         .then(([inv, entities, rels, allNotes, captures]) => {
           setInvestigation(inv)
+          // a layout kept aside before a reload: the "My layout" button has to
+          // come back with it, otherwise the arrangement looks permanent
+          setLayoutBackup(inv.layout_backup ?? null)
           // only confirmed entities live on the canvas; the candidates
           // wait in the triage tray
           const confirmed = entities.filter((e) => e.status === 'confirmed')
@@ -1023,10 +1039,30 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     if (entityNodes.length === 0) return
     keepLayout(nodes)
 
+    // The object stores the ATT&CK number, never the tactics: they are resolved
+    // against the embedded dataset, and a technique the dataset does not know
+    // simply has none. Fetched only for the one arrangement that needs it, and
+    // memoised by the loader, so the others cost nothing. A dataset that fails
+    // to load leaves every technique unplaced rather than breaking the button.
+    const tactics =
+      kind === 'tactic'
+        ? new Map(
+            ((await loadAttackDataset().catch(() => null))?.entries ?? [])
+              .filter((e) => e.id !== undefined)
+              .map((e) => [e.id!, e.tactics ?? []]),
+          )
+        : new Map<string, string[]>()
+    const tacticsOf = (properties: Record<string, unknown>) =>
+      typeof properties.x_mitre_id === 'string'
+        ? (tactics.get(properties.x_mitre_id) ?? [])
+        : []
     const sized = entityNodes.map((nd) => ({
       id: nd.id,
       stix_type: nd.data.entity.stix_type,
       tlp: String(nd.data.entity.properties.tlp ?? ''),
+      source: nd.data.entity.source,
+      tactics: tacticsOf(nd.data.entity.properties),
+      flagged: lintFlagged.has(nd.id),
       w: nd.measured?.width ?? NODE_W,
       h: nd.measured?.height ?? NODE_H,
     }))
@@ -1049,7 +1085,17 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     await api.savePositions(iid, entityPositions).catch(showError)
     requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15, minZoom: 0.1 }))
     },
-    [nodes, edges, iid, keepLayout, setNodes, fitView, placeAnnotations, showError],
+    [
+      nodes,
+      edges,
+      iid,
+      lintFlagged,
+      keepLayout,
+      setNodes,
+      fitView,
+      placeAnnotations,
+      showError,
+    ],
   )
 
   /** Puts the objects back where the analyst had them, however many
@@ -1061,6 +1107,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       ns.map((nd) => (backup[nd.id] ? { ...nd, position: { ...backup[nd.id] } } : nd)),
     )
     setLayoutBackup(null)
+    void api.saveLayoutBackup(iid, null).catch(showError)
     // each kind gets its position back through its own persistence channel
     const entityPositions: Record<string, { x: number; y: number }> = {}
     for (const [id, pos] of Object.entries(backup)) {
@@ -1967,8 +2014,17 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     const timer = window.setTimeout(() => {
       api
         .lintInvestigation(iid)
-        .then((findings) => setLintWarnings(findings.filter((f) => f.level === 'warn').length))
-        .catch(() => setLintWarnings(0))
+        .then((findings) => {
+          const warnings = findings.filter((f) => f.level === 'warn')
+          setLintWarnings(warnings.length)
+          setLintFlagged(
+            new Set(findings.flatMap((f) => (f.entityId === undefined ? [] : [f.entityId]))),
+          )
+        })
+        .catch(() => {
+          setLintWarnings(0)
+          setLintFlagged(new Set())
+        })
       api
         .getInvestigation(iid)
         .then(setInvestigation)

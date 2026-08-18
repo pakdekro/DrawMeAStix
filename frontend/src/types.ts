@@ -6,6 +6,8 @@ export interface Investigation {
   updated_at: string
   /** local working notes, never exported (#29) */
   scratchpad?: string
+  /** positions from before the analyst started trying arrangements */
+  layout_backup?: Record<string, { x: number; y: number }>
   /** date of the last STIX export actually downloaded */
   exported_at?: string
   /** `updated_at` of the state this bundle represents (see markExported) */

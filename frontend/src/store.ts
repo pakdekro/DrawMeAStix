@@ -319,6 +319,22 @@ export async function saveScratchpad(iid: string, text: string): Promise<void> {
   });
 }
 
+/**
+ * The analyst's own layout, kept aside before the first arrangement and
+ * cleared once restored. Written WITHOUT touching updated_at, like the
+ * scratchpad: where the objects sit on a canvas is not intel.
+ */
+export async function saveLayoutBackup(
+  iid: string,
+  positions: Record<string, { x: number; y: number }> | null,
+): Promise<void> {
+  await tx(["investigations"], "readwrite", async (stores) => {
+    const row = await getInvestigationOr404(stores, iid);
+    const { layout_backup: _dropped, ...rest } = row;
+    stores.investigations.put(positions === null ? rest : { ...rest, layout_backup: positions });
+  });
+}
+
 export async function deleteInvestigation(iid: string): Promise<void> {
   await tx(STORES.slice() as StoreName[], "readwrite", async (stores) => {
     await getInvestigationOr404(stores, iid);

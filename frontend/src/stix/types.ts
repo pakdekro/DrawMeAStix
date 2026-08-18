@@ -20,6 +20,16 @@ export interface InvestigationRow {
    */
   scratchpad?: string;
   /**
+   * Where the analyst had put the objects before they started trying the
+   * canvas arrangements (#-, Arrange menu).
+   *
+   * Local like `scratchpad`, and for the same reasons: the builder does not
+   * read it and writing it does not touch `updated_at`. It lives here rather
+   * than in React state because it used to, and a page reload turned a
+   * reversible detour into a permanent rearrangement.
+   */
+  layout_backup?: Record<string, { x: number; y: number }>;
+  /**
    * Last STIX export actually downloaded (#-, status bar).
    *
    * Like `scratchpad`, these fields are not read by the builder and writing
