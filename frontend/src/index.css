@@ -39,6 +39,10 @@
   --text-dim: #9a9782;    /* lightened fujiGray, readable as a label */
   --muted: var(--text-dim);  /* alias: was used without ever being defined */
   --accent: #7e9cd8;      /* crystalBlue */
+  /* A second signal on the canvas, and only there: what the selection touches
+     directly. It has to read as "related to", never as "also selected", so it
+     takes a different hue rather than a thinner ring of the same one. */
+  --linked: #7aa89f;      /* waveAqua2 */
   --accent-ink: #1f1f28;  /* text sitting on --accent */
   --success: #98bb6c;     /* springGreen */
   --warning: #dca561;     /* autumnYellow */
@@ -1898,6 +1902,58 @@ input.checkbox {
 
 .react-flow__node.search-miss {
   opacity: 0.2;
+}
+
+/* ---- One hop from the selection ---- */
+
+/* Selecting an object rings its neighbours. On a star-shaped graph this is
+   what reading the structure actually looks like: no layout draws it, so the
+   analyst asks it one object at a time.
+
+   The ring is 3px and doubled by a halo. Two pixels of a quiet hue was the
+   first try and it read as a rendering artefact: the answer was on screen and
+   the eye went past it. */
+.react-flow__node.linked .entity-node,
+.react-flow__node.linked .annot-note,
+.react-flow__node.linked .annot-capture {
+  box-shadow:
+    0 0 0 3px var(--linked),
+    0 0 14px color-mix(in srgb, var(--linked) 55%, transparent);
+}
+
+/* Selected AND a neighbour of another selection: the selection ring wins,
+   otherwise a multi-selection would lose track of what it picked. */
+.react-flow__node.linked.selected .entity-node,
+.react-flow__node.linked .entity-node.selected {
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
+/* Everything the selection does not touch steps back, which is what makes the
+   ring land at a glance rather than after a search.
+
+   Held at 0.45 and not at the 0.2 the search uses: a search is a question
+   about the whole canvas and answers it by elimination, whereas selecting is
+   also the everyday way to open the inspector. Dimming that hard on every
+   click would turn an ordinary gesture into a light show. */
+.react-flow__node.aside {
+  opacity: 0.45;
+}
+
+/* The ring says which objects, the edge says which link: without this the
+   answer is there and unreadable, because thirty other edges cross it. */
+.react-flow__edge.edge-linked .react-flow__edge-path {
+  stroke: var(--linked);
+  stroke-width: 2;
+}
+
+.react-flow__edge.edge-linked .react-flow__edge-text {
+  fill: var(--linked);
+}
+
+/* Stepped back, not hidden: an edge that disappears while an object is
+   selected reads as an edge that was deleted. */
+.react-flow__edge.edge-aside {
+  opacity: 0.15;
 }
 
 /* multiple canonical bridges (#37): one name field per recipe ticked */
