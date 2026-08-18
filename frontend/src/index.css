@@ -764,6 +764,14 @@ label {
   border-color: var(--accent);
 }
 
+/* A latched toolbar button. It wears the colour of what it switches on, so
+   the canvas and the button say the same thing without a label. */
+.rf-btn.on {
+  border-color: var(--linked);
+  color: var(--linked);
+  background: color-mix(in srgb, var(--linked) 12%, var(--panel));
+}
+
 .endpoint-row {
   display: flex;
   align-items: center;

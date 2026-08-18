@@ -273,6 +273,17 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
   // shortcuts cheat sheet (#190), opened with "?"
   const [showShortcuts, setShowShortcuts] = useState(false)
   /**
+   * Link focus (L): off by default, and that is the whole point.
+   *
+   * Ringing the neighbours on every selection sounds free and is not: selecting
+   * is also how you pick an object up to move it, and having the canvas dim
+   * itself each time you rearrange it turns a quiet gesture into a strobe. So
+   * it became a mode you ask for, for the moments when the question is the
+   * structure rather than the tidying.
+   */
+  const [linkFocus, setLinkFocus] = useState(false)
+  const toggleLinkFocusRef = useRef<() => void>(() => undefined)
+  /**
    * The analyst's own layout, kept aside the first time an arrangement runs.
    *
    * Captured ONCE, not on every arrangement. Arrangements are meant to be
@@ -530,7 +541,9 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    */
   const linked = useMemo(() => {
     const selected = new Set(nodes.filter((nd) => nd.selected).map((nd) => nd.id))
-    if (selected.size === 0) return { nodes: new Set<string>(), edges: new Set<string>() }
+    if (!linkFocus || selected.size === 0) {
+      return { nodes: new Set<string>(), edges: new Set<string>() }
+    }
     const neighbours = new Set<string>()
     const incident = new Set<string>()
     for (const e of edges) {
@@ -542,7 +555,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       if (!toSelection) neighbours.add(e.target)
     }
     return { nodes: neighbours, edges: incident }
-  }, [nodes, edges])
+  }, [nodes, edges, linkFocus])
 
   const displayNodes = useMemo(() => {
     const searching = searchOpen && query.trim() !== ''
@@ -630,6 +643,19 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
   const toggleSidebarRef = useRef(toggleSidebar)
   toggleSidebarRef.current = toggleSidebar
 
+  /**
+   * A mode with no visible state is a trap, so this one announces itself both
+   * ways: the toolbar button stays lit while it is on, and the toggle says so
+   * out loud for the times it was reached by the keyboard.
+   */
+  const toggleLinkFocus = useCallback(() => {
+    setLinkFocus((on) => {
+      showInfo(on ? 'Link focus off' : 'Link focus on: select an object to see what it touches')
+      return !on
+    })
+  }, [showInfo])
+  toggleLinkFocusRef.current = toggleLinkFocus
+
   const closeSearch = useCallback(() => {
     setSearchOpen(false)
     setQuery('')
@@ -661,6 +687,19 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       if (e.key === '/' && !el?.closest('input, textarea, [contenteditable]')) {
         e.preventDefault()
         setSearchOpen(true)
+        return
+      }
+      // "l" for links. A bare letter, like "/" just above: the canvas owns the
+      // keyboard whenever no field does.
+      if (
+        e.key.toLowerCase() === 'l' &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey &&
+        !el?.closest('input, textarea, [contenteditable]')
+      ) {
+        e.preventDefault()
+        toggleLinkFocusRef.current()
         return
       }
       // "?": the shortcuts cheat sheet (#190). We test the CHARACTER
@@ -2237,6 +2276,11 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       { label: 'Toggle the inspector', hint: 'panel', run: toggleInspector },
       { label: 'Undo the last deletion', hint: 'Ctrl Z', run: () => void undo() },
       { label: 'Search the canvas', hint: '/', run: () => setSearchOpen(true) },
+      {
+        label: linkFocus ? 'Stop highlighting what the selection links to' : 'Highlight what the selection links to',
+        hint: 'L',
+        run: toggleLinkFocus,
+      },
       { label: 'Keyboard shortcuts', hint: '?', run: () => setShowShortcuts(true) },
       {
         label: 'STIX guide: what links to what',
@@ -2492,6 +2536,14 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
                 onClick={() => setSearchOpen(true)}
               >
                 <Icon name="search" size={15} />
+              </button>
+              <button
+                className={`rf-btn${linkFocus ? ' on' : ''}`}
+                aria-pressed={linkFocus}
+                onClick={toggleLinkFocus}
+                title="Highlight what the selection is linked to (L)"
+              >
+                <Icon name="target" size={15} />
               </button>
               {/* The button asks a question rather than promising a drawing:
                   each entry lines the objects up in blocks that answer one,
