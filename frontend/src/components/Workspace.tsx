@@ -21,6 +21,7 @@ import { typeMeta } from '../stixMeta'
 import type { CaptureItem, Entity, Investigation, NoteItem, Relationship } from '../types'
 import { compressImage } from '../annotations'
 import { NODE_H, NODE_W, findFreeSpot, type Rect } from '../placement'
+import { NODE_SEP, RANK_SEP, foldWideRanks } from '../layout'
 import { circleLayout, validateTemplate } from '../templates'
 import type { ScenarioTemplate, TemplatePlan } from '../templates'
 import { findBridges } from '../bridges'
@@ -903,7 +904,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       return
     }
     const g = new dagre.graphlib.Graph()
-    g.setGraph({ rankdir: 'TB', nodesep: 40, ranksep: 80 })
+    g.setGraph({ rankdir: 'TB', nodesep: NODE_SEP, ranksep: RANK_SEP })
     g.setDefaultEdgeLabel(() => ({}))
     for (const nd of entityNodes) g.setNode(nd.id, { width: NODE_W, height: NODE_H })
     for (const e of edges) {
@@ -912,15 +913,19 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     dagre.layout(g)
     setLayoutBackup(Object.fromEntries(nodes.map((nd) => [nd.id, { ...nd.position }])))
 
-    // 1) entities: Dagre positions (centre → top-left corner)
+    // 1) entities: Dagre positions (centre → top-left corner), then the ranks
+    // too wide to read folded into several rows (layout.ts) - a CTI graph is
+    // shallow and broad, and left alone it lays out as a horizontal ribbon
+    const dagrePositions = entityNodes.flatMap((nd) => {
+      const p = g.node(nd.id)
+      if (!p) return []
+      return [{ id: nd.id, x: Math.round(p.x - NODE_W / 2), y: Math.round(p.y - NODE_H / 2) }]
+    })
     const entityPositions: Record<string, { x: number; y: number }> = {}
     const placed: Rect[] = []
-    for (const nd of entityNodes) {
-      const p = g.node(nd.id)
-      if (!p) continue
-      const pos = { x: Math.round(p.x - NODE_W / 2), y: Math.round(p.y - NODE_H / 2) }
-      entityPositions[nd.id] = pos
-      placed.push({ ...pos, w: NODE_W, h: NODE_H })
+    for (const { id, x, y } of foldWideRanks(dagrePositions)) {
+      entityPositions[id] = { x, y }
+      placed.push({ x, y, w: NODE_W, h: NODE_H })
     }
 
     // 2) annotations: right of their anchor (first linked entity), free slot
