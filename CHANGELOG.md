@@ -5,6 +5,82 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
+## 1.5.0 - 18 August 2026
+
+- **The re-layout stopped pretending it could draw the graph, and became a
+  menu of arrangements instead.** A CTI investigation is shaped like a star,
+  not like a tree: one malware wired to seventeen objects, one actor to five.
+  Measured on two real investigations, no layered layout survives that. A
+  Dagre layout that reads top to bottom comes out 5700px wide, and every way
+  of narrowing it buys the width back in edge crossings: folding the wide
+  ranks costs 119 crossings against 21, packing the ranks costs 41, and
+  ranking nodes by their STIX type, the intuitive idea, sends 22 of 37
+  relationships pointing back up the page. That last one fails for a reason
+  worth stating: a STIX type has no fixed level in a flow, since an indicator
+  is the source of `indicates` and a malware its target while that same
+  malware is the source of `uses`. So the button stopped answering "what does
+  this mean" and now answers "where am I". Seven arrangements, each laying the
+  objects out in clusters that answer one question: by type, by detection
+  (what carries no indicator yet), by TLP marking, loose ends first, by
+  provenance (what a tool handed you against what you established), by
+  validation (what the export will complain about), and by ATT&CK tactic. The
+  layout by relationship is still there, one search away in the command
+  palette. Arranging the meaning goes back to the analyst, which is where it
+  was in practice anyway.
+
+- **The layout you built yourself is kept, and comes back.** Trying three
+  arrangements in a row used to leave no way home: the backup was rewritten
+  each time, so it only ever restored the previous arrangement. It is now
+  taken once, before the first arrangement, and it lives in the database
+  rather than in memory, where a page reload turned a reversible detour into a
+  permanent rearrangement. The button says "My layout" because that is what it
+  restores. Like the working notes, it never reaches the exported bundle and
+  writing it does not age the export.
+
+- **Selecting an object shows what it touches.** Press `l`, select anything,
+  and its direct neighbours take a ring while the relationships it is an end
+  of come forward and everything else steps back. It works whatever
+  arrangement the canvas is in, which is the point: reading a star is asking
+  it one object at a time, not drawing it better. Off by default and on a
+  keystroke, because selecting is also how you pick an object up to move it,
+  and a canvas that dims itself at every click while you tidy is a strobe.
+
+- **The object counter says what the objects are.** Hovering "24 objects" in
+  the status bar breaks the total down by type, in the palette's own order and
+  colours. The number said the investigation had weight; the detail existed
+  nowhere short of counting nodes by colour on the canvas.
+
+- **A file name pasted as an IOC is a file.** `setup.exe` and `payload.dll`
+  were classified as domain names, and that did not stop at a wrong label in
+  the triage tray: an observable's identifier is computed from its value, so
+  the mistake minted a bogus object that merges with every other analyst's
+  `setup.exe` on import. Extensions no registry sells now name a file.
+  Deliberately absent from that list: `zip`, `mov`, `com`, `sh`, `py` and `pl`,
+  which are all real top-level domains, and guessing on those would break the
+  cases an analyst cares about most.
+
+- **The connection handles are easier to grab than to draw.** The diamonds
+  were clipped by a `clip-path`, which clips the pointer target along with the
+  pixels: the shape you aimed at was smaller than the shape you saw. The
+  target is now a transparent rectangle and the diamond is only paint.
+
+- **Scenario templates stopped blaming the payload for the breach it walked
+  through.** `X exploits vulnerability` names the component that did the
+  exploiting, which a template cannot know: a flaw is often exploited at a
+  different phase, by something else entirely. The relation now survives only
+  in the scenarios whose payload is genuinely the exploiting component, and
+  every scenario carrying a flaw still ties it to the actor.
+
+- **Smaller fixes.** The fit that closes a re-layout no longer stops at React
+  Flow's default zoom floor and leaves the result running off the screen. The
+  enrichment settings are named instead of being drawn as a magnifying glass,
+  which says "search" in every other piece of software. The inspector folds
+  and unfolds from its own edge rather than from a button in the middle of the
+  import/export group. `countries.json` stopped stamping the local `iso-codes`
+  release into itself, which would have opened a noise pull request every
+  Monday forever, and a lint error left the CI red on `main` since the 1.4.0
+  release.
+
 ## 1.4.0 - 15 August 2026
 
 - **Eight hundred more adversary names are suggested.** ATT&CK knows 174
