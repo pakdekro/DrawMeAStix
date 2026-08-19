@@ -6,9 +6,10 @@
 
 import "fake-indexeddb/auto";
 
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import demoBundle from "../public/examples/operation-voliere.stix.json";
+import { loadDemoInvestigation } from "./demo";
 import { TOOL_IDENTITY_ID } from "./stix/bundle";
 import { _resetForTests, exportBundle, importBundle, listEntities, listNotes } from "./store";
 
@@ -69,5 +70,35 @@ describe("investigation de démonstration", () => {
     // if the scenario is renamed, the demo would silently lose its attachments
     expect(names.has("nest.corax.example")).toBe(true);
     expect(names.has("http://nest.corax.example/beacon")).toBe(true);
+  });
+});
+
+describe("what the demo says when the bundle does not come back", () => {
+  const originalFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  const answer = (status: number, contentType: string, body = "{}") => {
+    globalThis.fetch = (() =>
+      Promise.resolve(
+        new Response(body, { status, headers: { "content-type": contentType } }),
+      )) as typeof fetch;
+  };
+
+  // A 403 is not a missing file. Saying "not found" for one cost a real
+  // deployment an evening looking for the file instead of at its permissions.
+  it("tells a refusal apart from an absence", async () => {
+    answer(403, "text/html");
+    await expect(loadDemoInvestigation()).rejects.toThrow(/refuses/i);
+    answer(404, "text/html");
+    await expect(loadDemoInvestigation()).rejects.toThrow(/missing/i);
+  });
+
+  // The SPA answers 200 with index.html on an unknown path, so a bundle left
+  // out of the build reaches `json()` and dies on "Unexpected token '<'".
+  it("names the real cause when the SPA answers with its own page", async () => {
+    answer(200, "text/html", "<!doctype html><html></html>");
+    await expect(loadDemoInvestigation()).rejects.toThrow(/not on the server/i);
   });
 });

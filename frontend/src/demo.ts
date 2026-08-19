@@ -88,13 +88,45 @@ async function drawShot(shot: Shot): Promise<{ blob: Blob; width: number; height
 const PINNED = ['Attribution to confirm', 'Whois: domain registered']
 
 /**
+ * What an HTTP status means HERE, in the words of someone who has to fix it.
+ *
+ * This used to say "example not found" whatever came back, including for a
+ * 403, which is not a missing file but a server refusing to hand one over. It
+ * cost a real deployment an evening: the message pointed at the file while the
+ * cause was the permissions the build had carried into the image.
+ */
+function explainFetch(status: number): string {
+  if (status === 403) {
+    return (
+      'the server refuses to serve the example bundle (HTTP 403). It is there, ' +
+      'something will not hand it over: file permissions inside the image, or a ' +
+      'proxy in front of it.'
+    )
+  }
+  if (status === 404) {
+    return 'the example bundle is missing from this deployment (HTTP 404).'
+  }
+  return `the example bundle could not be read (HTTP ${String(status)}).`
+}
+
+/**
  * Imports the demo bundle, then adds the annotation layer on top of it.
  * Returns the id of the investigation created.
  */
 export async function loadDemoInvestigation(): Promise<string> {
   const response = await fetch(BUNDLE_URL)
   if (!response.ok) {
-    throw new Error(`example not found (HTTP ${response.status})`)
+    throw new Error(explainFetch(response.status))
+  }
+  // The SPA falls back to index.html on an unknown path, so a bundle missing
+  // from the image answers 200 with a page. Left to `json()` that came out as
+  // "Unexpected token '<'", which sends whoever reads it looking at the wrong
+  // thing entirely.
+  if (!(response.headers.get('content-type') ?? '').includes('json')) {
+    throw new Error(
+      'the example bundle is not on the server: the address answered with a page ' +
+        'instead of a file. The examples/ directory is missing from the deployed build.',
+    )
   }
   const bundle: unknown = await response.json()
   const { investigation } = await api.importBundle(bundle, 'Operation Aviary')
