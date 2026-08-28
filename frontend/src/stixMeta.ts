@@ -72,7 +72,13 @@ export const SCO_ORDER = [
 ]
 
 export function typeMeta(stixType: string): TypeMeta {
-  return TYPE_META[stixType] ?? { label: stixType, color: '#8992a8', kind: 'sdo' }
+  return (
+    TYPE_META[stixType] ?? {
+      label: stixType,
+      color: '#8992a8',
+      kind: 'sdo',
+    }
+  )
 }
 
 /** TLP chips (#125) - colors of the FIRST convention, Kanagawa toning. */

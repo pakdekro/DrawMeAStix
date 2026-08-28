@@ -17,11 +17,14 @@ import { ApiError, api } from '../api'
 import { entryToCreation, loadAttackDataset } from '../attack'
 import type { AttackEntry } from '../attack'
 import { ACCEPT, pageAt, textFromFile } from '../extractors'
-import { countByType, typeMeta } from '../stixMeta'
+import { SCO_ORDER, SDO_ORDER, countByType, typeMeta } from '../stixMeta'
 import type { CaptureItem, Entity, Investigation, NoteItem, Relationship } from '../types'
 import { compressImage } from '../annotations'
-import { NODE_H, NODE_W, findFreeSpot, type Rect } from '../placement'
-import { ARRANGEMENTS, arrange, type Arrangement } from '../layout'
+import { NODE_H, NODE_W, findFreeSpot, type Rect, type Segment } from '../placement'
+import { anchor } from '../floating'
+import { relColor, relLabelColor } from '../relMeta'
+import { radialArrange } from '../radial'
+import { LENSES, labelHits, labelIndex, lensHits, type LensChoice } from '../lens'
 import { circleLayout, validateTemplate } from '../templates'
 import type { ScenarioTemplate, TemplatePlan } from '../templates'
 import { findBridges } from '../bridges'
@@ -62,6 +65,8 @@ import TopbarMenu from './TopbarMenu'
 import TriageTray from './TriageTray'
 import WorkNotes from './WorkNotes'
 import EntityNode from './EntityNode'
+import Legend from './Legend'
+import FloatingEdge from './FloatingEdge'
 import type { EntityNodeType } from './EntityNode'
 import NoteNode from './NoteNode'
 import type { NoteNodeType } from './NoteNode'
@@ -71,6 +76,10 @@ import ExportDialog from './ExportDialog'
 import ImageExportDialog from './ImageExportDialog'
 
 const nodeTypes = { entity: EntityNode, annotNote: NoteNode, annotCapture: CaptureNode }
+// Relationships route themselves (see floating.ts); the note and capture
+// links keep the default edge, since their handle IS the statement - they
+// always hang off the side of the object they annotate.
+const edgeTypes = { floating: FloatingEdge }
 
 // Annotation layer (#136): pinned notes and captures share the canvas with
 // the entities, but stay outside STIX. ID prefixes so an annotation node is
@@ -183,14 +192,29 @@ function toNode(entity: Entity): EntityNodeType {
   }
 }
 
-// Literal Kanagawa colours (no CSS var): they are set inline on the edges, so
-// they survive the html-to-image capture of the image export (CSS variables,
-// for their part, are not resolved in the cloned SVG → invisible strokes and
-// black label backgrounds). If the theme changes, adjust here too.
-const EDGE_STROKE = '#6b6b82'
+/**
+ * Where a bare letter belongs to the field rather than to the canvas. A
+ * `<select>` is in the list because typing a letter into an open dropdown
+ * jumps to the option starting with it, which "t" was stealing.
+ */
+const TYPING = 'input, textarea, select, [contenteditable]'
+
+/** Where the card labels toggle (T) is remembered. */
+const LABELS_KEY = 'dmas.card-labels'
+
 function toEdge(rel: Relationship): Edge {
+  // The colour groups the verb rather than naming it (see relMeta.ts).
+  //
+  // Set INLINE on the element, and literal rather than a CSS variable, because
+  // that is what the image export can see: html-to-image clones the edge's own
+  // <svg> without inlining the computed styles of its descendants, so a stroke
+  // that lives in the stylesheet comes out of the capture as no stroke at all
+  // and a label as black on black. Learned once, undone once, and now the
+  // comment sits next to the code it is about.
+  const color = relColor(rel.rel_type)
   return {
     id: rel.id,
+    type: 'floating',
     source: rel.source_id,
     target: rel.target_id,
     label: rel.rel_type,
@@ -202,12 +226,12 @@ function toEdge(rel: Relationship): Edge {
       start_time: rel.start_time,
       stop_time: rel.stop_time,
     },
-    style: { stroke: EDGE_STROKE, strokeWidth: 1.5 },
-    labelStyle: { fill: '#9a9782', fontSize: 11 },
+    style: { stroke: color, strokeWidth: 1.5 },
+    labelStyle: { fill: relLabelColor(rel.rel_type), fontSize: 11 },
     labelBgStyle: { fill: '#1f1f28' },
     labelBgPadding: [4, 2],
     labelBgBorderRadius: 2,
-    markerEnd: { type: MarkerType.ArrowClosed, color: EDGE_STROKE },
+    markerEnd: { type: MarkerType.ArrowClosed, color },
   }
 }
 
@@ -261,7 +285,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
   const [layout, setLayout] = useState<PanelLayout>(() =>
     loadLayout(window.innerWidth, window.localStorage),
   )
-  const [sidePanel, setSidePanel] = useState<'objects' | 'attack' | 'scenarios' | null>(
+  const [sidePanel, setSidePanel] = useState<'objects' | 'attack' | 'scenarios' | 'labels' | null>(
     () => (loadLayout(window.innerWidth, window.localStorage).left ? 'objects' : null),
   )
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth)
@@ -282,6 +306,35 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    * structure rather than the tidying.
    */
   const [linkFocus, setLinkFocus] = useState(false)
+  /**
+   * The lens: a question asked of the canvas, answered on the canvas.
+   *
+   * One at a time, and off by default. These used to be arrangements that
+   * moved every object into a pile per answer; they move nothing now, because
+   * the answer is a SET and a set is best shown where the objects already are.
+   */
+  const [lens, setLens] = useState<LensChoice | null>(null)
+  /**
+   * The labels written on the cards (T).
+   *
+   * They earn their room on a small canvas and cost it on a big one: three
+   * chips per card is a third line of text on every object, and the labels an
+   * analyst tags with are the same handful over and over, so on a crowded
+   * graph they say almost nothing while taking almost as much ink as the
+   * names. A way of looking rather than a property of the case, so it is
+   * remembered in localStorage and never travels in a bundle.
+   */
+  const [showLabels, setShowLabels] = useState(() => {
+    try {
+      return window.localStorage.getItem(LABELS_KEY) !== 'off'
+    } catch {
+      // a private window and blocked site data both throw here
+      return true
+    }
+  })
+  const toggleLabelsRef = useRef<() => void>(() => undefined)
+  const lensRef = useRef<LensChoice | null>(null)
+  lensRef.current = lens
   const toggleLinkFocusRef = useRef<() => void>(() => undefined)
   /**
    * The analyst's own layout, kept aside the first time an arrangement runs.
@@ -309,12 +362,36 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
   const [lightbox, setLightbox] = useState<CaptureItem | null>(null)
   const { screenToFlowPosition, getNodes, deleteElements, fitView, setCenter } = useReactFlow()
 
+  /**
+   * Fit the canvas once React Flow has taken the new positions in.
+   *
+   * Two frames and not one, which is measured rather than assumed: the same
+   * arrangement chosen twice from a fresh load fitted to the PREVIOUS layout
+   * the first time and to the right one the second. React commits the moved
+   * nodes on its own schedule, and a single frame lands on the wrong side of
+   * that commit often enough to see.
+   *
+   * These calls used to pass `minZoom: 0.1` to escape React Flow's floor of
+   * 0.5, and that never worked: the option only changes the viewport being
+   * COMPUTED, and d3-zoom then clamps the transform it is handed to the scale
+   * extent the canvas was built with. Which is why every arrangement ran off
+   * the sides of the screen. The floor is set on the canvas now, where it
+   * takes effect, and the analyst gets to zoom out that far by hand too - on
+   * a canvas that can be four screens wide, that is a gain and not a side
+   * effect.
+   */
+  const fitSoon = useCallback(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15 }))
+    })
+  }, [fitView])
+
   /* -- canvas search (#122) ---------------------------------------------- */
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [undoStack, setUndoStack] = useState<UndoAction[]>([])
   const [lintWarnings, setLintWarnings] = useState(0)
   // ids the validator has something to say about: the count goes to the status
-  // bar, the ids to the "By validation" arrangement
+  // bar, the ids to the "the export will complain" lens
   const [lintFlagged, setLintFlagged] = useState<Set<string>>(new Set())
   const pushUndo = useCallback(
     (action: UndoPayload) =>
@@ -557,9 +634,82 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     return { nodes: neighbours, edges: incident }
   }, [nodes, edges, linkFocus])
 
+  /**
+   * What each object carries, for the annotation grip to show at a glance.
+   * A note pinned on the canvas is obvious; a note left in the inspector was
+   * invisible until you clicked the object, which is the wrong way round -
+   * you click BECAUSE you saw there was something to read.
+   *
+   * An opinion outranks a note: it is the analyst's own judgement, and it is
+   * the thing you least want to walk past.
+   */
+  const annotated = useMemo(() => {
+    const map = new Map<string, 'note' | 'opinion'>()
+    for (const n of notes) {
+      if (!n.entity_id) continue
+      if (n.kind === 'opinion' || !map.has(n.entity_id)) map.set(n.entity_id, n.kind)
+    }
+    return map
+  }, [notes])
+
+  /**
+   * What the lens lights up. Computed from the canvas rather than the database
+   * so it follows an edit straight away: delete the only indicator on an
+   * object and it joins the uncovered while you watch.
+   */
+  const asked = useMemo(
+    () =>
+      (nodes.filter((nd) => nd.type === 'entity') as EntityNodeType[]).map((nd) => {
+        // Guarded like every other reader of this field. A row saved by an
+        // older version, or restored from a backup, can arrive without
+        // `properties`, and this runs on every render: one bad row would take
+        // the canvas down on load and on every reload after it.
+        const props = nd.data.entity.properties ?? {}
+        return {
+          id: nd.id,
+          stix_type: nd.data.entity.stix_type,
+          labels: Array.isArray(props.labels)
+            ? props.labels.filter((l): l is string => typeof l === 'string')
+            : [],
+          tlp: String(props.tlp ?? ''),
+          source: nd.data.entity.source ?? 'manual',
+          flagged: lintFlagged.has(nd.id),
+        }
+      }),
+    [nodes, lintFlagged],
+  )
+
+  /** The analyst's own vocabulary, listed in the objects panel. */
+  const labels = useMemo(() => labelIndex(asked), [asked])
+
+  const lensLit = useMemo(() => {
+    if (!lens) return null
+    if (lens.kind === 'label') return labelHits(lens.value, asked)
+    return lensHits(
+      lens.id,
+      asked,
+      edges
+        .filter((e) => !e.id.startsWith('annot:'))
+        .map((e) => ({ source: e.source, target: e.target, rel_type: String(e.label ?? '') })),
+    )
+  }, [lens, asked, edges])
+
+  /** Toggling: clicking the label that is already lit puts the canvas back. */
+  const pickLabel = useCallback((value: string) => {
+    setLens((now) =>
+      now?.kind === 'label' && now.value === value ? null : { kind: 'label', value },
+    )
+  }, [])
+
+  /** The entity a note or a capture is pinned to; null for an object itself. */
+  const anchorOf = useCallback((n: CanvasNode): string | null => {
+    if (n.type === 'annotNote') return n.data.note.entity_id
+    if (n.type === 'annotCapture') return n.data.capture.entity_ids[0] ?? null
+    return null
+  }, [])
+
   const displayNodes = useMemo(() => {
     const searching = searchOpen && query.trim() !== ''
-    if (!searching && linked.nodes.size === 0) return nodes
     const hitIds = new Set(hits.map((n) => n.id))
     return nodes.map((n) => {
       // the search verdict wins the opacity, the link adds its ring on top:
@@ -571,23 +721,74 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         // the search already dims what it rejected; stacking a second opacity
         // on top of it would push those nodes to nearly invisible
         !searching && linked.nodes.size > 0 && !touched ? 'aside' : '',
+        annotated.has(n.id) ? `has-${annotated.get(n.id)}` : '',
+        // The lens dims on its own axis: an object can be a search hit AND
+        // outside the lens, and it has to read as both.
+        //
+        // A note or a capture answers none of these questions, so it takes the
+        // verdict of the object it hangs off. Dimming the whole annotation
+        // layer whenever a lens was on hid the analyst's own reasoning about
+        // the very objects the lens had just picked out.
+        lensLit ? (lensLit.has(anchorOf(n) ?? n.id) ? 'lens-lit' : 'lens-out') : '',
       ].filter(Boolean)
       return classes.length === 0 ? n : { ...n, className: classes.join(' ') }
     })
-  }, [nodes, hits, searchOpen, query, linked])
+  }, [nodes, hits, searchOpen, query, linked, annotated, lensLit, anchorOf])
 
   /**
    * The relationships the selection is an end of, brought forward while the
    * others step back. On a graph where thirty edges cross the screen, the ring
    * around a neighbour says WHICH objects; only the edge says which link.
    */
+  /**
+   * Where each relationship meets each card. Worked out here rather than by
+   * each edge, because an edge cannot know how many others are competing for
+   * the side it wants to leave from. Only the STIX relationships take part:
+   * a note or a capture hangs off the annotation handle, and that position IS
+   * the statement.
+   */
+  const ends = useMemo(
+    () =>
+      anchor(
+        nodes.map((nd) => ({
+          id: nd.id,
+          x: nd.position.x,
+          y: nd.position.y,
+          w: nd.measured?.width ?? NODE_W,
+          h: nd.measured?.height ?? NODE_H,
+        })),
+        edges.filter((e) => e.type === 'floating'),
+      ),
+    [nodes, edges],
+  )
+
   const displayEdges = useMemo(() => {
-    if (linked.edges.size === 0) return edges
-    return edges.map((e) => ({
-      ...e,
-      className: linked.edges.has(e.id) ? 'edge-linked' : 'edge-aside',
-    }))
-  }, [edges, linked])
+    const lensSurvives = (e: Edge) =>
+      !lensLit ||
+      (e.id.startsWith('annot:')
+        ? lensLit.has(e.target)
+        : lensLit.has(e.source) && lensLit.has(e.target))
+    return (
+      edges.map((e) => {
+        const mine = ends.get(e.id)
+        const lit = linked.edges.has(e.id)
+        const classes = [
+          linked.edges.size === 0 ? '' : lit ? 'edge-linked' : 'edge-aside',
+          // A relationship survives the lens only if both its ends did.
+          // Otherwise the lit objects sit inside a web of bright lines going
+          // nowhere the question asked about. An annotation link follows the
+          // object it hangs off, which is always its target.
+          lensLit && !lensSurvives(e) ? 'edge-aside' : '',
+        ].filter((c, i, all) => c && all.indexOf(c) === i)
+        if (!mine && classes.length === 0) return e
+        return {
+          ...e,
+          ...(mine ? { data: { ...e.data, ends: mine, lit } } : {}),
+          ...(classes.length === 0 ? {} : { className: classes.join(' ') }),
+        }
+      })
+    )
+  }, [edges, ends, linked, lensLit])
 
   const centerOnHit = useCallback(
     (index: number) => {
@@ -625,7 +826,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
 
   /** The rail drives the palette; "open or not" is stored along with it. */
   const choosePanel = useCallback(
-    (panel: 'objects' | 'attack' | 'scenarios' | null) => {
+    (panel: 'objects' | 'attack' | 'scenarios' | 'labels' | null) => {
       setSidePanel(panel)
       setPanels({ left: panel !== null, right: layout.right })
     },
@@ -648,6 +849,19 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    * ways: the toolbar button stays lit while it is on, and the toggle says so
    * out loud for the times it was reached by the keyboard.
    */
+  const toggleLabels = useCallback(() => {
+    setShowLabels((on) => {
+      try {
+        window.localStorage.setItem(LABELS_KEY, on ? 'off' : 'on')
+      } catch {
+        /* see the reader, above */
+      }
+      showInfo(on ? 'Labels hidden on the cards' : 'Labels shown on the cards')
+      return !on
+    })
+  }, [showInfo])
+  toggleLabelsRef.current = toggleLabels
+
   const toggleLinkFocus = useCallback(() => {
     setLinkFocus((on) => {
       showInfo(on ? 'Link focus off' : 'Link focus on: select an object to see what it touches')
@@ -684,7 +898,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       // opaque backdrop, or the cheat sheet on top of an entry in progress.
       // Ctrl+K stays reachable, that is the whole point of it.
       if (isModalOpen()) return
-      if (e.key === '/' && !el?.closest('input, textarea, [contenteditable]')) {
+      if (e.key === '/' && !el?.closest(TYPING)) {
         e.preventDefault()
         setSearchOpen(true)
         return
@@ -696,16 +910,37 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         !e.ctrlKey &&
         !e.metaKey &&
         !e.altKey &&
-        !el?.closest('input, textarea, [contenteditable]')
+        !el?.closest(TYPING)
       ) {
         e.preventDefault()
         toggleLinkFocusRef.current()
         return
       }
+      // "t" for the tags written on the cards. A bare letter, like "/" and
+      // "l": the canvas owns the keyboard whenever no field does.
+      if (
+        e.key.toLowerCase() === 't' &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey &&
+        !el?.closest(TYPING)
+      ) {
+        e.preventDefault()
+        toggleLabelsRef.current()
+        return
+      }
+      // Escape puts the canvas back the way it was, and only reaches here when
+      // nothing nearer consumed it: the search field and the canvas menus both
+      // stop the event, so closing either one no longer clears the lens on the
+      // way past.
+      if (e.key === 'Escape' && lensRef.current) {
+        setLens(null)
+        return
+      }
       // "?": the shortcuts cheat sheet (#190). We test the CHARACTER
       // produced, not the physical key - "?" is composed differently on
       // AZERTY and on QWERTY, and the character is all the two share.
-      if (e.key === HELP_KEY && !el?.closest('input, textarea, [contenteditable]')) {
+      if (e.key === HELP_KEY && !el?.closest(TYPING)) {
         e.preventDefault()
         setShowShortcuts((s) => !s)
       }
@@ -1015,15 +1250,32 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
 
   /**
    * Annotations (#136) put back next to their anchor entity once the objects
-   * have moved: first free slot to its right, no overlap. Shared by both ways
-   * of rearranging the canvas, since only the objects differ between them.
+   * have moved. Shared by both ways of rearranging the canvas, since only the
+   * objects differ between them.
+   *
+   * OUTWARD from the middle of the drawing, not to the right. "To the right"
+   * was fine on a layered layout where right is nowhere in particular; on a
+   * radial one, right is straight at the hub for everything sitting west of
+   * it, which is the busiest part of the picture. Away from the centre of mass
+   * is the quiet direction on both, and on the radial it is the empty one.
+   *
+   * And the relationships are handed to the search, so a note lands beside its
+   * object rather than across three of its spokes.
    */
   const placeAnnotations = useCallback(
     async (
       entityPositions: Record<string, { x: number; y: number }>,
       placed: Rect[],
+      links: Segment[] = [],
     ): Promise<Record<string, { x: number; y: number }>> => {
       const out: Record<string, { x: number; y: number }> = { ...entityPositions }
+      const spots = Object.values(entityPositions)
+      const middle = spots.length
+        ? {
+            x: spots.reduce((sum, p) => sum + p.x, 0) / spots.length + NODE_W / 2,
+            y: spots.reduce((sum, p) => sum + p.y, 0) / spots.length + NODE_H / 2,
+          }
+        : { x: 0, y: 0 }
       for (const nd of nodes) {
         if (nd.type !== 'annotNote' && nd.type !== 'annotCapture') continue
         const size = {
@@ -1033,8 +1285,8 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         const anchorId =
           nd.type === 'annotNote' ? nd.data.note.entity_id : nd.data.capture.entity_ids[0]
         const anchor = anchorId ? entityPositions[anchorId] : undefined
-        const preferred = anchor ? { x: anchor.x + NODE_W + 80, y: anchor.y } : nd.position
-        const pos = findFreeSpot(preferred, placed, size)
+        const preferred = anchor ? outward(anchor, size) : nd.position
+        const pos = findFreeSpot(preferred, placed, size, links)
         placed.push({ ...pos, ...size })
         out[nd.id] = pos
         if (nd.type === 'annotNote') {
@@ -1044,6 +1296,27 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         }
       }
       return out
+
+      /**
+       * One card-and-a-bit away from the anchor, pointing away from the middle
+       * of the drawing. Pushed per axis rather than along a circle, so a note
+       * ends up a note's width to the side or a note's height above, never a
+       * note's width above.
+       */
+      function outward(at: { x: number; y: number }, size: { w: number; h: number }) {
+        const cx = at.x + NODE_W / 2
+        const cy = at.y + NODE_H / 2
+        const dx = cx - middle.x
+        const dy = cy - middle.y
+        const len = Math.hypot(dx, dy)
+        // An object sitting exactly on the middle has no outward: the old
+        // answer, to its right, is as good as any.
+        const away = len === 0 ? { x: 1, y: 0 } : { x: dx / len, y: dy / len }
+        return {
+          x: cx + away.x * (NODE_W / 2 + size.w / 2 + 40) - size.w / 2,
+          y: cy + away.y * (NODE_H / 2 + size.h / 2 + 40) - size.h / 2,
+        }
+      }
     },
     [nodes, iid, showError],
   )
@@ -1101,7 +1374,16 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       placed.push({ ...pos, w: width, h: height })
     }
 
-    const newPositions = await placeAnnotations(entityPositions, placed)
+    const links: Segment[] = edges
+      .filter((e) => !e.id.startsWith('annot:'))
+      .filter((e) => entityPositions[e.source] && entityPositions[e.target])
+      .map((e) => ({
+        x1: entityPositions[e.source].x + NODE_W / 2,
+        y1: entityPositions[e.source].y + NODE_H / 2,
+        x2: entityPositions[e.target].x + NODE_W / 2,
+        y2: entityPositions[e.target].y + NODE_H / 2,
+      }))
+    const newPositions = await placeAnnotations(entityPositions, placed, links)
 
     setNodes((ns) =>
       ns.map((nd) =>
@@ -1109,82 +1391,55 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       ),
     )
     await api.savePositions(iid, entityPositions).catch(showError)
-    // `minZoom` here, and not on the canvas: React Flow refuses to zoom out
-    // past 0.5 by default, so on any graph worth re-laying out the fit stopped
-    // there and left the result running off the screen. Lowered for this one
-    // call, so what the analyst can do by hand is unchanged.
-    requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15, minZoom: 0.1 }))
-  }, [nodes, edges, iid, keepLayout, setNodes, fitView, placeAnnotations, showError])
+    fitSoon()
+  }, [nodes, edges, iid, keepLayout, setNodes, fitSoon, placeAnnotations, showError])
 
   /**
-   * "Group by type": the everyday button. One band per STIX type, in palette
-   * order, and no claim at all about the relationships - see layout.ts for why
-   * drawing them automatically was given up on.
+   * Draws the graph around its hub (see radial.ts). The only thing left that
+   * moves objects: the questions the other arrangements used to answer by
+   * moving them are lenses now, and lenses move nothing.
    */
-  const arrangeCanvas = useCallback(
-    async (kind: Arrangement) => {
+  const arrangeCanvas = useCallback(async () => {
     const entityNodes = nodes.filter((nd) => nd.type === 'entity')
     if (entityNodes.length === 0) return
     keepLayout(nodes)
 
-    // The object stores the ATT&CK number, never the tactics: they are resolved
-    // against the embedded dataset, and a technique the dataset does not know
-    // simply has none. Fetched only for the one arrangement that needs it, and
-    // memoised by the loader, so the others cost nothing. A dataset that fails
-    // to load leaves every technique unplaced rather than breaking the button.
-    const tactics =
-      kind === 'tactic'
-        ? new Map(
-            ((await loadAttackDataset().catch(() => null))?.entries ?? [])
-              .filter((e) => e.id !== undefined)
-              .map((e) => [e.id!, e.tactics ?? []]),
-          )
-        : new Map<string, string[]>()
-    const tacticsOf = (properties: Record<string, unknown>) =>
-      typeof properties.x_mitre_id === 'string'
-        ? (tactics.get(properties.x_mitre_id) ?? [])
-        : []
     const sized = entityNodes.map((nd) => ({
       id: nd.id,
       stix_type: nd.data.entity.stix_type,
-      tlp: String(nd.data.entity.properties.tlp ?? ''),
-      source: nd.data.entity.source,
-      tactics: tacticsOf(nd.data.entity.properties),
-      flagged: lintFlagged.has(nd.id),
       w: nd.measured?.width ?? NODE_W,
       h: nd.measured?.height ?? NODE_H,
     }))
     const relations = edges
       .filter((e) => !e.id.startsWith('annot:'))
-      .map((e) => ({ source: e.source, target: e.target, rel_type: String(e.label ?? '') }))
+      .map((e) => ({ source: e.source, target: e.target }))
     const byId = new Map(sized.map((n) => [n.id, n]))
     const entityPositions: Record<string, { x: number; y: number }> = {}
     const placed: Rect[] = []
-    for (const { id, x, y } of arrange(kind, sized, relations)) {
+    for (const { id, x, y } of radialArrange(sized, relations, [...SDO_ORDER, ...SCO_ORDER])) {
       entityPositions[id] = { x, y }
       const size = byId.get(id)!
       placed.push({ x, y, w: size.w, h: size.h })
     }
 
-    const newPositions = await placeAnnotations(entityPositions, placed)
+    // Where the lines will be once everything has moved, so the annotations
+    // are laid out against the drawing that is about to exist.
+    const links: Segment[] = relations
+      .filter((r) => entityPositions[r.source] && entityPositions[r.target])
+      .map((r) => ({
+        x1: entityPositions[r.source].x + (byId.get(r.source)?.w ?? NODE_W) / 2,
+        y1: entityPositions[r.source].y + (byId.get(r.source)?.h ?? NODE_H) / 2,
+        x2: entityPositions[r.target].x + (byId.get(r.target)?.w ?? NODE_W) / 2,
+        y2: entityPositions[r.target].y + (byId.get(r.target)?.h ?? NODE_H) / 2,
+      }))
+
+    const newPositions = await placeAnnotations(entityPositions, placed, links)
     setNodes((ns) =>
       ns.map((nd) => (newPositions[nd.id] ? { ...nd, position: newPositions[nd.id] } : nd)),
     )
     await api.savePositions(iid, entityPositions).catch(showError)
-    requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15, minZoom: 0.1 }))
-    },
-    [
-      nodes,
-      edges,
-      iid,
-      lintFlagged,
-      keepLayout,
-      setNodes,
-      fitView,
-      placeAnnotations,
-      showError,
-    ],
-  )
+    fitSoon()
+  }, [nodes, edges, iid, keepLayout, setNodes, fitSoon, placeAnnotations, showError])
 
   /** Puts the objects back where the analyst had them, however many
    *  arrangements have been tried since. */
@@ -1208,8 +1463,8 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       }
     }
     await api.savePositions(iid, entityPositions).catch(showError)
-    requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15, minZoom: 0.1 }))
-  }, [layoutBackup, iid, setNodes, fitView, showError])
+    fitSoon()
+  }, [layoutBackup, iid, setNodes, fitSoon, showError])
 
   // narrative data (#116): derived from the canvas nodes/edges, memoised so
   // the text is only recomputed when the graph actually changes
@@ -2261,16 +2516,18 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       { label: 'Export STIX bundle…', hint: 'export', run: () => setShowExport(true) },
       { label: 'Export image / PDF / Markdown…', hint: 'share', run: () => setShowImageExport(true) },
       { label: 'Paste IOCs…', hint: 'import', run: openPaste },
-      // every arrangement is searchable, so the menu is a shortcut and not the
-      // only door
-      ...ARRANGEMENTS.map((a) => ({
-        label: `Arrange the canvas: ${a.label.toLowerCase()}`,
-        hint: 'canvas',
-        run: () => arrangeCanvas(a.id),
+      { label: 'Arrange the canvas by structure', hint: 'canvas', run: arrangeCanvas },
+      // every lens is searchable, so the menu is a shortcut and not the only
+      // door
+      ...LENSES.map((l) => ({
+        label: `Show me: ${l.label.toLowerCase()}`,
+        hint: 'lens',
+        run: () => setLens({ kind: 'question', id: l.id }),
       })),
-      // Dagre stays reachable, one search away, for the times the structure is
-      // the question. It is not the button any more because on a real CTI
-      // graph it answers with a 5700px ribbon (layout.ts).
+      { label: 'Show everything again', hint: 'lens', run: () => setLens(null) },
+      // Dagre stays reachable, one search away, for the times the graph really
+      // is a flow. It is not the button because on a star it answers with a
+      // ribbon a screen and a half wide (layoutCompare.test.ts).
       { label: 'Re-layout the graph by relationship', hint: 'canvas', run: reorganize },
       { label: 'Toggle the objects panel', hint: 'Ctrl B', run: toggleSidebar },
       { label: 'Toggle the inspector', hint: 'panel', run: toggleInspector },
@@ -2450,6 +2707,9 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
           onPaste={openPaste}
           onPickAttack={pickAttack}
           onPickTemplate={setActiveTemplate}
+          labels={labels}
+          activeLabel={lens?.kind === 'label' ? lens.value : null}
+          onPickLabel={pickLabel}
           onLoadTemplate={loadCustomTemplate}
           candidateCount={candidates.length}
           triageOpen={triageOpen}
@@ -2457,11 +2717,12 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
           panel={sidePanel}
           onPanel={choosePanel}
         />
-        <div className="canvas-wrap">
+        <div className={`canvas-wrap${showLabels ? '' : ' no-labels'}`}>
           <ReactFlow
             nodes={displayNodes}
             edges={displayEdges}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
@@ -2486,11 +2747,15 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
             // the expected gesture everywhere anyway.
             multiSelectionKeyCode={['Control', 'Meta', 'Shift']}
             fitView
+            // See `fitSoon`: a whole investigation does not fit on a screen at
+            // half size, and this is the only place the limit is real.
+            minZoom={0.15}
             colorMode="dark"
             proOptions={{ hideAttribution: true }}
           >
             <Background gap={24} />
             <Controls />
+            <Legend besideMinimap={viewportWidth >= MINIMAP_BREAKPOINT} />
             {/* 200px wide: on a narrow canvas it eats the very space it is
                 supposed to help you cover */}
             {viewportWidth >= MINIMAP_BREAKPOINT && <MiniMap pannable zoomable />}
@@ -2506,7 +2771,12 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
                     setHitIndex(0)
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === 'Escape') closeSearch()
+                    // Stopped for the same reason as the menus: closing the
+                    // search must not also put away a lens on the way past.
+                    if (e.key === 'Escape') {
+                      e.stopPropagation()
+                      closeSearch()
+                    }
                     if (e.key === 'Enter' && hits.length > 0) {
                       const next = e.shiftKey ? hitIndex - 1 : hitIndex + 1
                       setHitIndex(next)
@@ -2545,32 +2815,59 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
               >
                 <Icon name="target" size={15} />
               </button>
-              {/* The button asks a question rather than promising a drawing:
-                  each entry lines the objects up in blocks that answer one,
-                  and the arranging of meaning stays the analyst's. */}
+              {/* One button that moves things, one menu that does not. The
+                  lens answers a question where the objects already are; the
+                  arrangement is the only thing left that rearranges them. */}
               <TopbarMenu
-                label="Arrange"
-                icon={<Icon name="layout" size={15} />}
-                buttonClass="rf-btn"
+                label="Show"
+                icon={<Icon name="search" size={15} />}
+                buttonClass={`rf-btn${lens ? ' on' : ''}`}
               >
-                {(close) =>
-                  ARRANGEMENTS.map((a) => (
-                    <button
-                      key={a.id}
-                      className="menu-item"
-                      onClick={() => {
-                        close()
-                        arrangeCanvas(a.id)
-                      }}
-                    >
-                      <span>
-                        {a.label}
-                        <em>{a.hint}</em>
-                      </span>
-                    </button>
-                  ))
-                }
+                {(close) => (
+                  <>
+                    {LENSES.map((l) => (
+                      <button
+                        key={l.id}
+                        className={`menu-item${
+                          lens?.kind === 'question' && lens.id === l.id ? ' on' : ''
+                        }`}
+                        onClick={() => {
+                          close()
+                          setLens(
+                            lens?.kind === 'question' && lens.id === l.id
+                              ? null
+                              : { kind: 'question', id: l.id },
+                          )
+                        }}
+                      >
+                        <span>
+                          {l.label}
+                          <em>{l.hint}</em>
+                        </span>
+                      </button>
+                    ))}
+                    {lens && (
+                      <button
+                        className="menu-item"
+                        onClick={() => {
+                          close()
+                          setLens(null)
+                        }}
+                      >
+                        <span>Show everything again</span>
+                      </button>
+                    )}
+                  </>
+                )}
               </TopbarMenu>
+              <button
+                className="rf-btn"
+                onClick={() => void arrangeCanvas()}
+                title="Draw the graph around what it is about: hubs in the middle, rings by distance"
+              >
+                <Icon name="layout" size={15} />
+                Arrange
+              </button>
               {layoutBackup && (
                 <button
                   className="rf-btn"

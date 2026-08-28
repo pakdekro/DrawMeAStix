@@ -5,6 +5,99 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
+## 1.6.0 - 28 August 2026
+
+- **The graph gets drawn after all, because the edges stopped leaving from a
+  fixed point.** Every relationship used to leave the bottom of its source and
+  enter the top of its target, since that is where the two handles were. On a
+  layout that reads top to bottom that is honest; on any other it is the whole
+  of the spaghetti, because an edge pointing upwards has to leave downwards,
+  swing around the card and come back, once per edge. The anchor now aims for
+  the middle of the side facing the other object, and leaves that middle only
+  when it has to: several edges on one side fan out around it, ordered the way
+  their targets lie along it, so two lines leaving the same border do not cross
+  each other in the last few pixels. What says which way a relationship runs is
+  the arrowhead, which it always did; where the line touched the card was never
+  carrying that.
+
+- **A layout that draws the investigation around what it is about.** 1.5.0
+  measured that no layered layout survives a star and gave up on drawing;
+  radiating edges make the drawing a star actually has available. The most
+  connected object goes in the middle, what it touches forms a ring around it,
+  and what those touch forms the next ring out, so distance from the centre
+  means hops from the subject of the case. Angles come from the breadth-first
+  tree, each object owning a wedge and splitting it between its children in
+  proportion to what hangs off each, so subtrees stay together; a ring too
+  crowded for wedges shares itself out evenly rather than growing without
+  bound. Measured again, on the shapes this app produces, and the harness is
+  committed beside it: on a hub with seventeen spokes, ranks give a ribbon
+  4294px wide and 246px tall, and the radial gives 1846x1018 with the same
+  zero crossings. Neither wins outright, which is the finding: ranks still draw
+  a chain better, and Aviary costs four crossings against one. The layered
+  layout stays one search away in the command palette.
+
+- **The seven arrangements became five lenses, and stopped moving anything.**
+  They existed because the graph could not be drawn, and made a virtue of
+  ignoring the relationships. Once it could be drawn, ignoring them stopped
+  being a precaution and became the cost: the answer to "what has no indicator
+  on it" is a SET of objects, and piling that set into a block takes away the
+  context that made those objects mean anything - which of them is wired to the
+  malware was the interesting half. They had a plainer fault too: nothing named
+  the blocks, so you got six silent piles and had to work out which was which.
+  A lens moves nothing. It lights what answers the question and steps the rest
+  back, on whatever layout is on screen, and `Esc` puts it away. Five questions
+  survived the change: no indicator on it, no relationship at all, no TLP of
+  its own, machine-supplied, and what the export will complain about. "By type"
+  and "by ATT&CK tactic" did not: both were partitions rather than questions,
+  and the first was telling the analyst something every card already says in
+  its own colour.
+
+- **A relationship is drawn in the colour of what it says.** Not one colour per
+  verb: STIX has twenty-six of them here, and six more hues on top of the
+  eighteen the objects already carry would say "these differ" far louder than
+  they differ. What an analyst reads off a graph is coarser than the verb
+  anyway, so the colour groups instead: who is behind this, what does it wield,
+  who does it hit, how would we see it, where does it live. `related-to`, and
+  any verb a later spec adds, reads as unclassified rather than as a guess. A
+  legend beside the minimap carries the key, folds away, and stays folded.
+
+- **The labels you coin, listed in their own panel, each one a lens.** Most
+  used first, with how many objects carry each; clicking one lights those
+  objects. They are compared exactly and never case-folded, because they are
+  free text and they drift: `ransomware` and `Ransomware` are two labels and a
+  bundle exports them as two, so folding them here would hide the drift at the
+  moment a list makes it visible. It is the only place in the app where you see
+  your own vocabulary at once. `t` shows or hides the labels written on the
+  cards, which are a third line of text on every object when the canvas is
+  crowded.
+
+- **A card offers a grip on every side, and only when you come near it.** Two
+  fixed triangles claimed that a line arrives at the top and leaves from the
+  bottom, which stopped being true. There is one grip per side now, drawn as
+  circles because a triangle points and there is nothing left to point at, and
+  they are hidden at rest: a mark drawn there permanently was the thing reading
+  as "the line arrives here". While a link is being dragged, every card that
+  could legally receive it shows its own. The annotation grip is the exception
+  and stays drawn when there is something to read, in the notes' own hue, so a
+  note left in the inspector is no longer invisible until you click the object.
+
+- **Two canvas faults that were making every arrangement look worse than it
+  was.** The fit ran one frame too early and framed the previous layout, so the
+  same arrangement chosen twice gave two different viewports. And
+  `fitView({ minZoom })` never did anything: the option changes the viewport
+  being computed, and d3-zoom then clamps the transform to the canvas's own
+  scale extent, which was the default 0.5. The fit therefore stopped at half
+  size and every arrangement ran off the sides of the screen. The floor is set
+  on the canvas now, where it takes effect, and you can zoom out that far by
+  hand as well.
+
+- **Notes and captures are no longer laid across the relationships.** They went
+  to the right of their object, which is nowhere in particular on a layered
+  layout and straight at the hub on a radial one. They go outward from the
+  middle of the drawing now, and the placer is handed the relationships as the
+  lines they will be once everything has moved: a free cell is not a clear one,
+  and a note could overlap nothing while sitting on three spokes.
+
 ## 1.5.1 - 19 August 2026
 
 - **Self-hosting: the permissions of your clone no longer decide what the

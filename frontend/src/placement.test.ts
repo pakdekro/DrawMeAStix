@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { NODE_H, NODE_W, findFreeSpot, type Rect } from "./placement";
+import { NODE_H, NODE_W, crosses, findFreeSpot, type Rect, type Segment } from "./placement";
 
 const at = (x: number, y: number): Rect => ({ x, y, w: NODE_W, h: NODE_H });
 
@@ -50,5 +50,49 @@ describe("findFreeSpot", () => {
       }
     }
     expect(findFreeSpot({ x: 0, y: 0 }, wall)).toEqual({ x: 0, y: 0 });
+  });
+});
+
+/**
+ * A free cell is not the same as a clear one. On a radial layout the space
+ * around an object is crossed by its own spokes, so a note dropped into it
+ * overlaps nothing and still sits on three lines.
+ */
+describe("keeping clear of the relationships", () => {
+  const size = { w: 100, h: 40 };
+  const across: Segment = { x1: -500, y1: 20, x2: 500, y2: 20 };
+
+  it("knows when a line passes through a box", () => {
+    expect(crosses(across, { x: 0, y: 0, w: 100, h: 40 })).toBe(true);
+    expect(crosses(across, { x: 0, y: 100, w: 100, h: 40 })).toBe(false);
+  });
+
+  it("counts a line that ends inside the box", () => {
+    expect(crosses({ x1: 50, y1: 20, x2: 900, y2: 20 }, { x: 0, y: 0, w: 100, h: 40 })).toBe(
+      true,
+    );
+  });
+
+  it("steps aside for a line even when the cell is free", () => {
+    const spot = findFreeSpot({ x: 0, y: 0 }, [], size, [across]);
+    expect(crosses(across, { ...spot, ...size })).toBe(false);
+  });
+
+  it("puts objects first: a line is worth crossing to avoid one", () => {
+    // every cell the search can reach is crossed by one of these
+    const everywhere: Segment[] = Array.from({ length: 40 }, (_, i) => ({
+      x1: -5000,
+      y1: (i - 20) * 60,
+      x2: 5000,
+      y2: (i - 20) * 60,
+    }));
+    const spot = findFreeSpot({ x: 0, y: 0 }, [{ x: 0, y: 0, w: 100, h: 40 }], size, everywhere);
+    expect(spot).not.toEqual({ x: 0, y: 0 });
+  });
+
+  it("behaves as it always did when it is given no lines", () => {
+    expect(findFreeSpot({ x: 0, y: 0 }, [], size)).toEqual(
+      findFreeSpot({ x: 0, y: 0 }, [], size, []),
+    );
   });
 });

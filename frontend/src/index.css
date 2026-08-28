@@ -909,6 +909,18 @@ label {
   margin-bottom: 20px;
 }
 
+/* The buttons keep their labels on one line and the field gives up the room.
+   Left to shrink, two of the three wrapped onto two lines while the first did
+   not, and a row of buttons at three different heights is the first thing
+   anyone sees of the app. */
+.create-row button {
+  white-space: nowrap;
+}
+
+.create-row input {
+  min-width: 0;
+}
+
 .inv-table {
   width: 100%;
   border-collapse: collapse;
@@ -1060,6 +1072,34 @@ label {
   border-radius: 50%;
   flex-shrink: 0;
 }
+/* A label chip is not a type chip. No colour dot, because the analyst's own
+   vocabulary has no palette and inventing one would compete with the codes
+   the canvas already carries. The count is what says the chip is about what
+   is on the canvas rather than about what could be added to it. */
+.chip.label-chip {
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.chip.label-chip .chip-count {
+  flex: none;
+  color: var(--text-dim);
+  font-size: 10px;
+}
+
+/* Lit, and saying so: the same accent the canvas uses for a selection, since
+   this chip IS the selection while it is pressed. */
+.chip.label-chip.on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chip.label-chip.on .chip-count {
+  color: var(--accent);
+}
+
 
 /* "Load a scenario…" is a <label> wrapping a file input: same neutralizations
    as .menu-item, otherwise the global `label` rule uppercases it in the
@@ -1408,6 +1448,20 @@ label {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 18px;
+}
+
+/* The form's own action row, laid out wherever the form is shown and not only
+   inside a modal. In the inspector it was plain block flow, so the marker's
+   `margin-right: auto` did nothing and "unsaved changes" simply shoved Save
+   along the line each time you typed a character. */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  /* Air above, which the modal got from its own rule and the inspector did
+     not: the row sat straight against the field above it. */
+  margin-top: 14px;
 }
 
 /* Unsaved-input marker: placed left of the buttons, it pushes "Cancel" and
@@ -1834,6 +1888,17 @@ input.checkbox {
   margin-top: 3px;
 }
 
+/* T hides the labels written on the cards. They earn their room on a small
+   canvas and cost it on a big one: three chips is a third line of text on
+   every object, and the labels an analyst tags with are the same handful over
+   and over, so on a crowded graph they say almost nothing while taking almost
+   as much ink as the names. Hidden and not shrunk, because a smaller chip is
+   still a chip. */
+.no-labels .entity-node .node-labels {
+  display: none;
+}
+
+
 .entity-node .node-label {
   font-size: 9px;
   color: var(--text-dim);
@@ -1912,6 +1977,21 @@ input.checkbox {
   opacity: 0.2;
 }
 
+/* ---- The lens ----
+   A question asked of the canvas, answered on the canvas. Nothing moves and
+   nothing is added: what does not answer the question steps back, and what is
+   left standing IS the answer. No glow on the survivors - the contrast does
+   the work, and a second colour on top of the type colours and the family
+   colours would be one code too many.
+
+   Placed after the search rules so that when both are on, failing either one
+   dims the object. An object that fails the lens must not be brought back by
+   having matched the search. */
+.react-flow__node.lens-out {
+  opacity: 0.15;
+}
+
+
 /* ---- One hop from the selection ---- */
 
 /* Selecting an object rings its neighbours. On a star-shaped graph this is
@@ -1947,17 +2027,9 @@ input.checkbox {
   opacity: 0.45;
 }
 
-/* The ring says which objects, the edge says which link: without this the
-   answer is there and unreadable, because thirty other edges cross it. */
-.react-flow__edge.edge-linked .react-flow__edge-path {
-  stroke: var(--linked);
-  stroke-width: 2;
-}
-
-.react-flow__edge.edge-linked .react-flow__edge-text {
-  fill: var(--linked);
-}
-
+/* The ring says which objects, the edge says which link. The colour itself is
+   set on the element by `FloatingEdge`, not here: it has to survive the image
+   export, which sees inline styles and nothing else. */
 /* Stepped back, not hidden: an edge that disappears while an object is
    selected reads as an edge that was deleted. */
 .react-flow__edge.edge-aside {
@@ -1970,28 +2042,53 @@ input.checkbox {
   width: calc(100% - 26px);
 }
 
-/* typed handles (#136): arrow = STIX flow (in at the top, out at the
-   bottom, the triangle follows the reading direction), diamond = annotation.
+/* A grip on each side of the card, and each one is a source and a target laid
+   over each other (see EntityNode). Circles, not arrows: the drawing used to
+   point the way a line would leave, and a line now leaves whichever way it is
+   going.
 
-   Sizes come in pairs, and the pair is the point: the handle is the hitbox,
-   its ::after is the drawing. `clip-path` cuts the pointer target along with
-   the pixels, so a 12x7 triangle offered almost nothing to grab near its
-   tip, where it tapers to nothing. The drawing keeps its size, the target no
-   longer has to match it. */
-.entity-node .react-flow__handle-top,
-.entity-node .react-flow__handle-bottom {
-  width: 26px;
-  height: 16px;
+   The pointer target is deliberately larger than the drawing, so there is
+   something to grab without hunting for nine pixels. */
+.entity-node .link-handle {
+  width: 20px;
+  height: 20px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
 }
 
-.entity-node .react-flow__handle-top::after,
-.entity-node .react-flow__handle-bottom::after {
-  width: 12px;
-  height: 7px;
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
+.entity-node .link-handle::after {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  clip-path: none;
 }
 
-.entity-node .react-flow__handle-bottom::after {
+/* At rest the card says nothing about links: a mark drawn there permanently
+   read as "the line arrives here", which is exactly the claim that stopped
+   being true. It offers itself when you come near it. */
+.react-flow__node:hover .entity-node .link-handle,
+.react-flow__node.selected .entity-node .link-handle,
+.react-flow__node:hover .entity-node .annot-handle,
+.react-flow__node.selected .entity-node .annot-handle {
+  opacity: 1;
+}
+
+/* While a link is being dragged, every card that could legally receive it
+   shows its grips, wherever the pointer happens to be. React Flow only marks
+   a handle that can END the connection in progress, and these targets refuse
+   to start one, so the mark means exactly "you may drop here".
+
+   The TARGET half only, hence `link-in` and `annot-in` rather than the pairs:
+   a source handle carries the same mark at rest, because at rest it can start
+   a connection, so naming a pair shows that grip permanently. Which is a bug
+   you can see - it put a diamond on the corner of every card, which is exactly
+   what hiding them at rest is for. */
+.entity-node .link-in.connectionindicator,
+.entity-node .annot-in.connectionindicator {
+  opacity: 1;
+}
+
+.entity-node .link-in.connectionindicator::after {
   background: var(--accent);
 }
 
@@ -2002,6 +2099,25 @@ input.checkbox {
   height: 22px;
 }
 
+/* Hidden at rest like the link grips, and shown by the same rules - plus one
+   of its own: a card carrying a note keeps it drawn, in the notes' own hue.
+
+   Which is the point, and the reason it is not simply drawn everywhere in
+   grey. What carries the information is the PRESENCE of the diamond, not its
+   colour: a mark on every card would make the reader compare hues, a mark on
+   four cards out of thirty is seen without looking. A card with nothing to say
+   says nothing.
+
+   Pushed to the corner, out of the way of the east grip. The two shapes say
+   different things, a diamond for a note, which has no direction, a circle for
+   a relationship, which now leaves from anywhere, and they must not sit on top
+   of each other while they say it. */
+.entity-node .annot-handle {
+  top: 100%;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
 .entity-node .annot-handle::after,
 .annot-note .react-flow__handle::after,
 .annot-capture .react-flow__handle::after {
@@ -2009,6 +2125,26 @@ input.checkbox {
   height: 10px;
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
+
+/* An object that carries a note keeps its diamond drawn at rest, in the hue
+   the notes already use on the canvas. A note pinned beside the object is
+   obvious; a note left in the inspector was invisible until you clicked the
+   object, which is the wrong way round - you click BECAUSE you saw there was
+   something to read. An opinion gets its own hue: it is the analyst's own
+   judgement and the thing you least want to walk past. */
+.react-flow__node.has-note .entity-node .annot-handle,
+.react-flow__node.has-opinion .entity-node .annot-handle {
+  opacity: 1;
+}
+
+.react-flow__node.has-note .entity-node .annot-handle::after {
+  background: var(--warning);
+}
+
+.react-flow__node.has-opinion .entity-node .annot-handle::after {
+  background: var(--opinion);
+}
+
 
 /* welcome panel, first launch (#115) */
 .welcome {
@@ -2361,6 +2497,20 @@ input.checkbox {
 
 .menu-item:hover {
   background: var(--raised);
+}
+
+/* The entry that is already in force. A menu you can open twice has to say
+   where you are, or every choice looks equally unchosen. */
+.menu-item.on {
+  color: var(--accent);
+}
+
+.menu-item.on::before {
+  content: "";
+  width: 3px;
+  align-self: stretch;
+  margin: -8px 0 -8px -10px;
+  background: var(--accent);
 }
 
 .menu-item svg {
@@ -2851,9 +3001,25 @@ input.checkbox {
   width: 760px;
 }
 
+/* Two columns filled top to bottom rather than left to right.
+   
+   Filling across put "Everywhere" beside "Canvas", and a grid lines its rows
+   up, so the short group was padded out to the height of the tall one and
+   left a hand's width of nothing in the middle of the sheet. Letting the
+   groups simply flow fixed that and broke something else: the second heading
+   in each column then started at whatever height the first one happened to
+   end, and the two columns no longer read as columns.
+   
+   Filling downwards gets both. "Everywhere" pairs with "Triage tray", which
+   are near enough the same size, and the one big group pairs with the one
+   small one, so what slack is left sits in the bottom corner where it reads
+   as a margin. Two rows means four groups; a fifth would start a third
+   column and want a wider sheet. */
 .shortcuts .shortcut-groups {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(2, auto);
+  grid-auto-flow: column;
   gap: 18px 28px;
   margin: 4px 0 14px;
 }
@@ -3329,4 +3495,106 @@ input.checkbox {
   padding: 1px 5px;
   border-radius: 3px;
   word-break: break-all;
+}
+
+
+/* ---- Canvas legend ----
+   Beside the minimap, on its baseline and at its height, so the bottom of the
+   canvas reads as one strip of instruments. The minimap is 200 wide with a
+   15px margin, so stepping 227px clear of the right edge puts them 12px
+   apart; without it the legend takes the corner itself. Not the bottom left:
+   the triage tray is 300px wide and sits on top of whatever is there. */
+.legend,
+.legend-shut {
+  margin-bottom: 15px;
+}
+
+.legend.beside-minimap,
+.legend-shut.beside-minimap {
+  margin-right: 227px;
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  height: 150px;
+  padding: 7px 10px 8px;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(3px);
+}
+
+.legend-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.legend-shut-btn {
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  padding: 0 2px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.legend-shut-btn:hover {
+  color: var(--text);
+}
+
+.legend-cols {
+  display: flex;
+  gap: 20px;
+}
+
+.legend-group {
+  margin: 6px 0 2px;
+  font-size: 10px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 1px 0;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* A stroke, drawn the width a relationship is drawn, because that is the
+   thing being named. A square of colour would read as an object. */
+.legend-line {
+  flex: none;
+  width: 16px;
+  height: 2px;
+}
+
+/* And a diamond for the annotation grip, the shape it actually has. */
+.legend-mark {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin: 0 3.5px;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.legend-mark.note {
+  background: var(--warning);
+}
+
+.legend-mark.opinion {
+  background: var(--opinion);
+}
+
+.legend-name {
+  color: var(--text);
 }

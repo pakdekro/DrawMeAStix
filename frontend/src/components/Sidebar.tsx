@@ -25,12 +25,13 @@ import type { IconName } from './Icon'
  * every drag frame on the canvas.
  */
 
-type PanelId = 'objects' | 'attack' | 'scenarios'
+type PanelId = 'objects' | 'attack' | 'scenarios' | 'labels'
 
 const PANELS: { id: PanelId; icon: IconName; label: string }[] = [
   { id: 'objects', icon: 'grid', label: 'Objects and observables' },
   { id: 'attack', icon: 'search', label: 'ATT&CK' },
   { id: 'scenarios', icon: 'scenario', label: 'Scenarios' },
+  { id: 'labels', icon: 'tag', label: 'Labels in use' },
 ]
 
 function Sidebar({
@@ -44,6 +45,9 @@ function Sidebar({
   onToggleTriage,
   panel,
   onPanel,
+  labels,
+  activeLabel,
+  onPickLabel,
 }: {
   onAdd: (stixType: string) => void
   onPaste: () => void
@@ -57,6 +61,10 @@ function Sidebar({
       both Ctrl+B and the command palette must be able to change it */
   panel: PanelId | null
   onPanel: (panel: PanelId | null) => void
+  /** the analyst's own vocabulary, most used first */
+  labels: { value: string; count: number }[]
+  activeLabel: string | null
+  onPickLabel: (value: string) => void
 }) {
 
   return (
@@ -118,6 +126,38 @@ function Sidebar({
                   Paste IOCs…
                 </button>
               </div>
+            </>
+          )}
+
+          {/* Its own panel and not a section of the objects one: that panel is
+              a creation palette, every chip in it makes something, and a chip
+              that filters instead would be a second verb wearing the same
+              clothes. Here the whole panel is about what is already on the
+              canvas. */}
+          {panel === 'labels' && (
+            <>
+              <h3 className="micro">Labels in use</h3>
+              {labels.length === 0 ? (
+                <p className="hint">
+                  Nothing is labelled yet. Labels are yours to coin, in the inspector, and
+                  they travel in the bundle as the STIX `labels` field.
+                </p>
+              ) : (
+                <div className="chip-grid">
+                  {labels.map((l) => (
+                    <button
+                      key={l.value}
+                      className={`chip label-chip${activeLabel === l.value ? ' on' : ''}`}
+                      aria-pressed={activeLabel === l.value}
+                      title={`Light up the ${l.count} object${l.count > 1 ? 's' : ''} labelled "${l.value}"`}
+                      onClick={() => onPickLabel(l.value)}
+                    >
+                      {l.value}
+                      <span className="chip-count">{l.count}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </>
           )}
 
