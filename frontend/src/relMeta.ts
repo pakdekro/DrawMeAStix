@@ -34,7 +34,7 @@ export const REL_FAMILIES: { id: RelFamily; label: string; hint: string; color: 
   {
     id: 'capability',
     label: 'Capability',
-    hint: 'What it wields, and what it is made of',
+    hint: 'What it wields, and is made of',
     color: '#8ba4b0',
   },
   {
@@ -52,7 +52,7 @@ export const REL_FAMILIES: { id: RelFamily; label: string; hint: string; color: 
   {
     id: 'infrastructure',
     label: 'Infrastructure',
-    hint: 'Where it sits and what it talks to',
+    hint: 'Where it sits, what it talks to',
     color: '#a292a3',
   },
   { id: 'generic', label: 'Unspecified', hint: 'Only that they are related', color: '#6b6b82' },

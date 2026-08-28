@@ -64,6 +64,7 @@ import TopbarMenu from './TopbarMenu'
 import TriageTray from './TriageTray'
 import WorkNotes from './WorkNotes'
 import EntityNode from './EntityNode'
+import Legend from './Legend'
 import FloatingEdge from './FloatingEdge'
 import type { EntityNodeType } from './EntityNode'
 import NoteNode from './NoteNode'
@@ -2575,6 +2576,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
           >
             <Background gap={24} />
             <Controls />
+            <Legend />
             {/* 200px wide: on a narrow canvas it eats the very space it is
                 supposed to help you cover */}
             {viewportWidth >= MINIMAP_BREAKPOINT && <MiniMap pannable zoomable />}

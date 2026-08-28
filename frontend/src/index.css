@@ -3398,3 +3398,99 @@ input.checkbox {
   word-break: break-all;
 }
 
+
+/* ---- Canvas legend ----
+   Under the toolbar, top right. The bottom left belongs to the triage tray,
+   which is 300px wide and sits on top of anything there; the bottom right to
+   the minimap, which appears and disappears with the viewport width, so
+   anything stacked above it would have to move with it. */
+.legend,
+.legend-shut {
+  margin-top: 46px;
+}
+
+.legend {
+  width: 282px;
+  padding: 8px 10px 10px;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(3px);
+}
+
+.legend-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.legend-shut-btn {
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  padding: 0 2px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.legend-shut-btn:hover {
+  color: var(--text);
+}
+
+.legend-group {
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.legend-row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 2px 0;
+  font-size: 11px;
+}
+
+/* A stroke, drawn the width a relationship is drawn, because that is the
+   thing being named. A square of colour would read as an object. */
+.legend-line {
+  flex: none;
+  width: 18px;
+  height: 2px;
+  align-self: center;
+}
+
+/* And a diamond for the annotation grip, the shape it actually has. */
+.legend-mark {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  align-self: center;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.legend-mark.note {
+  background: var(--warning);
+}
+
+.legend-mark.opinion {
+  background: var(--opinion);
+}
+
+.legend-name {
+  flex: none;
+  color: var(--text);
+}
+
+.legend-row em {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
