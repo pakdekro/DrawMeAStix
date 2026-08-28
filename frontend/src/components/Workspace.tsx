@@ -22,6 +22,7 @@ import type { CaptureItem, Entity, Investigation, NoteItem, Relationship } from 
 import { compressImage } from '../annotations'
 import { NODE_H, NODE_W, findFreeSpot, type Rect } from '../placement'
 import { anchor } from '../floating'
+import { relColor } from '../relMeta'
 import { ARRANGEMENTS, arrange, type Arrangement } from '../layout'
 import { circleLayout, validateTemplate } from '../templates'
 import type { ScenarioTemplate, TemplatePlan } from '../templates'
@@ -193,8 +194,11 @@ function toNode(entity: Entity): EntityNodeType {
 // they survive the html-to-image capture of the image export (CSS variables,
 // for their part, are not resolved in the cloned SVG → invisible strokes and
 // black label backgrounds). If the theme changes, adjust here too.
-const EDGE_STROKE = '#6b6b82'
 function toEdge(rel: Relationship): Edge {
+  // The colour groups the verb rather than naming it (see relMeta.ts). It
+  // travels as a custom property rather than as a stroke, so the link focus
+  // can still paint over it from the stylesheet without a fight.
+  const color = relColor(rel.rel_type)
   return {
     id: rel.id,
     type: 'floating',
@@ -209,12 +213,12 @@ function toEdge(rel: Relationship): Edge {
       start_time: rel.start_time,
       stop_time: rel.stop_time,
     },
-    style: { stroke: EDGE_STROKE, strokeWidth: 1.5 },
-    labelStyle: { fill: '#9a9782', fontSize: 11 },
+    style: { strokeWidth: 1.5 },
+    labelStyle: { fontSize: 11 },
     labelBgStyle: { fill: '#1f1f28' },
     labelBgPadding: [4, 2],
     labelBgBorderRadius: 2,
-    markerEnd: { type: MarkerType.ArrowClosed, color: EDGE_STROKE },
+    markerEnd: { type: MarkerType.ArrowClosed, color },
   }
 }
 

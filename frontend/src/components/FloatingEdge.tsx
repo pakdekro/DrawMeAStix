@@ -1,4 +1,5 @@
 import { BaseEdge, getBezierPath } from '@xyflow/react'
+import type { CSSProperties } from 'react'
 import type { EdgeProps } from '@xyflow/react'
 import type { EdgeContacts } from '../floating'
 
@@ -25,6 +26,7 @@ export default function FloatingEdge({
 }: EdgeProps) {
   const ends = data?.ends as EdgeContacts | undefined
   if (!ends) return null
+  const color = data?.color as string | undefined
 
   const [path, labelX, labelY] = getBezierPath({
     sourceX: ends.from.x,
@@ -39,19 +41,24 @@ export default function FloatingEdge({
   })
 
   return (
-    <BaseEdge
-      id={id}
-      path={path}
-      style={style}
-      markerEnd={markerEnd}
-      label={label}
-      labelX={labelX}
-      labelY={labelY}
-      labelStyle={labelStyle}
-      labelShowBg
-      labelBgStyle={labelBgStyle}
-      labelBgPadding={labelBgPadding}
-      labelBgBorderRadius={labelBgBorderRadius}
-    />
+    // The family colour rides on a custom property set on a group, so both the
+    // line and its verb inherit it and the link focus can override both from
+    // the stylesheet, which an inline stroke would have won against.
+    <g style={{ '--edge-stroke': color } as CSSProperties}>
+      <BaseEdge
+        id={id}
+        path={path}
+        style={style}
+        markerEnd={markerEnd}
+        label={label}
+        labelX={labelX}
+        labelY={labelY}
+        labelStyle={labelStyle}
+        labelShowBg
+        labelBgStyle={labelBgStyle}
+        labelBgPadding={labelBgPadding}
+        labelBgBorderRadius={labelBgBorderRadius}
+      />
+    </g>
   )
 }

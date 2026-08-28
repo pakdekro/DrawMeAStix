@@ -1947,6 +1947,23 @@ input.checkbox {
   opacity: 0.45;
 }
 
+/* A relationship is drawn in the colour of what it SAYS - who is behind this,
+   what does it wield, who does it hit, how would we see it, where does it live
+   (see relMeta.ts). The verb stays written on the line; the colour only groups
+   them, so a graph can be read for its shape before it is read for its words.
+   The value arrives on the edge as a custom property, which is what lets the
+   two rules below paint over it without `!important`. */
+.react-flow__edge-path {
+  stroke: var(--edge-stroke, var(--border-strong));
+}
+
+/* The verb is read, the line is only followed, so the label takes the same
+   hue lifted towards the page's own foreground. Left at the stroke's value it
+   was legible for four families out of six and murky for the quietest. */
+.react-flow__edge-text {
+  fill: color-mix(in srgb, var(--edge-stroke, var(--border-strong)) 65%, var(--text));
+}
+
 /* The ring says which objects, the edge says which link: without this the
    answer is there and unreadable, because thirty other edges cross it. */
 .react-flow__edge.edge-linked .react-flow__edge-path {
@@ -1970,28 +1987,47 @@ input.checkbox {
   width: calc(100% - 26px);
 }
 
-/* typed handles (#136): arrow = STIX flow (in at the top, out at the
-   bottom, the triangle follows the reading direction), diamond = annotation.
+/* A grip on each side of the card, and each one is a source and a target laid
+   over each other (see EntityNode). Circles, not arrows: the drawing used to
+   point the way a line would leave, and a line now leaves whichever way it is
+   going.
 
-   Sizes come in pairs, and the pair is the point: the handle is the hitbox,
-   its ::after is the drawing. `clip-path` cuts the pointer target along with
-   the pixels, so a 12x7 triangle offered almost nothing to grab near its
-   tip, where it tapers to nothing. The drawing keeps its size, the target no
-   longer has to match it. */
-.entity-node .react-flow__handle-top,
-.entity-node .react-flow__handle-bottom {
-  width: 26px;
-  height: 16px;
+   The pointer target is deliberately larger than the drawing, so there is
+   something to grab without hunting for nine pixels. */
+.entity-node .link-handle {
+  width: 20px;
+  height: 20px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
 }
 
-.entity-node .react-flow__handle-top::after,
-.entity-node .react-flow__handle-bottom::after {
-  width: 12px;
-  height: 7px;
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
+.entity-node .link-handle::after {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  clip-path: none;
 }
 
-.entity-node .react-flow__handle-bottom::after {
+/* At rest the card says nothing about links: a mark drawn there permanently
+   read as "the line arrives here", which is exactly the claim that stopped
+   being true. It offers itself when you come near it. */
+.react-flow__node:hover .entity-node .link-handle,
+.react-flow__node.selected .entity-node .link-handle,
+.react-flow__node:hover .entity-node .annot-handle,
+.react-flow__node.selected .entity-node .annot-handle {
+  opacity: 1;
+}
+
+/* While a link is being dragged, every card that could legally receive it
+   shows its grips, wherever the pointer happens to be. React Flow only marks
+   a handle that can END the connection in progress, and these targets refuse
+   to start one, so the mark means exactly "you may drop here". */
+.entity-node .link-in.connectionindicator,
+.entity-node .annot-handle.connectionindicator {
+  opacity: 1;
+}
+
+.entity-node .link-in.connectionindicator::after {
   background: var(--accent);
 }
 
@@ -2000,6 +2036,17 @@ input.checkbox {
 .annot-capture .react-flow__handle {
   width: 22px;
   height: 22px;
+}
+
+/* Hidden at rest like the link grips, for the same reason and by the same
+   rules, and pushed down to the corner out of the way of the east grip. The
+   two shapes say different things - a diamond for a note, which has no
+   direction, a circle for a relationship, which now leaves from anywhere -
+   and they must not sit on top of each other while they say it. */
+.entity-node .annot-handle {
+  top: 100%;
+  opacity: 0;
+  transition: opacity 0.12s ease;
 }
 
 .entity-node .annot-handle::after,
