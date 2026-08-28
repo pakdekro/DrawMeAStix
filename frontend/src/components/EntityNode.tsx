@@ -37,6 +37,11 @@ export default function EntityNode({ id, data, selected }: NodeProps<EntityNodeT
       >
         <Icon name="cross" size={12} />
       </button>
+      {/* Type badge, only drawn by the disc shape: three letters and the
+          type's colour where a card would have shown the label. */}
+      <div className="node-glyph" style={{ color: meta.color, borderColor: meta.color }}>
+        {meta.abbr}
+      </div>
       <div className="node-type" style={{ color: meta.color }}>
         {meta.label}
       </div>
