@@ -50,8 +50,27 @@ export interface Placement {
   y: number
 }
 
-/** Air between two objects, whether side by side on a ring or ring to ring. */
+/** Air between two objects side by side on the same ring. */
 const GAP = 40
+/**
+ * Air between one ring and the next, which is a different number for a
+ * reason: that is where the relationship's verb is written. At 40 the two
+ * objects cleared each other and "communicates-with" did not fit between
+ * them, so the label was clipped by both cards at once - visible on the
+ * simplest graph anyone can draw, two objects and one link.
+ *
+ * The number is arithmetic rather than taste. The label is centred on the
+ * middle of the path, so with a gap G it reaches G/2 + half its width, and
+ * the arrowhead sits between G - 26 and G - 14 (the anchor's own padding plus
+ * the marker). The head is clear of the label when G >= 2 * (half-label + 27),
+ * and the longest verb the vocabulary holds, "communicates-with", is about
+ * 108px wide with its background. Which puts the floor a shade over 160.
+ *
+ * It costs about eight per cent of width on a real investigation and nothing
+ * at all on a star, where the rings are already pushed apart by the objects
+ * standing side by side on them rather than by this.
+ */
+const RING_GAP = 165
 /** Air between two disconnected pieces of the investigation. */
 const GUTTER = 160
 /**
@@ -330,7 +349,7 @@ function draw(
       Math.max(
         ...wanted.map(
           (s) =>
-            (inward(prevW, prevH, s.angle) + radial(s.node, s.angle) + GAP) /
+            (inward(prevW, prevH, s.angle) + radial(s.node, s.angle) + RING_GAP) /
             stepRate(s.angle),
         ),
       )

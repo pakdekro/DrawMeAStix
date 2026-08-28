@@ -113,7 +113,7 @@ export default function EntityNode({ id, data, selected }: NodeProps<EntityNodeT
         type="target"
         position={Position.Right}
         id="annot"
-        className="annot-handle"
+        className="annot-handle annot-in"
         isConnectableStart={false}
       />
       <Handle

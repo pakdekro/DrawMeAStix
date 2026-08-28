@@ -2089,9 +2089,15 @@ input.checkbox {
 /* While a link is being dragged, every card that could legally receive it
    shows its grips, wherever the pointer happens to be. React Flow only marks
    a handle that can END the connection in progress, and these targets refuse
-   to start one, so the mark means exactly "you may drop here". */
+   to start one, so the mark means exactly "you may drop here".
+
+   The TARGET half only, hence `link-in` and `annot-in` rather than the pairs:
+   a source handle carries the same mark at rest, because at rest it can start
+   a connection, so naming a pair shows that grip permanently. Which is a bug
+   you can see - it put a diamond on the corner of every card, which is exactly
+   what hiding them at rest is for. */
 .entity-node .link-in.connectionindicator,
-.entity-node .annot-handle.connectionindicator {
+.entity-node .annot-in.connectionindicator {
   opacity: 1;
 }
 
@@ -2106,11 +2112,19 @@ input.checkbox {
   height: 22px;
 }
 
-/* Hidden at rest like the link grips, for the same reason and by the same
-   rules, and pushed down to the corner out of the way of the east grip. The
-   two shapes say different things - a diamond for a note, which has no
-   direction, a circle for a relationship, which now leaves from anywhere -
-   and they must not sit on top of each other while they say it. */
+/* Hidden at rest like the link grips, and shown by the same rules - plus one
+   of its own: a card carrying a note keeps it drawn, in the notes' own hue.
+
+   Which is the point, and the reason it is not simply drawn everywhere in
+   grey. What carries the information is the PRESENCE of the diamond, not its
+   colour: a mark on every card would make the reader compare hues, a mark on
+   four cards out of thirty is seen without looking. A card with nothing to say
+   says nothing.
+
+   Pushed to the corner, out of the way of the east grip. The two shapes say
+   different things, a diamond for a note, which has no direction, a circle for
+   a relationship, which now leaves from anywhere, and they must not sit on top
+   of each other while they say it. */
 .entity-node .annot-handle {
   top: 100%;
   opacity: 0;
