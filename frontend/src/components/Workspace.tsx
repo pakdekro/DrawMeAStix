@@ -2576,7 +2576,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
           >
             <Background gap={24} />
             <Controls />
-            <Legend />
+            <Legend besideMinimap={viewportWidth >= MINIMAP_BREAKPOINT} />
             {/* 200px wide: on a narrow canvas it eats the very space it is
                 supposed to help you cover */}
             {viewportWidth >= MINIMAP_BREAKPOINT && <MiniMap pannable zoomable />}

@@ -3400,18 +3400,26 @@ input.checkbox {
 
 
 /* ---- Canvas legend ----
-   Under the toolbar, top right. The bottom left belongs to the triage tray,
-   which is 300px wide and sits on top of anything there; the bottom right to
-   the minimap, which appears and disappears with the viewport width, so
-   anything stacked above it would have to move with it. */
+   Beside the minimap, on its baseline and at its height, so the bottom of the
+   canvas reads as one strip of instruments. The minimap is 200 wide with a
+   15px margin, so stepping 227px clear of the right edge puts them 12px
+   apart; without it the legend takes the corner itself. Not the bottom left:
+   the triage tray is 300px wide and sits on top of whatever is there. */
 .legend,
 .legend-shut {
-  margin-top: 46px;
+  margin-bottom: 15px;
+}
+
+.legend.beside-minimap,
+.legend-shut.beside-minimap {
+  margin-right: 227px;
 }
 
 .legend {
-  width: 282px;
-  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  height: 150px;
+  padding: 7px 10px 8px;
   background: color-mix(in srgb, var(--panel) 88%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -3422,6 +3430,7 @@ input.checkbox {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -3441,27 +3450,33 @@ input.checkbox {
   color: var(--text);
 }
 
+.legend-cols {
+  display: flex;
+  gap: 20px;
+}
+
 .legend-group {
-  margin-top: 8px;
+  margin: 6px 0 2px;
   font-size: 10px;
   color: var(--text-dim);
+  white-space: nowrap;
 }
 
 .legend-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 7px;
-  padding: 2px 0;
+  padding: 1px 0;
   font-size: 11px;
+  white-space: nowrap;
 }
 
 /* A stroke, drawn the width a relationship is drawn, because that is the
    thing being named. A square of colour would read as an object. */
 .legend-line {
   flex: none;
-  width: 18px;
+  width: 16px;
   height: 2px;
-  align-self: center;
 }
 
 /* And a diamond for the annotation grip, the shape it actually has. */
@@ -3469,7 +3484,7 @@ input.checkbox {
   flex: none;
   width: 9px;
   height: 9px;
-  align-self: center;
+  margin: 0 3.5px;
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 
@@ -3482,15 +3497,5 @@ input.checkbox {
 }
 
 .legend-name {
-  flex: none;
   color: var(--text);
-}
-
-.legend-row em {
-  font-style: normal;
-  font-size: 10px;
-  color: var(--text-dim);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
