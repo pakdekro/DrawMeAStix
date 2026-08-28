@@ -91,6 +91,23 @@ const FAMILY_OF: Record<string, RelFamily> = {
 }
 
 const BY_ID = new Map(REL_FAMILIES.map((f) => [f.id, f]))
+const FAMILY_BY_VERB = new Map(Object.entries(FAMILY_OF))
+
+/**
+ * The page's own foreground. One of the two colours `stixMeta.ts` allows out
+ * of the theme tokens, for the same reason it names: what the image export
+ * captures has to be a real colour, because a CSS variable is not resolved in
+ * the cloned SVG.
+ */
+const PARCHMENT = [0xdc, 0xd7, 0xba]
+
+function lift(hex: string, towards: number[], amount: number): string {
+  const channel = (i: number) => {
+    const from = parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16)
+    return Math.round(from * (1 - amount) + towards[i] * amount)
+  }
+  return `#${[0, 1, 2].map((i) => channel(i).toString(16).padStart(2, '0')).join('')}`
+}
 
 /**
  * The family a verb belongs to. `related-to` is the STIX catch-all and lands
@@ -98,9 +115,26 @@ const BY_ID = new Map(REL_FAMILIES.map((f) => [f.id, f]))
  * adds: an unknown verb must read as unclassified, never as one of the five.
  */
 export function relFamily(relType: string): RelFamily {
-  return FAMILY_OF[relType] ?? 'generic'
+  // A Map and not the object: a bundle may carry any verb it likes, and
+  // `FAMILY_OF['constructor']` would hand back a function.
+  return FAMILY_BY_VERB.get(relType) ?? 'generic'
 }
 
 export function relColor(relType: string): string {
   return BY_ID.get(relFamily(relType))!.color
+}
+
+/**
+ * The same hue for the verb written on the line, lifted towards the page's
+ * foreground. The verb is READ, the line is only followed, and at the
+ * stroke's own value it was legible for four families out of six and murky
+ * for the quietest.
+ *
+ * Computed rather than a second colour per family: one source, so a change of
+ * palette cannot leave the two disagreeing. And computed rather than left to
+ * `color-mix` in the stylesheet, because the image export has to see a real
+ * colour on the element.
+ */
+export function relLabelColor(relType: string): string {
+  return lift(relColor(relType), PARCHMENT, 0.35)
 }

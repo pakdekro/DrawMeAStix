@@ -132,9 +132,15 @@ export function anchor(
     const a = byId.get(e.source)
     const b = byId.get(e.target)
     if (!a || !b) continue
-    const dx = b.x + b.w / 2 - (a.x + a.w / 2)
+    let dx = b.x + b.w / 2 - (a.x + a.w / 2)
     const dy = b.y + b.h / 2 - (a.y + a.h / 2)
-    if (dx === 0 && dy === 0) continue
+    // Two cards on exactly the same spot have no direction to speak of, and
+    // they do happen: the placer returns the requested point when the
+    // neighbourhood is full, on the grounds that an overlap beats a node
+    // thrown off the canvas. Dropping the edge here left it undrawn AND
+    // unselectable, so it could no longer be inspected or deleted. Any
+    // direction will do; sideways is the one a card is widest in.
+    if (dx === 0 && dy === 0) dx = 1
     add(a.id, { edge: e.id, end: 'from', side: sideOf(dx, dy, a), dx, dy })
     add(b.id, { edge: e.id, end: 'to', side: sideOf(-dx, -dy, b), dx: -dx, dy: -dy })
   }

@@ -131,8 +131,17 @@ describe('the edges it cannot place', () => {
     expect(anchor([card('a', 0, 0)], [link('e', 'a', 'ghost')]).size).toBe(0)
   })
 
-  it('skips two cards sharing a centre, which point nowhere', () => {
-    expect(anchor([card('a', 0, 0), card('b', 0, 0)], [link('e', 'a', 'b')]).size).toBe(0)
+  /**
+   * Two cards can end up on exactly the same spot: the placer returns the
+   * requested point when the neighbourhood is full, on the grounds that an
+   * overlap beats a node thrown off the canvas. Dropping the edge there left
+   * it undrawn AND unselectable, so it could no longer be inspected or
+   * deleted - the one state with no way out.
+   */
+  it('still places an edge between two cards sharing a centre', () => {
+    const map = anchor([card('a', 0, 0), card('b', 0, 0)], [link('e', 'a', 'b')])
+    expect(map.size).toBe(1)
+    expect(map.get('e')!.from).not.toEqual(map.get('e')!.to)
   })
 
   it('counts both ends of every edge it does place', () => {

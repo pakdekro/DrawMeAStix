@@ -1,7 +1,9 @@
 import { BaseEdge, getBezierPath } from '@xyflow/react'
-import type { CSSProperties } from 'react'
 import type { EdgeProps } from '@xyflow/react'
 import type { EdgeContacts } from '../floating'
+
+/** Kept beside the family colours, and literal for the same reason. */
+const LINKED = '#7aa89f'
 
 /**
  * A relationship drawn between two anchors rather than between two handles
@@ -26,7 +28,12 @@ export default function FloatingEdge({
 }: EdgeProps) {
   const ends = data?.ends as EdgeContacts | undefined
   if (!ends) return null
-  const color = data?.color as string | undefined
+  // The family colour arrives already set on the edge by `toEdge`, and is only
+  // overridden here, never re-derived: the highlight has to be drawn on the
+  // element like the rest, because that is all the image export can see, and
+  // this is also what makes the link focus reach the LINE at last - the inline
+  // stroke had been quietly winning against the rule meant to paint over it.
+  const lit = data?.lit === true
 
   const [path, labelX, labelY] = getBezierPath({
     sourceX: ends.from.x,
@@ -41,24 +48,19 @@ export default function FloatingEdge({
   })
 
   return (
-    // The family colour rides on a custom property set on a group, so both the
-    // line and its verb inherit it and the link focus can override both from
-    // the stylesheet, which an inline stroke would have won against.
-    <g style={{ '--edge-stroke': color } as CSSProperties}>
-      <BaseEdge
-        id={id}
-        path={path}
-        style={style}
-        markerEnd={markerEnd}
-        label={label}
-        labelX={labelX}
-        labelY={labelY}
-        labelStyle={labelStyle}
-        labelShowBg
-        labelBgStyle={labelBgStyle}
-        labelBgPadding={labelBgPadding}
-        labelBgBorderRadius={labelBgBorderRadius}
-      />
-    </g>
+    <BaseEdge
+      id={id}
+      path={path}
+      style={lit ? { ...style, stroke: LINKED, strokeWidth: 2 } : style}
+      markerEnd={markerEnd}
+      label={label}
+      labelX={labelX}
+      labelY={labelY}
+      labelStyle={lit ? { ...labelStyle, fill: LINKED } : labelStyle}
+      labelShowBg
+      labelBgStyle={labelBgStyle}
+      labelBgPadding={labelBgPadding}
+      labelBgBorderRadius={labelBgBorderRadius}
+    />
   )
 }

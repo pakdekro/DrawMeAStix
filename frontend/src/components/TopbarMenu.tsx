@@ -34,7 +34,12 @@ export default function TopbarMenu({
       if (!root.current?.contains(e.target as Node)) setOpen(false)
     }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
+      // Stopped, not just handled: the canvas listens for Escape on the window
+      // to put a lens away, and dismissing a menu should not do that too.
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        setOpen(false)
+      }
     }
     document.addEventListener('mousedown', onDown)
     document.addEventListener('keydown', onKey)

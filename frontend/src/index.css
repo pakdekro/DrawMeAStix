@@ -2027,34 +2027,9 @@ input.checkbox {
   opacity: 0.45;
 }
 
-/* A relationship is drawn in the colour of what it SAYS - who is behind this,
-   what does it wield, who does it hit, how would we see it, where does it live
-   (see relMeta.ts). The verb stays written on the line; the colour only groups
-   them, so a graph can be read for its shape before it is read for its words.
-   The value arrives on the edge as a custom property, which is what lets the
-   two rules below paint over it without `!important`. */
-.react-flow__edge-path {
-  stroke: var(--edge-stroke, var(--border-strong));
-}
-
-/* The verb is read, the line is only followed, so the label takes the same
-   hue lifted towards the page's own foreground. Left at the stroke's value it
-   was legible for four families out of six and murky for the quietest. */
-.react-flow__edge-text {
-  fill: color-mix(in srgb, var(--edge-stroke, var(--border-strong)) 65%, var(--text));
-}
-
-/* The ring says which objects, the edge says which link: without this the
-   answer is there and unreadable, because thirty other edges cross it. */
-.react-flow__edge.edge-linked .react-flow__edge-path {
-  stroke: var(--linked);
-  stroke-width: 2;
-}
-
-.react-flow__edge.edge-linked .react-flow__edge-text {
-  fill: var(--linked);
-}
-
+/* The ring says which objects, the edge says which link. The colour itself is
+   set on the element by `FloatingEdge`, not here: it has to survive the image
+   export, which sees inline styles and nothing else. */
 /* Stepped back, not hidden: an edge that disappears while an object is
    selected reads as an edge that was deleted. */
 .react-flow__edge.edge-aside {

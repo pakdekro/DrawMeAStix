@@ -22,7 +22,7 @@ import type { CaptureItem, Entity, Investigation, NoteItem, Relationship } from 
 import { compressImage } from '../annotations'
 import { NODE_H, NODE_W, findFreeSpot, type Rect, type Segment } from '../placement'
 import { anchor } from '../floating'
-import { relColor } from '../relMeta'
+import { relColor, relLabelColor } from '../relMeta'
 import { radialArrange } from '../radial'
 import { LENSES, labelHits, labelIndex, lensHits, type LensChoice } from '../lens'
 import { circleLayout, validateTemplate } from '../templates'
@@ -192,17 +192,25 @@ function toNode(entity: Entity): EntityNodeType {
   }
 }
 
-// Literal Kanagawa colours (no CSS var): they are set inline on the edges, so
-// they survive the html-to-image capture of the image export (CSS variables,
-// for their part, are not resolved in the cloned SVG → invisible strokes and
-// black label backgrounds). If the theme changes, adjust here too.
+/**
+ * Where a bare letter belongs to the field rather than to the canvas. A
+ * `<select>` is in the list because typing a letter into an open dropdown
+ * jumps to the option starting with it, which "t" was stealing.
+ */
+const TYPING = 'input, textarea, select, [contenteditable]'
+
 /** Where the card labels toggle (T) is remembered. */
 const LABELS_KEY = 'dmas.card-labels'
 
 function toEdge(rel: Relationship): Edge {
-  // The colour groups the verb rather than naming it (see relMeta.ts). It
-  // travels as a custom property rather than as a stroke, so the link focus
-  // can still paint over it from the stylesheet without a fight.
+  // The colour groups the verb rather than naming it (see relMeta.ts).
+  //
+  // Set INLINE on the element, and literal rather than a CSS variable, because
+  // that is what the image export can see: html-to-image clones the edge's own
+  // <svg> without inlining the computed styles of its descendants, so a stroke
+  // that lives in the stylesheet comes out of the capture as no stroke at all
+  // and a label as black on black. Learned once, undone once, and now the
+  // comment sits next to the code it is about.
   const color = relColor(rel.rel_type)
   return {
     id: rel.id,
@@ -217,10 +225,9 @@ function toEdge(rel: Relationship): Edge {
       description: rel.description,
       start_time: rel.start_time,
       stop_time: rel.stop_time,
-      color,
     },
-    style: { strokeWidth: 1.5 },
-    labelStyle: { fontSize: 11 },
+    style: { stroke: color, strokeWidth: 1.5 },
+    labelStyle: { fill: relLabelColor(rel.rel_type), fontSize: 11 },
     labelBgStyle: { fill: '#1f1f28' },
     labelBgPadding: [4, 2],
     labelBgBorderRadius: 2,
@@ -652,16 +659,23 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    */
   const asked = useMemo(
     () =>
-      (nodes.filter((nd) => nd.type === 'entity') as EntityNodeType[]).map((nd) => ({
-        id: nd.id,
-        stix_type: nd.data.entity.stix_type,
-        labels: Array.isArray(nd.data.entity.properties.labels)
-          ? nd.data.entity.properties.labels.filter((l): l is string => typeof l === 'string')
-          : [],
-        tlp: String(nd.data.entity.properties.tlp ?? ''),
-        source: nd.data.entity.source,
-        flagged: lintFlagged.has(nd.id),
-      })),
+      (nodes.filter((nd) => nd.type === 'entity') as EntityNodeType[]).map((nd) => {
+        // Guarded like every other reader of this field. A row saved by an
+        // older version, or restored from a backup, can arrive without
+        // `properties`, and this runs on every render: one bad row would take
+        // the canvas down on load and on every reload after it.
+        const props = nd.data.entity.properties ?? {}
+        return {
+          id: nd.id,
+          stix_type: nd.data.entity.stix_type,
+          labels: Array.isArray(props.labels)
+            ? props.labels.filter((l): l is string => typeof l === 'string')
+            : [],
+          tlp: String(props.tlp ?? ''),
+          source: nd.data.entity.source ?? 'manual',
+          flagged: lintFlagged.has(nd.id),
+        }
+      }),
     [nodes, lintFlagged],
   )
 
@@ -687,6 +701,13 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     )
   }, [])
 
+  /** The entity a note or a capture is pinned to; null for an object itself. */
+  const anchorOf = useCallback((n: CanvasNode): string | null => {
+    if (n.type === 'annotNote') return n.data.note.entity_id
+    if (n.type === 'annotCapture') return n.data.capture.entity_ids[0] ?? null
+    return null
+  }, [])
+
   const displayNodes = useMemo(() => {
     const searching = searchOpen && query.trim() !== ''
     const hitIds = new Set(hits.map((n) => n.id))
@@ -703,11 +724,16 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         annotated.has(n.id) ? `has-${annotated.get(n.id)}` : '',
         // The lens dims on its own axis: an object can be a search hit AND
         // outside the lens, and it has to read as both.
-        lensLit ? (lensLit.has(n.id) ? 'lens-lit' : 'lens-out') : '',
+        //
+        // A note or a capture answers none of these questions, so it takes the
+        // verdict of the object it hangs off. Dimming the whole annotation
+        // layer whenever a lens was on hid the analyst's own reasoning about
+        // the very objects the lens had just picked out.
+        lensLit ? (lensLit.has(anchorOf(n) ?? n.id) ? 'lens-lit' : 'lens-out') : '',
       ].filter(Boolean)
       return classes.length === 0 ? n : { ...n, className: classes.join(' ') }
     })
-  }, [nodes, hits, searchOpen, query, linked, annotated, lensLit])
+  }, [nodes, hits, searchOpen, query, linked, annotated, lensLit, anchorOf])
 
   /**
    * The relationships the selection is an end of, brought forward while the
@@ -736,26 +762,33 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     [nodes, edges],
   )
 
-  const displayEdges = useMemo(
-    () =>
+  const displayEdges = useMemo(() => {
+    const lensSurvives = (e: Edge) =>
+      !lensLit ||
+      (e.id.startsWith('annot:')
+        ? lensLit.has(e.target)
+        : lensLit.has(e.source) && lensLit.has(e.target))
+    return (
       edges.map((e) => {
         const mine = ends.get(e.id)
+        const lit = linked.edges.has(e.id)
         const classes = [
-          linked.edges.size === 0 ? '' : linked.edges.has(e.id) ? 'edge-linked' : 'edge-aside',
+          linked.edges.size === 0 ? '' : lit ? 'edge-linked' : 'edge-aside',
           // A relationship survives the lens only if both its ends did.
           // Otherwise the lit objects sit inside a web of bright lines going
-          // nowhere the question asked about.
-          lensLit && !(lensLit.has(e.source) && lensLit.has(e.target)) ? 'edge-aside' : '',
-        ].filter(Boolean)
+          // nowhere the question asked about. An annotation link follows the
+          // object it hangs off, which is always its target.
+          lensLit && !lensSurvives(e) ? 'edge-aside' : '',
+        ].filter((c, i, all) => c && all.indexOf(c) === i)
         if (!mine && classes.length === 0) return e
         return {
           ...e,
-          ...(mine ? { data: { ...e.data, ends: mine } } : {}),
+          ...(mine ? { data: { ...e.data, ends: mine, lit } } : {}),
           ...(classes.length === 0 ? {} : { className: classes.join(' ') }),
         }
-      }),
-    [edges, ends, linked, lensLit],
-  )
+      })
+    )
+  }, [edges, ends, linked, lensLit])
 
   const centerOnHit = useCallback(
     (index: number) => {
@@ -865,7 +898,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       // opaque backdrop, or the cheat sheet on top of an entry in progress.
       // Ctrl+K stays reachable, that is the whole point of it.
       if (isModalOpen()) return
-      if (e.key === '/' && !el?.closest('input, textarea, [contenteditable]')) {
+      if (e.key === '/' && !el?.closest(TYPING)) {
         e.preventDefault()
         setSearchOpen(true)
         return
@@ -877,7 +910,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         !e.ctrlKey &&
         !e.metaKey &&
         !e.altKey &&
-        !el?.closest('input, textarea, [contenteditable]')
+        !el?.closest(TYPING)
       ) {
         e.preventDefault()
         toggleLinkFocusRef.current()
@@ -890,14 +923,16 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         !e.ctrlKey &&
         !e.metaKey &&
         !e.altKey &&
-        !el?.closest('input, textarea, [contenteditable]')
+        !el?.closest(TYPING)
       ) {
         e.preventDefault()
         toggleLabelsRef.current()
         return
       }
-      // Escape puts the canvas back the way it was. Only when a lens is on,
-      // so it stays the key that closes whatever is open first.
+      // Escape puts the canvas back the way it was, and only reaches here when
+      // nothing nearer consumed it: the search field and the canvas menus both
+      // stop the event, so closing either one no longer clears the lens on the
+      // way past.
       if (e.key === 'Escape' && lensRef.current) {
         setLens(null)
         return
@@ -905,7 +940,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       // "?": the shortcuts cheat sheet (#190). We test the CHARACTER
       // produced, not the physical key - "?" is composed differently on
       // AZERTY and on QWERTY, and the character is all the two share.
-      if (e.key === HELP_KEY && !el?.closest('input, textarea, [contenteditable]')) {
+      if (e.key === HELP_KEY && !el?.closest(TYPING)) {
         e.preventDefault()
         setShowShortcuts((s) => !s)
       }
@@ -2736,7 +2771,12 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
                     setHitIndex(0)
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === 'Escape') closeSearch()
+                    // Stopped for the same reason as the menus: closing the
+                    // search must not also put away a lens on the way past.
+                    if (e.key === 'Escape') {
+                      e.stopPropagation()
+                      closeSearch()
+                    }
                     if (e.key === 'Enter' && hits.length > 0) {
                       const next = e.shiftKey ? hitIndex - 1 : hitIndex + 1
                       setHitIndex(next)
