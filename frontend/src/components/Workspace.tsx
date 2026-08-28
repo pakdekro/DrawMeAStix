@@ -21,7 +21,6 @@ import { countByType, typeMeta } from '../stixMeta'
 import type { CaptureItem, Entity, Investigation, NoteItem, Relationship } from '../types'
 import { compressImage } from '../annotations'
 import { NODE_H, NODE_W, findFreeSpot, type Rect } from '../placement'
-import { NODE_SHAPES, readShape, writeShape, type NodeShape } from '../nodeShape'
 import { ARRANGEMENTS, arrange, type Arrangement } from '../layout'
 import { circleLayout, validateTemplate } from '../templates'
 import type { ScenarioTemplate, TemplatePlan } from '../templates'
@@ -289,13 +288,6 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    * structure rather than the tidying.
    */
   const [linkFocus, setLinkFocus] = useState(false)
-  // A way of looking, not a property of the case: it lives in localStorage
-  // and never travels in a bundle.
-  const [shape, setShape] = useState<NodeShape>(() => readShape(window.localStorage))
-  const chooseShape = useCallback((next: NodeShape) => {
-    setShape(next)
-    writeShape(window.localStorage, next)
-  }, [])
   const toggleLinkFocusRef = useRef<() => void>(() => undefined)
   /**
    * The analyst's own layout, kept aside the first time an arrangement runs.
@@ -595,18 +587,13 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    * others step back. On a graph where thirty edges cross the screen, the ring
    * around a neighbour says WHICH objects; only the edge says which link.
    */
-  const displayEdges = useMemo(
-    () =>
-      edges.map((e) => ({
-        ...e,
-        // the edge anchors on the shape, so it has to be told which one
-        data: { ...e.data, shape },
-        ...(linked.edges.size === 0
-          ? {}
-          : { className: linked.edges.has(e.id) ? 'edge-linked' : 'edge-aside' }),
-      })),
-    [edges, linked, shape],
-  )
+  const displayEdges = useMemo(() => {
+    if (linked.edges.size === 0) return edges
+    return edges.map((e) => ({
+      ...e,
+      className: linked.edges.has(e.id) ? 'edge-linked' : 'edge-aside',
+    }))
+  }, [edges, linked])
 
   const centerOnHit = useCallback(
     (index: number) => {
@@ -2476,7 +2463,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
           panel={sidePanel}
           onPanel={choosePanel}
         />
-        <div className={`canvas-wrap shape-${shape}`}>
+        <div className="canvas-wrap">
           <ReactFlow
             nodes={displayNodes}
             edges={displayEdges}
@@ -2568,29 +2555,6 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
               {/* The button asks a question rather than promising a drawing:
                   each entry lines the objects up in blocks that answer one,
                   and the arranging of meaning stays the analyst's. */}
-              <TopbarMenu
-                label="Shape"
-                icon={<Icon name="grid" size={15} />}
-                buttonClass="rf-btn"
-              >
-                {(close) =>
-                  NODE_SHAPES.map((s) => (
-                    <button
-                      key={s.id}
-                      className={`menu-item${shape === s.id ? ' on' : ''}`}
-                      onClick={() => {
-                        close()
-                        chooseShape(s.id)
-                      }}
-                    >
-                      <span>
-                        {s.label}
-                        <em>{s.hint}</em>
-                      </span>
-                    </button>
-                  ))
-                }
-              </TopbarMenu>
               <TopbarMenu
                 label="Arrange"
                 icon={<Icon name="layout" size={15} />}

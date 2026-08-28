@@ -85,18 +85,31 @@ export const ARRANGEMENTS: { id: Arrangement; label: string; hint: string }[] = 
 
 /* -- geometry -------------------------------------------------------------- */
 
-/** Gap between two neighbours inside a cluster. */
-const GAP = 24
+/**
+ * Gap between two neighbours inside a cluster, as a fraction of a node's
+ * width. What says "these belong together" is not the gap itself but its
+ * ratio to the gutter around the cluster, so both are measured in the same
+ * unit or the grouping stops reading as soon as the nodes change size.
+ */
+const GAP_UNITS = 0.1
 /**
  * Air around a cluster: a full node's width, and deliberately far more than a
  * design layout would ever spend. These arrangements gave up on drawing the
  * graph, so no edge has to stay short, and the whitespace is doing the one job
  * nothing else does - saying where a group ends. A timid gutter and the
  * clusters read as one crowd again.
+ *
+ * Measured rather than fixed, because the node no longer has one size: a disc
+ * is a third of a card's width, and a gutter of 230px between two of them puts
+ * two nodes' worth of nothing between the groups. Everything below is
+ * expressed in this unit so the arrangement keeps its proportions whatever
+ * shape the canvas is drawing.
  */
-const GUTTER = 230
-/** Width past which the next cluster starts a new row of clusters. */
-const ROW_WIDTH = 3200
+function unitOf(nodes: ArrangeNode[]): number {
+  return Math.max(...nodes.map((n) => n.w), 1)
+}
+/** Clusters per row, past which the next one wraps. Was 3200px over 230. */
+const ROW_UNITS = 14
 
 /**
  * One group as a block, near square, positions relative to its own corner.
@@ -104,7 +117,10 @@ const ROW_WIDTH = 3200
  * Square rather than a row: a group of twelve laid out in a line is a band
  * again, and reads as one at a glance. Four by three reads as a pile.
  */
-function cluster(group: ArrangeNode[]): { at: (Placement & { node: ArrangeNode })[]; w: number; h: number } {
+function cluster(
+  group: ArrangeNode[],
+  gap: number,
+): { at: (Placement & { node: ArrangeNode })[]; w: number; h: number } {
   const columns = Math.ceil(Math.sqrt(group.length))
   const at: (Placement & { node: ArrangeNode })[] = []
   let y = 0
@@ -114,33 +130,35 @@ function cluster(group: ArrangeNode[]): { at: (Placement & { node: ArrangeNode }
     let x = 0
     for (const node of row) {
       at.push({ id: node.id, x, y, node })
-      x += node.w + GAP
+      x += node.w + gap
     }
-    w = Math.max(w, x - GAP)
-    y += Math.max(...row.map((n) => n.h)) + GAP
+    w = Math.max(w, x - gap)
+    y += Math.max(...row.map((n) => n.h)) + gap
   }
-  return { at, w, h: y - GAP }
+  return { at, w, h: y - gap }
 }
 
 /**
  * Lays the clusters out left to right in reading order, wrapping into a new
  * row of clusters rather than running off sideways forever.
  */
-function spread(groups: ArrangeNode[][]): Placement[] {
+function spread(groups: ArrangeNode[][], unit: number): Placement[] {
+  const rowWidth = unit * ROW_UNITS
+  const gap = Math.round(unit * GAP_UNITS)
   const out: Placement[] = []
   let x = 0
   let y = 0
   let tallest = 0
   for (const group of groups) {
     if (group.length === 0) continue
-    const block = cluster(group)
-    if (x > 0 && x + block.w > ROW_WIDTH) {
+    const block = cluster(group, gap)
+    if (x > 0 && x + block.w > rowWidth) {
       x = 0
-      y += tallest + GUTTER
+      y += tallest + unit
       tallest = 0
     }
     for (const p of block.at) out.push({ id: p.id, x: x + p.x, y: y + p.y })
-    x += block.w + GUTTER
+    x += block.w + unit
     tallest = Math.max(tallest, block.h)
   }
   return out
@@ -279,20 +297,21 @@ export function arrange(
   edges: ArrangeEdge[],
 ): Placement[] {
   if (nodes.length === 0) return []
+  const unit = unitOf(nodes)
   switch (kind) {
     case 'indicators':
-      return spread(byDetection(nodes, edges))
+      return spread(byDetection(nodes, edges), unit)
     case 'tlp':
-      return spread(byTlp(nodes))
+      return spread(byTlp(nodes), unit)
     case 'isolated':
-      return spread(byIsolation(nodes, edges))
+      return spread(byIsolation(nodes, edges), unit)
     case 'source':
-      return spread(bySource(nodes))
+      return spread(bySource(nodes), unit)
     case 'lint':
-      return spread(byLint(nodes))
+      return spread(byLint(nodes), unit)
     case 'tactic':
-      return spread(byTactic(nodes))
+      return spread(byTactic(nodes), unit)
     default:
-      return spread(byType(nodes))
+      return spread(byType(nodes), unit)
   }
 }

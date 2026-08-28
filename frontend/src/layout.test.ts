@@ -28,6 +28,17 @@ const edge = (source: string, target: string, rel_type: string): ArrangeEdge => 
   rel_type,
 });
 
+/**
+ * Whether every placement sits side by side in ONE cluster. A neighbour is a
+ * node's width plus a gap away, a second cluster a node's width plus a
+ * gutter, so the halfway mark tells them apart without pinning the test to
+ * the exact spacing.
+ */
+const sideBySide = (placed: { x: number }[]) => {
+  const xs = placed.map((p) => p.x).sort((a, b) => a - b);
+  return xs.every((x, i) => i === 0 || x - xs[i - 1] < 230 * 1.5);
+};
+
 /** ids in reading order: clusters left to right, rows of clusters top down. */
 const reading = (placed: { id: string; x: number; y: number }[]) =>
   [...placed].sort((a, b) => a.y - b.y || a.x - b.x).map((p) => p.id);
@@ -158,7 +169,7 @@ describe("arrange: by TLP", () => {
   it("reads the old spelling of CLEAR as CLEAR", () => {
     const nodes = [node("w", "url", { tlp: "white" }), node("c", "url", { tlp: "clear" })];
     // one cluster of two, side by side, not two clusters a gutter apart
-    expect(arrange("tlp", nodes, []).map((p) => p.x)).toEqual([0, 254]);
+    expect(sideBySide(arrange("tlp", nodes, []))).toBe(true);
   });
 });
 
@@ -172,7 +183,7 @@ describe("arrange: loose ends", () => {
   it("a relationship in either direction counts as touched", () => {
     const nodes = [node("a", "malware"), node("b", "url")];
     const at = arrange("isolated", nodes, [edge("b", "a", "communicates-with")]);
-    expect(at.map((p) => p.x)).toEqual([0, 254]); // one cluster, nothing left alone
+    expect(sideBySide(at)).toBe(true); // one cluster, nothing left alone
   });
 });
 
@@ -200,12 +211,12 @@ describe("arrange: by provenance", () => {
       node("a", "url", { source: "doc:a.pdf" }),
       node("b", "url", { source: "doc:b.pdf" }),
     ];
-    expect(arrange("source", nodes, []).map((p) => p.x)).toEqual([0, 254]);
+    expect(sideBySide(arrange("source", nodes, []))).toBe(true);
   });
 
   it("an object without a source counts as hand-made", () => {
     const nodes = [node("bare", "url", { source: "" }), node("typed", "url")];
-    expect(arrange("source", nodes, []).map((p) => p.x)).toEqual([0, 254]);
+    expect(sideBySide(arrange("source", nodes, []))).toBe(true);
   });
 });
 
@@ -217,7 +228,7 @@ describe("arrange: by validation", () => {
 
   it("a clean investigation is one cluster, not an empty one and a full one", () => {
     const nodes = [node("a", "url"), node("b", "url")];
-    expect(arrange("lint", nodes, []).map((p) => p.x)).toEqual([0, 254]);
+    expect(sideBySide(arrange("lint", nodes, []))).toBe(true);
   });
 });
 
@@ -238,7 +249,7 @@ describe("arrange: by ATT&CK tactic", () => {
     const nodes = [tech("dual", "persistence", "privilege-escalation"), tech("p", "persistence")];
     const at = arrange("tactic", nodes, []);
     expect(at).toHaveLength(2);
-    expect(at.map((p) => p.x)).toEqual([0, 254]); // same cluster
+    expect(sideBySide(at)).toBe(true); // same cluster
   });
 
   it("keeps a tactic the list does not know, at the end of the chain", () => {
@@ -254,6 +265,43 @@ describe("arrange: by ATT&CK tactic", () => {
 
   it("an investigation without a single technique still arranges", () => {
     const nodes = [node("a", "url"), node("b", "malware")];
-    expect(arrange("tactic", nodes, []).map((p) => p.x)).toEqual([0, 254]);
+    expect(sideBySide(arrange("tactic", nodes, []))).toBe(true);
+  });
+});
+
+/**
+ * The canvas can draw an object as a 230px card or as a 104px disc, and the
+ * arrangement has to keep its proportions across both: a gutter measured in
+ * pixels puts two nodes' worth of nothing between two clusters of discs, and
+ * a fixed row width lets four times as many of them run off sideways.
+ */
+describe("arrange: geometry measured in nodes, not in pixels", () => {
+  const cluster = (w: number) => {
+    const nodes = [
+      ...Array.from({ length: 4 }, (_, i) => node(`m${i}`, "malware", { w, h: 60 })),
+      ...Array.from({ length: 4 }, (_, i) => node(`t${i}`, "tool", { w, h: 60 })),
+    ];
+    const placed = arrange("type", nodes, []);
+    const by = Object.fromEntries(placed.map((p) => [p.id, p]));
+    // rightmost malware to leftmost tool: the gutter between two clusters
+    const edgeOfFirst = Math.max(...["m0", "m1", "m2", "m3"].map((id) => by[id].x)) + w;
+    const startOfSecond = Math.min(...["t0", "t1", "t2", "t3"].map((id) => by[id].x));
+    return startOfSecond - edgeOfFirst;
+  };
+
+  it("spends one node's width of air between two clusters", () => {
+    expect(cluster(230)).toBe(230);
+    expect(cluster(104)).toBe(104);
+  });
+
+  it("wraps a row of clusters after the same NUMBER of nodes, not the same width", () => {
+    const rowsFor = (w: number) => {
+      // fourteen clusters of one: the row has to wrap whatever the node size
+      const nodes = Array.from({ length: 14 }, (_, i) =>
+        node(`n${i}`, i % 2 ? "malware" : "tool", { w, h: 60 }),
+      );
+      return new Set(arrange("type", nodes, []).map((p) => p.y)).size;
+    };
+    expect(rowsFor(104)).toBe(rowsFor(230));
   });
 });

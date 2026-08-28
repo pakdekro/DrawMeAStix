@@ -2,8 +2,6 @@
 
 interface TypeMeta {
   label: string
-  /** three letters for the disc shape, where there is no room for the label */
-  abbr: string
   color: string
   kind: 'sdo' | 'sco'
 }
@@ -11,36 +9,36 @@ interface TypeMeta {
 // Kanagawa colors: SDO = saturated jewel tones (objects are spotted fast),
 // SCO = desaturated tones (observables stand apart from objects at a glance).
 const TYPE_META: Record<string, TypeMeta> = {
-  'intrusion-set': { label: 'Intrusion Set', abbr: 'INT', color: '#c34043', kind: 'sdo' }, // autumnRed
-  'threat-actor': { label: 'Threat Actor', abbr: 'ACT', color: '#e46876', kind: 'sdo' }, // waveRed
-  campaign: { label: 'Campaign', abbr: 'CMP', color: '#e6c384', kind: 'sdo' }, // carpYellow
-  malware: { label: 'Malware', abbr: 'MAL', color: '#957fb8', kind: 'sdo' }, // oniViolet
-  tool: { label: 'Tool', abbr: 'TOL', color: '#938aa9', kind: 'sdo' }, // springViolet1
-  'attack-pattern': { label: 'Technique', abbr: 'TEC', color: '#dca561', kind: 'sdo' }, // autumnYellow
-  indicator: { label: 'Indicator', abbr: 'IND', color: '#7fb4ca', kind: 'sdo' }, // springBlue
-  vulnerability: { label: 'Vulnerability', abbr: 'VUL', color: '#ffa066', kind: 'sdo' }, // surimiOrange
-  identity: { label: 'Identity', abbr: 'IDT', color: '#98bb6c', kind: 'sdo' }, // springGreen
-  location: { label: 'Location', abbr: 'LOC', color: '#7aa89f', kind: 'sdo' }, // waveAqua2
-  infrastructure: { label: 'Infrastructure', abbr: 'INF', color: '#d27e99', kind: 'sdo' }, // sakuraPink
+  'intrusion-set': { label: 'Intrusion Set', color: '#c34043', kind: 'sdo' }, // autumnRed
+  'threat-actor': { label: 'Threat Actor', color: '#e46876', kind: 'sdo' }, // waveRed
+  campaign: { label: 'Campaign', color: '#e6c384', kind: 'sdo' }, // carpYellow
+  malware: { label: 'Malware', color: '#957fb8', kind: 'sdo' }, // oniViolet
+  tool: { label: 'Tool', color: '#938aa9', kind: 'sdo' }, // springViolet1
+  'attack-pattern': { label: 'Technique', color: '#dca561', kind: 'sdo' }, // autumnYellow
+  indicator: { label: 'Indicator', color: '#7fb4ca', kind: 'sdo' }, // springBlue
+  vulnerability: { label: 'Vulnerability', color: '#ffa066', kind: 'sdo' }, // surimiOrange
+  identity: { label: 'Identity', color: '#98bb6c', kind: 'sdo' }, // springGreen
+  location: { label: 'Location', color: '#7aa89f', kind: 'sdo' }, // waveAqua2
+  infrastructure: { label: 'Infrastructure', color: '#d27e99', kind: 'sdo' }, // sakuraPink
   // SCO respread over distinct muted hues (blue/green/ochre/mauve/violet/cyan)
   // to tell them apart at a glance, while staying duller than the SDO.
-  'ipv4-addr': { label: 'IPv4', abbr: 'IP4', color: '#6f9bb3', kind: 'sco' }, // blue
-  'ipv6-addr': { label: 'IPv6', abbr: 'IP6', color: '#6f9bb3', kind: 'sco' }, // blue (IP family)
-  'domain-name': { label: 'Domain', abbr: 'DOM', color: '#7fae86', kind: 'sco' }, // green
-  url: { label: 'URL', abbr: 'URL', color: '#c2a568', kind: 'sco' }, // ochre
-  'email-addr': { label: 'Email', abbr: 'EML', color: '#c08bb0', kind: 'sco' }, // mauve
-  file: { label: 'File', abbr: 'FIL', color: '#9a8fb5', kind: 'sco' }, // violet
-  'autonomous-system': { label: 'AS', abbr: 'ASN', color: '#5fb0b0', kind: 'sco' }, // cyan-teal
+  'ipv4-addr': { label: 'IPv4', color: '#6f9bb3', kind: 'sco' }, // blue
+  'ipv6-addr': { label: 'IPv6', color: '#6f9bb3', kind: 'sco' }, // blue (IP family)
+  'domain-name': { label: 'Domain', color: '#7fae86', kind: 'sco' }, // green
+  url: { label: 'URL', color: '#c2a568', kind: 'sco' }, // ochre
+  'email-addr': { label: 'Email', color: '#c08bb0', kind: 'sco' }, // mauve
+  file: { label: 'File', color: '#9a8fb5', kind: 'sco' }, // violet
+  'autonomous-system': { label: 'AS', color: '#5fb0b0', kind: 'sco' }, // cyan-teal
   // The second batch shares one muted taupe. Six more hues in a palette that
   // already holds eighteen would say "these differ" louder than they differ:
   // they are host-side observables, read by their label, and none of them is
   // the thing the eye hunts for on a graph.
-  'mac-addr': { label: 'MAC', abbr: 'MAC', color: '#9a9086', kind: 'sco' },
-  mutex: { label: 'Mutex', abbr: 'MTX', color: '#9a9086', kind: 'sco' },
-  directory: { label: 'Directory', abbr: 'DIR', color: '#9a9086', kind: 'sco' },
-  software: { label: 'Software', abbr: 'SFW', color: '#9a9086', kind: 'sco' },
-  'user-account': { label: 'Account', abbr: 'ACC', color: '#9a9086', kind: 'sco' },
-  'x509-certificate': { label: 'Certificate', abbr: 'CRT', color: '#9a9086', kind: 'sco' },
+  'mac-addr': { label: 'MAC', color: '#9a9086', kind: 'sco' },
+  mutex: { label: 'Mutex', color: '#9a9086', kind: 'sco' },
+  directory: { label: 'Directory', color: '#9a9086', kind: 'sco' },
+  software: { label: 'Software', color: '#9a9086', kind: 'sco' },
+  'user-account': { label: 'Account', color: '#9a9086', kind: 'sco' },
+  'x509-certificate': { label: 'Certificate', color: '#9a9086', kind: 'sco' },
 }
 
 export const SDO_ORDER = [
@@ -77,7 +75,6 @@ export function typeMeta(stixType: string): TypeMeta {
   return (
     TYPE_META[stixType] ?? {
       label: stixType,
-      abbr: stixType.slice(0, 3).toUpperCase(),
       color: '#8992a8',
       kind: 'sdo',
     }
