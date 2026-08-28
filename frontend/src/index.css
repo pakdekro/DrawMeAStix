@@ -2057,6 +2057,26 @@ input.checkbox {
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 
+/* An object that carries a note keeps its diamond drawn at rest, in the hue
+   the notes already use on the canvas. A note pinned beside the object is
+   obvious; a note left in the inspector was invisible until you clicked the
+   object, which is the wrong way round - you click BECAUSE you saw there was
+   something to read. An opinion gets its own hue: it is the analyst's own
+   judgement and the thing you least want to walk past. */
+.react-flow__node.has-note .entity-node .annot-handle,
+.react-flow__node.has-opinion .entity-node .annot-handle {
+  opacity: 1;
+}
+
+.react-flow__node.has-note .entity-node .annot-handle::after {
+  background: var(--warning);
+}
+
+.react-flow__node.has-opinion .entity-node .annot-handle::after {
+  background: var(--opinion);
+}
+
+
 /* welcome panel, first launch (#115) */
 .welcome {
   margin-top: 24px;

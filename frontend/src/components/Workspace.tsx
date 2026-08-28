@@ -212,6 +212,7 @@ function toEdge(rel: Relationship): Edge {
       description: rel.description,
       start_time: rel.start_time,
       stop_time: rel.stop_time,
+      color,
     },
     style: { strokeWidth: 1.5 },
     labelStyle: { fontSize: 11 },
@@ -592,9 +593,26 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     return { nodes: neighbours, edges: incident }
   }, [nodes, edges, linkFocus])
 
+  /**
+   * What each object carries, for the annotation grip to show at a glance.
+   * A note pinned on the canvas is obvious; a note left in the inspector was
+   * invisible until you clicked the object, which is the wrong way round -
+   * you click BECAUSE you saw there was something to read.
+   *
+   * An opinion outranks a note: it is the analyst's own judgement, and it is
+   * the thing you least want to walk past.
+   */
+  const annotated = useMemo(() => {
+    const map = new Map<string, 'note' | 'opinion'>()
+    for (const n of notes) {
+      if (!n.entity_id) continue
+      if (n.kind === 'opinion' || !map.has(n.entity_id)) map.set(n.entity_id, n.kind)
+    }
+    return map
+  }, [notes])
+
   const displayNodes = useMemo(() => {
     const searching = searchOpen && query.trim() !== ''
-    if (!searching && linked.nodes.size === 0) return nodes
     const hitIds = new Set(hits.map((n) => n.id))
     return nodes.map((n) => {
       // the search verdict wins the opacity, the link adds its ring on top:
@@ -606,10 +624,11 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         // the search already dims what it rejected; stacking a second opacity
         // on top of it would push those nodes to nearly invisible
         !searching && linked.nodes.size > 0 && !touched ? 'aside' : '',
+        annotated.has(n.id) ? `has-${annotated.get(n.id)}` : '',
       ].filter(Boolean)
       return classes.length === 0 ? n : { ...n, className: classes.join(' ') }
     })
-  }, [nodes, hits, searchOpen, query, linked])
+  }, [nodes, hits, searchOpen, query, linked, annotated])
 
   /**
    * The relationships the selection is an end of, brought forward while the
