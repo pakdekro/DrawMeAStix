@@ -22,9 +22,21 @@
 
 export type Lens = 'uncovered' | 'loose' | 'unmarked' | 'machine' | 'flagged'
 
+/**
+ * What the canvas is being asked, whichever way it was asked. One of the five
+ * fixed questions, or a label the analyst coined, which is the same shape of
+ * question - "which objects are these" - and must share the same dimming, or
+ * two answers would fight over it.
+ */
+export type LensChoice =
+  | { kind: 'question'; id: Lens }
+  | { kind: 'label'; value: string }
+
 export interface LensNode {
   id: string
   stix_type: string
+  /** `properties.labels`, the analyst's own vocabulary */
+  labels: string[]
   /** `properties.tlp`; empty when the object inherits the export's marking */
   tlp: string
   /** where it came from: `manual`, `paste`, `import`, `doc:…`, `enrich:…` */
@@ -106,4 +118,28 @@ export function lensHits(lens: Lens, nodes: LensNode[], edges: LensEdge[]): Set<
  */
 function machineMade(source: string): boolean {
   return source === 'import' || source.startsWith('doc:') || source.startsWith('enrich:')
+}
+
+/**
+ * The labels in use, with how many objects carry each, most used first and
+ * then alphabetical so the same investigation always lists them the same way.
+ *
+ * Compared exactly, never case-folded. STIX labels are free text and they
+ * drift - `ransomware` and `Ransomware` are two labels, and a bundle will
+ * export them as two. Folding them here would hide the drift at exactly the
+ * moment a list makes it visible, which is half of what this list is for.
+ */
+export function labelIndex(nodes: LensNode[]): { value: string; count: number }[] {
+  const seen = new Map<string, number>()
+  for (const n of nodes) {
+    for (const label of new Set(n.labels)) seen.set(label, (seen.get(label) ?? 0) + 1)
+  }
+  return [...seen]
+    .map(([value, count]) => ({ value, count }))
+    .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value))
+}
+
+/** The objects carrying one label. */
+export function labelHits(value: string, nodes: LensNode[]): Set<string> {
+  return new Set(nodes.filter((n) => n.labels.includes(value)).map((n) => n.id))
 }

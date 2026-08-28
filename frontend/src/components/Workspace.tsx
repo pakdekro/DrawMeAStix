@@ -24,7 +24,7 @@ import { NODE_H, NODE_W, findFreeSpot, type Rect, type Segment } from '../placem
 import { anchor } from '../floating'
 import { relColor } from '../relMeta'
 import { radialArrange } from '../radial'
-import { LENSES, lensHits, type Lens } from '../lens'
+import { LENSES, labelHits, labelIndex, lensHits, type LensChoice } from '../lens'
 import { circleLayout, validateTemplate } from '../templates'
 import type { ScenarioTemplate, TemplatePlan } from '../templates'
 import { findBridges } from '../bridges'
@@ -278,7 +278,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
   const [layout, setLayout] = useState<PanelLayout>(() =>
     loadLayout(window.innerWidth, window.localStorage),
   )
-  const [sidePanel, setSidePanel] = useState<'objects' | 'attack' | 'scenarios' | null>(
+  const [sidePanel, setSidePanel] = useState<'objects' | 'attack' | 'scenarios' | 'labels' | null>(
     () => (loadLayout(window.innerWidth, window.localStorage).left ? 'objects' : null),
   )
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth)
@@ -306,7 +306,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    * moved every object into a pile per answer; they move nothing now, because
    * the answer is a SET and a set is best shown where the objects already are.
    */
-  const [lens, setLens] = useState<Lens | null>(null)
+  const [lens, setLens] = useState<LensChoice | null>(null)
   /**
    * The labels written on the cards (T).
    *
@@ -326,7 +326,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     }
   })
   const toggleLabelsRef = useRef<() => void>(() => undefined)
-  const lensRef = useRef<Lens | null>(null)
+  const lensRef = useRef<LensChoice | null>(null)
   lensRef.current = lens
   const toggleLinkFocusRef = useRef<() => void>(() => undefined)
   /**
@@ -650,23 +650,42 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    * so it follows an edit straight away: delete the only indicator on an
    * object and it joins the uncovered while you watch.
    */
-  const lensLit = useMemo(() => {
-    if (!lens) return null
-    const entities = nodes.filter((nd) => nd.type === 'entity') as EntityNodeType[]
-    return lensHits(
-      lens,
-      entities.map((nd) => ({
+  const asked = useMemo(
+    () =>
+      (nodes.filter((nd) => nd.type === 'entity') as EntityNodeType[]).map((nd) => ({
         id: nd.id,
         stix_type: nd.data.entity.stix_type,
+        labels: Array.isArray(nd.data.entity.properties.labels)
+          ? nd.data.entity.properties.labels.filter((l): l is string => typeof l === 'string')
+          : [],
         tlp: String(nd.data.entity.properties.tlp ?? ''),
         source: nd.data.entity.source,
         flagged: lintFlagged.has(nd.id),
       })),
+    [nodes, lintFlagged],
+  )
+
+  /** The analyst's own vocabulary, listed in the objects panel. */
+  const labels = useMemo(() => labelIndex(asked), [asked])
+
+  const lensLit = useMemo(() => {
+    if (!lens) return null
+    if (lens.kind === 'label') return labelHits(lens.value, asked)
+    return lensHits(
+      lens.id,
+      asked,
       edges
         .filter((e) => !e.id.startsWith('annot:'))
         .map((e) => ({ source: e.source, target: e.target, rel_type: String(e.label ?? '') })),
     )
-  }, [lens, nodes, edges, lintFlagged])
+  }, [lens, asked, edges])
+
+  /** Toggling: clicking the label that is already lit puts the canvas back. */
+  const pickLabel = useCallback((value: string) => {
+    setLens((now) =>
+      now?.kind === 'label' && now.value === value ? null : { kind: 'label', value },
+    )
+  }, [])
 
   const displayNodes = useMemo(() => {
     const searching = searchOpen && query.trim() !== ''
@@ -774,7 +793,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
 
   /** The rail drives the palette; "open or not" is stored along with it. */
   const choosePanel = useCallback(
-    (panel: 'objects' | 'attack' | 'scenarios' | null) => {
+    (panel: 'objects' | 'attack' | 'scenarios' | 'labels' | null) => {
       setSidePanel(panel)
       setPanels({ left: panel !== null, right: layout.right })
     },
@@ -2468,7 +2487,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       ...LENSES.map((l) => ({
         label: `Show me: ${l.label.toLowerCase()}`,
         hint: 'lens',
-        run: () => setLens(l.id),
+        run: () => setLens({ kind: 'question', id: l.id }),
       })),
       { label: 'Show everything again', hint: 'lens', run: () => setLens(null) },
       // Dagre stays reachable, one search away, for the times the graph really
@@ -2653,6 +2672,9 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
           onPaste={openPaste}
           onPickAttack={pickAttack}
           onPickTemplate={setActiveTemplate}
+          labels={labels}
+          activeLabel={lens?.kind === 'label' ? lens.value : null}
+          onPickLabel={pickLabel}
           onLoadTemplate={loadCustomTemplate}
           candidateCount={candidates.length}
           triageOpen={triageOpen}
@@ -2766,10 +2788,16 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
                     {LENSES.map((l) => (
                       <button
                         key={l.id}
-                        className={`menu-item${lens === l.id ? ' on' : ''}`}
+                        className={`menu-item${
+                          lens?.kind === 'question' && lens.id === l.id ? ' on' : ''
+                        }`}
                         onClick={() => {
                           close()
-                          setLens(lens === l.id ? null : l.id)
+                          setLens(
+                            lens?.kind === 'question' && lens.id === l.id
+                              ? null
+                              : { kind: 'question', id: l.id },
+                          )
                         }}
                       >
                         <span>

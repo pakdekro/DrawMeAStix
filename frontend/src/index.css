@@ -1060,6 +1060,34 @@ label {
   border-radius: 50%;
   flex-shrink: 0;
 }
+/* A label chip is not a type chip. No colour dot, because the analyst's own
+   vocabulary has no palette and inventing one would compete with the codes
+   the canvas already carries. The count is what says the chip is about what
+   is on the canvas rather than about what could be added to it. */
+.chip.label-chip {
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.chip.label-chip .chip-count {
+  flex: none;
+  color: var(--text-dim);
+  font-size: 10px;
+}
+
+/* Lit, and saying so: the same accent the canvas uses for a selection, since
+   this chip IS the selection while it is pressed. */
+.chip.label-chip.on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chip.label-chip.on .chip-count {
+  color: var(--accent);
+}
+
 
 /* "Load a scenario…" is a <label> wrapping a file input: same neutralizations
    as .menu-item, otherwise the global `label` rule uppercases it in the

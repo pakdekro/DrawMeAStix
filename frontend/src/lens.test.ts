@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { LENSES, lensHits, type LensEdge, type LensNode } from './lens'
+import { LENSES, labelHits, labelIndex, lensHits, type LensEdge, type LensNode } from './lens'
 
 const node = (id: string, extra: Partial<LensNode> = {}): LensNode => ({
   id,
   stix_type: 'malware',
+  labels: [],
   tlp: '',
   source: 'manual',
   flagged: false,
@@ -92,5 +93,54 @@ describe('every lens', () => {
     for (const l of LENSES) {
       for (const hit of lensHits(l.id, nodes, [edge('a', 'b')])) expect(ids.has(hit)).toBe(true)
     }
+  })
+})
+
+describe('the labels in use', () => {
+  it('counts the objects carrying each one', () => {
+    const nodes = [
+      node('a', { labels: ['ransomware', 'apt'] }),
+      node('b', { labels: ['ransomware'] }),
+      node('c', { labels: [] }),
+    ]
+    expect(labelIndex(nodes)).toEqual([
+      { value: 'ransomware', count: 2 },
+      { value: 'apt', count: 1 },
+    ])
+  })
+
+  it('counts an object once however many times it repeats a label', () => {
+    expect(labelIndex([node('a', { labels: ['dup', 'dup'] })])).toEqual([
+      { value: 'dup', count: 1 },
+    ])
+  })
+
+  it('breaks a tie on the count alphabetically, so the list never reshuffles', () => {
+    const nodes = [node('a', { labels: ['zeta'] }), node('b', { labels: ['alpha'] })]
+    expect(labelIndex(nodes).map((l) => l.value)).toEqual(['alpha', 'zeta'])
+  })
+
+  /**
+   * STIX labels are free text and they drift. Folding the case would hide the
+   * drift at the very moment a list makes it visible, and the bundle would
+   * export two labels anyway.
+   */
+  it('keeps two spellings apart rather than tidying them together', () => {
+    const nodes = [node('a', { labels: ['ransomware'] }), node('b', { labels: ['Ransomware'] })]
+    expect(labelIndex(nodes)).toHaveLength(2)
+  })
+
+  it('says nothing about an investigation that labels nothing', () => {
+    expect(labelIndex([node('a'), node('b')])).toEqual([])
+  })
+
+  it('lights the objects carrying one label, and only those', () => {
+    const nodes = [
+      node('a', { labels: ['apt'] }),
+      node('b', { labels: ['apt', 'other'] }),
+      node('c', { labels: ['other'] }),
+    ]
+    expect([...labelHits('apt', nodes)].sort()).toEqual(['a', 'b'])
+    expect(labelHits('nothing-uses-this', nodes).size).toBe(0)
   })
 })

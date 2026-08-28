@@ -185,6 +185,13 @@ const ICONS: Record<string, ReactNode> = {
     </>
   ),
   // mail tray (triage tray)
+  // luggage tag (the labels an analyst coins)
+  tag: (
+    <>
+      <path d="M12.6 3H21v8.4L11.4 21 3 12.6 12.6 3z" />
+      <circle cx="16.9" cy="7.1" r="1.3" />
+    </>
+  ),
   tray: (
     <>
       <path d="M3 14 5.5 4h13L21 14v6H3z" />
