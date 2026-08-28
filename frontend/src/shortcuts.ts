@@ -52,6 +52,10 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
         what: "Link focus: selecting an object rings what it is connected to",
         note: "off by default, because it dims the rest and that gets in the way while you rearrange",
       },
+      {
+        keys: ["Esc"],
+        what: "Show everything again, when a lens is dimming the canvas",
+      },
       { keys: ["Del"], what: "Delete the selection" },
       {
         keys: ["Ctrl", "click"],

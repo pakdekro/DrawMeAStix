@@ -17,13 +17,14 @@ import { ApiError, api } from '../api'
 import { entryToCreation, loadAttackDataset } from '../attack'
 import type { AttackEntry } from '../attack'
 import { ACCEPT, pageAt, textFromFile } from '../extractors'
-import { countByType, typeMeta } from '../stixMeta'
+import { SCO_ORDER, SDO_ORDER, countByType, typeMeta } from '../stixMeta'
 import type { CaptureItem, Entity, Investigation, NoteItem, Relationship } from '../types'
 import { compressImage } from '../annotations'
 import { NODE_H, NODE_W, findFreeSpot, type Rect } from '../placement'
 import { anchor } from '../floating'
 import { relColor } from '../relMeta'
-import { ARRANGEMENTS, arrange, type Arrangement } from '../layout'
+import { radialArrange } from '../radial'
+import { LENSES, lensHits, type Lens } from '../lens'
 import { circleLayout, validateTemplate } from '../templates'
 import type { ScenarioTemplate, TemplatePlan } from '../templates'
 import { findBridges } from '../bridges'
@@ -295,6 +296,16 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    * structure rather than the tidying.
    */
   const [linkFocus, setLinkFocus] = useState(false)
+  /**
+   * The lens: a question asked of the canvas, answered on the canvas.
+   *
+   * One at a time, and off by default. These used to be arrangements that
+   * moved every object into a pile per answer; they move nothing now, because
+   * the answer is a SET and a set is best shown where the objects already are.
+   */
+  const [lens, setLens] = useState<Lens | null>(null)
+  const lensRef = useRef<Lens | null>(null)
+  lensRef.current = lens
   const toggleLinkFocusRef = useRef<() => void>(() => undefined)
   /**
    * The analyst's own layout, kept aside the first time an arrangement runs.
@@ -351,7 +362,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
   const [undoStack, setUndoStack] = useState<UndoAction[]>([])
   const [lintWarnings, setLintWarnings] = useState(0)
   // ids the validator has something to say about: the count goes to the status
-  // bar, the ids to the "By validation" arrangement
+  // bar, the ids to the "the export will complain" lens
   const [lintFlagged, setLintFlagged] = useState<Set<string>>(new Set())
   const pushUndo = useCallback(
     (action: UndoPayload) =>
@@ -612,6 +623,29 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     return map
   }, [notes])
 
+  /**
+   * What the lens lights up. Computed from the canvas rather than the database
+   * so it follows an edit straight away: delete the only indicator on an
+   * object and it joins the uncovered while you watch.
+   */
+  const lensLit = useMemo(() => {
+    if (!lens) return null
+    const entities = nodes.filter((nd) => nd.type === 'entity') as EntityNodeType[]
+    return lensHits(
+      lens,
+      entities.map((nd) => ({
+        id: nd.id,
+        stix_type: nd.data.entity.stix_type,
+        tlp: String(nd.data.entity.properties.tlp ?? ''),
+        source: nd.data.entity.source,
+        flagged: lintFlagged.has(nd.id),
+      })),
+      edges
+        .filter((e) => !e.id.startsWith('annot:'))
+        .map((e) => ({ source: e.source, target: e.target, rel_type: String(e.label ?? '') })),
+    )
+  }, [lens, nodes, edges, lintFlagged])
+
   const displayNodes = useMemo(() => {
     const searching = searchOpen && query.trim() !== ''
     const hitIds = new Set(hits.map((n) => n.id))
@@ -626,10 +660,13 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         // on top of it would push those nodes to nearly invisible
         !searching && linked.nodes.size > 0 && !touched ? 'aside' : '',
         annotated.has(n.id) ? `has-${annotated.get(n.id)}` : '',
+        // The lens dims on its own axis: an object can be a search hit AND
+        // outside the lens, and it has to read as both.
+        lensLit ? (lensLit.has(n.id) ? 'lens-lit' : 'lens-out') : '',
       ].filter(Boolean)
       return classes.length === 0 ? n : { ...n, className: classes.join(' ') }
     })
-  }, [nodes, hits, searchOpen, query, linked, annotated])
+  }, [nodes, hits, searchOpen, query, linked, annotated, lensLit])
 
   /**
    * The relationships the selection is an end of, brought forward while the
@@ -662,16 +699,21 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     () =>
       edges.map((e) => {
         const mine = ends.get(e.id)
-        if (!mine && linked.edges.size === 0) return e
+        const classes = [
+          linked.edges.size === 0 ? '' : linked.edges.has(e.id) ? 'edge-linked' : 'edge-aside',
+          // A relationship survives the lens only if both its ends did.
+          // Otherwise the lit objects sit inside a web of bright lines going
+          // nowhere the question asked about.
+          lensLit && !(lensLit.has(e.source) && lensLit.has(e.target)) ? 'edge-aside' : '',
+        ].filter(Boolean)
+        if (!mine && classes.length === 0) return e
         return {
           ...e,
           ...(mine ? { data: { ...e.data, ends: mine } } : {}),
-          ...(linked.edges.size === 0
-            ? {}
-            : { className: linked.edges.has(e.id) ? 'edge-linked' : 'edge-aside' }),
+          ...(classes.length === 0 ? {} : { className: classes.join(' ') }),
         }
       }),
-    [edges, ends, linked],
+    [edges, ends, linked, lensLit],
   )
 
   const centerOnHit = useCallback(
@@ -785,6 +827,12 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       ) {
         e.preventDefault()
         toggleLinkFocusRef.current()
+        return
+      }
+      // Escape puts the canvas back the way it was. Only when a lens is on,
+      // so it stays the key that closes whatever is open first.
+      if (e.key === 'Escape' && lensRef.current) {
+        setLens(null)
         return
       }
       // "?": the shortcuts cheat sheet (#190). We test the CHARACTER
@@ -1202,46 +1250,29 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    * order, and no claim at all about the relationships - see layout.ts for why
    * drawing them automatically was given up on.
    */
-  const arrangeCanvas = useCallback(
-    async (kind: Arrangement) => {
+  /**
+   * Draws the graph around its hub (see radial.ts). The only thing left that
+   * moves objects: the questions the other arrangements used to answer by
+   * moving them are lenses now, and lenses move nothing.
+   */
+  const arrangeCanvas = useCallback(async () => {
     const entityNodes = nodes.filter((nd) => nd.type === 'entity')
     if (entityNodes.length === 0) return
     keepLayout(nodes)
 
-    // The object stores the ATT&CK number, never the tactics: they are resolved
-    // against the embedded dataset, and a technique the dataset does not know
-    // simply has none. Fetched only for the one arrangement that needs it, and
-    // memoised by the loader, so the others cost nothing. A dataset that fails
-    // to load leaves every technique unplaced rather than breaking the button.
-    const tactics =
-      kind === 'tactic'
-        ? new Map(
-            ((await loadAttackDataset().catch(() => null))?.entries ?? [])
-              .filter((e) => e.id !== undefined)
-              .map((e) => [e.id!, e.tactics ?? []]),
-          )
-        : new Map<string, string[]>()
-    const tacticsOf = (properties: Record<string, unknown>) =>
-      typeof properties.x_mitre_id === 'string'
-        ? (tactics.get(properties.x_mitre_id) ?? [])
-        : []
     const sized = entityNodes.map((nd) => ({
       id: nd.id,
       stix_type: nd.data.entity.stix_type,
-      tlp: String(nd.data.entity.properties.tlp ?? ''),
-      source: nd.data.entity.source,
-      tactics: tacticsOf(nd.data.entity.properties),
-      flagged: lintFlagged.has(nd.id),
       w: nd.measured?.width ?? NODE_W,
       h: nd.measured?.height ?? NODE_H,
     }))
     const relations = edges
       .filter((e) => !e.id.startsWith('annot:'))
-      .map((e) => ({ source: e.source, target: e.target, rel_type: String(e.label ?? '') }))
+      .map((e) => ({ source: e.source, target: e.target }))
     const byId = new Map(sized.map((n) => [n.id, n]))
     const entityPositions: Record<string, { x: number; y: number }> = {}
     const placed: Rect[] = []
-    for (const { id, x, y } of arrange(kind, sized, relations)) {
+    for (const { id, x, y } of radialArrange(sized, relations, [...SDO_ORDER, ...SCO_ORDER])) {
       entityPositions[id] = { x, y }
       const size = byId.get(id)!
       placed.push({ x, y, w: size.w, h: size.h })
@@ -1253,19 +1284,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     )
     await api.savePositions(iid, entityPositions).catch(showError)
     fitSoon()
-    },
-    [
-      nodes,
-      edges,
-      iid,
-      lintFlagged,
-      keepLayout,
-      setNodes,
-      fitSoon,
-      placeAnnotations,
-      showError,
-    ],
-  )
+  }, [nodes, edges, iid, keepLayout, setNodes, fitSoon, placeAnnotations, showError])
 
   /** Puts the objects back where the analyst had them, however many
    *  arrangements have been tried since. */
@@ -2342,16 +2361,18 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       { label: 'Export STIX bundle…', hint: 'export', run: () => setShowExport(true) },
       { label: 'Export image / PDF / Markdown…', hint: 'share', run: () => setShowImageExport(true) },
       { label: 'Paste IOCs…', hint: 'import', run: openPaste },
-      // every arrangement is searchable, so the menu is a shortcut and not the
-      // only door
-      ...ARRANGEMENTS.map((a) => ({
-        label: `Arrange the canvas: ${a.label.toLowerCase()}`,
-        hint: 'canvas',
-        run: () => arrangeCanvas(a.id),
+      { label: 'Arrange the canvas by structure', hint: 'canvas', run: arrangeCanvas },
+      // every lens is searchable, so the menu is a shortcut and not the only
+      // door
+      ...LENSES.map((l) => ({
+        label: `Show me: ${l.label.toLowerCase()}`,
+        hint: 'lens',
+        run: () => setLens(l.id),
       })),
-      // Dagre stays reachable, one search away, for the times the structure is
-      // the question. It is not the button any more because on a real CTI
-      // graph it answers with a 5700px ribbon (layout.ts).
+      { label: 'Show everything again', hint: 'lens', run: () => setLens(null) },
+      // Dagre stays reachable, one search away, for the times the graph really
+      // is a flow. It is not the button because on a star it answers with a
+      // ribbon a screen and a half wide (layoutCompare.test.ts).
       { label: 'Re-layout the graph by relationship', hint: 'canvas', run: reorganize },
       { label: 'Toggle the objects panel', hint: 'Ctrl B', run: toggleSidebar },
       { label: 'Toggle the inspector', hint: 'panel', run: toggleInspector },
@@ -2631,32 +2652,53 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
               >
                 <Icon name="target" size={15} />
               </button>
-              {/* The button asks a question rather than promising a drawing:
-                  each entry lines the objects up in blocks that answer one,
-                  and the arranging of meaning stays the analyst's. */}
+              {/* One button that moves things, one menu that does not. The
+                  lens answers a question where the objects already are; the
+                  arrangement is the only thing left that rearranges them. */}
               <TopbarMenu
-                label="Arrange"
-                icon={<Icon name="layout" size={15} />}
-                buttonClass="rf-btn"
+                label="Show"
+                icon={<Icon name="search" size={15} />}
+                buttonClass={`rf-btn${lens ? ' on' : ''}`}
               >
-                {(close) =>
-                  ARRANGEMENTS.map((a) => (
-                    <button
-                      key={a.id}
-                      className="menu-item"
-                      onClick={() => {
-                        close()
-                        arrangeCanvas(a.id)
-                      }}
-                    >
-                      <span>
-                        {a.label}
-                        <em>{a.hint}</em>
-                      </span>
-                    </button>
-                  ))
-                }
+                {(close) => (
+                  <>
+                    {LENSES.map((l) => (
+                      <button
+                        key={l.id}
+                        className={`menu-item${lens === l.id ? ' on' : ''}`}
+                        onClick={() => {
+                          close()
+                          setLens(lens === l.id ? null : l.id)
+                        }}
+                      >
+                        <span>
+                          {l.label}
+                          <em>{l.hint}</em>
+                        </span>
+                      </button>
+                    ))}
+                    {lens && (
+                      <button
+                        className="menu-item"
+                        onClick={() => {
+                          close()
+                          setLens(null)
+                        }}
+                      >
+                        <span>Show everything again</span>
+                      </button>
+                    )}
+                  </>
+                )}
               </TopbarMenu>
+              <button
+                className="rf-btn"
+                onClick={() => void arrangeCanvas()}
+                title="Draw the graph around what it is about: hubs in the middle, rings by distance"
+              >
+                <Icon name="layout" size={15} />
+                Arrange
+              </button>
               {layoutBackup && (
                 <button
                   className="rf-btn"

@@ -30,7 +30,25 @@
  * about them, and they are what the crossings are made of.
  */
 
-import type { ArrangeEdge, ArrangeNode, Placement } from './layout'
+/** The only thing the drawing needs to know about an object. */
+export interface GraphNode {
+  id: string
+  stix_type: string
+  w: number
+  h: number
+}
+
+/** And about a relationship: which two it joins. The verb plays no part. */
+export interface GraphEdge {
+  source: string
+  target: string
+}
+
+export interface Placement {
+  id: string
+  x: number
+  y: number
+}
 
 /** Air between two objects, whether side by side on a ring or ring to ring. */
 const GAP = 40
@@ -53,7 +71,7 @@ const STRETCH = 3
 const OBLATE = 1.7
 
 interface Ready {
-  node: ArrangeNode
+  node: GraphNode
   /** hops from the centre of its piece */
   depth: number
   angle: number
@@ -62,12 +80,12 @@ interface Ready {
 }
 
 /** Half the room the card needs ALONG the ring it sits on. */
-function tangential(n: ArrangeNode, angle: number): number {
+function tangential(n: GraphNode, angle: number): number {
   return (n.w * Math.abs(Math.sin(angle)) + n.h * Math.abs(Math.cos(angle))) / 2
 }
 
 /** Half the room the card needs ACROSS the rings, pointing at the centre. */
-function radial(n: ArrangeNode, angle: number): number {
+function radial(n: GraphNode, angle: number): number {
   return (n.w * Math.abs(Math.cos(angle)) + n.h * Math.abs(Math.sin(angle))) / 2
 }
 
@@ -91,7 +109,7 @@ function stepRate(angle: number): number {
 }
 
 /** Undirected neighbours, both ways, each id listed once per neighbour. */
-function neighbours(nodes: ArrangeNode[], edges: ArrangeEdge[]): Map<string, string[]> {
+function neighbours(nodes: GraphNode[], edges: GraphEdge[]): Map<string, string[]> {
   const known = new Set(nodes.map((n) => n.id))
   const out = new Map<string, string[]>(nodes.map((n) => [n.id, []]))
   for (const e of edges) {
@@ -104,13 +122,13 @@ function neighbours(nodes: ArrangeNode[], edges: ArrangeEdge[]): Map<string, str
 }
 
 /** The pieces of the investigation that are not joined to each other. */
-function pieces(nodes: ArrangeNode[], near: Map<string, string[]>): ArrangeNode[][] {
+function pieces(nodes: GraphNode[], near: Map<string, string[]>): GraphNode[][] {
   const byId = new Map(nodes.map((n) => [n.id, n]))
   const seen = new Set<string>()
-  const out: ArrangeNode[][] = []
+  const out: GraphNode[][] = []
   for (const start of nodes) {
     if (seen.has(start.id)) continue
-    const piece: ArrangeNode[] = []
+    const piece: GraphNode[] = []
     const queue = [start.id]
     seen.add(start.id)
     while (queue.length > 0) {
@@ -135,7 +153,7 @@ function pieces(nodes: ArrangeNode[], near: Map<string, string[]>): ArrangeNode[
  * which is the reading an analyst would make anyway - and then to the id, so
  * the same investigation always draws the same way.
  */
-function hub(piece: ArrangeNode[], near: Map<string, string[]>, rank: Map<string, number>): ArrangeNode {
+function hub(piece: GraphNode[], near: Map<string, string[]>, rank: Map<string, number>): GraphNode {
   return [...piece].sort(
     (a, b) =>
       (near.get(b.id)?.length ?? 0) - (near.get(a.id)?.length ?? 0) ||
@@ -145,7 +163,7 @@ function hub(piece: ArrangeNode[], near: Map<string, string[]>, rank: Map<string
 }
 
 /** Breadth-first from the hub: depth for everyone, children for the wedges. */
-function tree(centre: string, piece: ArrangeNode[], near: Map<string, string[]>) {
+function tree(centre: string, piece: GraphNode[], near: Map<string, string[]>) {
   const inPiece = new Set(piece.map((n) => n.id))
   const depth = new Map<string, number>([[centre, 0]])
   const children = new Map<string, string[]>(piece.map((n) => [n.id, []]))
@@ -257,7 +275,7 @@ function untangle(
 
 /** One disconnected piece, drawn around its hub, positions relative to it. */
 function draw(
-  piece: ArrangeNode[],
+  piece: GraphNode[],
   near: Map<string, string[]>,
   rank: Map<string, number>,
 ): { at: Placement[]; w: number; h: number } {
@@ -304,7 +322,7 @@ function draw(
     wanted.sort((a, b) => a.angle - b.angle || a.node.id.localeCompare(b.node.id))
 
     /** How wide the ring has to be for one object to stand in `span` radians. */
-    const room = (s: { node: ArrangeNode; angle: number }, span: number) =>
+    const room = (s: { node: GraphNode; angle: number }, span: number) =>
       (tangential(s.node, s.angle) * 2 + GAP) / (span * arcRate(s.angle))
     /** How far out it has to be to clear the ring inside it. */
     const floor =
@@ -370,8 +388,8 @@ function draw(
  * to right in reading order, the one that carries the case first.
  */
 export function radialArrange(
-  nodes: ArrangeNode[],
-  edges: ArrangeEdge[],
+  nodes: GraphNode[],
+  edges: GraphEdge[],
   typeRank: string[],
 ): Placement[] {
   if (nodes.length === 0) return []

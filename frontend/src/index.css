@@ -1912,6 +1912,21 @@ input.checkbox {
   opacity: 0.2;
 }
 
+/* ---- The lens ----
+   A question asked of the canvas, answered on the canvas. Nothing moves and
+   nothing is added: what does not answer the question steps back, and what is
+   left standing IS the answer. No glow on the survivors - the contrast does
+   the work, and a second colour on top of the type colours and the family
+   colours would be one code too many.
+
+   Placed after the search rules so that when both are on, failing either one
+   dims the object. An object that fails the lens must not be brought back by
+   having matched the search. */
+.react-flow__node.lens-out {
+  opacity: 0.15;
+}
+
+
 /* ---- One hop from the selection ---- */
 
 /* Selecting an object rings its neighbours. On a star-shaped graph this is
@@ -2428,6 +2443,20 @@ input.checkbox {
 
 .menu-item:hover {
   background: var(--raised);
+}
+
+/* The entry that is already in force. A menu you can open twice has to say
+   where you are, or every choice looks equally unchosen. */
+.menu-item.on {
+  color: var(--accent);
+}
+
+.menu-item.on::before {
+  content: "";
+  width: 3px;
+  align-self: stretch;
+  margin: -8px 0 -8px -10px;
+  background: var(--accent);
 }
 
 .menu-item svg {

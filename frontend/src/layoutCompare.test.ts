@@ -21,7 +21,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import dagre from '@dagrejs/dagre'
-import { arrange, type ArrangeEdge, type ArrangeNode, type Placement } from './layout'
+import { radialArrange, type GraphEdge, type GraphNode, type Placement } from './radial'
 import { SCO_ORDER, SDO_ORDER } from './stixMeta'
 // The bundle the app ships as its worked example, read as data rather than
 // through the importer: what is being measured is the shape of the graph.
@@ -41,28 +41,19 @@ function load() {
       relationship_type?: string
     }[]
   }
-  const nodes: ArrangeNode[] = bundle.objects
+  const nodes: GraphNode[] = bundle.objects
     .filter((o) => KNOWN.has(o.type))
-    .map((o) => ({
-      id: o.id,
-      stix_type: o.type,
-      tlp: '',
-      source: 'import',
-      tactics: [],
-      flagged: false,
-      w: W,
-      h: H,
-    }))
+    .map((o) => ({ id: o.id, stix_type: o.type, w: W, h: H }))
   const ids = new Set(nodes.map((n) => n.id))
-  const edges: ArrangeEdge[] = bundle.objects
+  const edges: GraphEdge[] = bundle.objects
     .filter((o) => o.type === 'relationship' && ids.has(o.source_ref!) && ids.has(o.target_ref!))
-    .map((o) => ({ source: o.source_ref!, target: o.target_ref!, rel_type: o.relationship_type! }))
+    .map((o) => ({ source: o.source_ref!, target: o.target_ref! }))
   return { nodes, edges }
 }
 
 const centre = (p: Placement) => ({ x: p.x + W / 2, y: p.y + H / 2 })
 
-function crossings(at: Map<string, Placement>, edges: ArrangeEdge[]): number {
+function crossings(at: Map<string, Placement>, edges: GraphEdge[]): number {
   const segs = edges
     .map((e) => ({ e, a: at.get(e.source), b: at.get(e.target) }))
     .filter((s) => s.a && s.b)
@@ -91,7 +82,7 @@ function box(placed: Placement[]) {
   return { w: Math.round(w), h: Math.round(h) }
 }
 
-function dagreTB(nodes: ArrangeNode[], edges: ArrangeEdge[]): Placement[] {
+function dagreTB(nodes: GraphNode[], edges: GraphEdge[]): Placement[] {
   const g = new dagre.graphlib.Graph()
   g.setGraph({ rankdir: 'TB', nodesep: 24, ranksep: 120 })
   g.setDefaultEdgeLabel(() => ({}))
@@ -116,42 +107,35 @@ function overlaps(placed: Placement[]): number {
   return n
 }
 
-const node = (id: string, stix_type = 'malware'): ArrangeNode => ({
-  id,
-  stix_type,
-  tlp: '',
-  source: 'manual',
-  tactics: [],
-  flagged: false,
-  w: W,
-  h: H,
-})
+const node = (id: string, stix_type = 'malware'): GraphNode => ({ id, stix_type, w: W, h: H })
 
 /** A hub with `spokes` leaves, and `chains` tails of length `deep` off it. */
 function star(spokes: number, chains: number, deep: number) {
   const nodes = [node('hub', 'malware')]
-  const edges: ArrangeEdge[] = []
+  const edges: GraphEdge[] = []
   for (let i = 0; i < spokes; i++) {
     nodes.push(node(`s${i}`, 'ipv4-addr'))
-    edges.push({ source: 'hub', target: `s${i}`, rel_type: 'communicates-with' })
+    edges.push({ source: 'hub', target: `s${i}` })
   }
   for (let c = 0; c < chains; c++) {
     let prev = 'hub'
     for (let d = 0; d < deep; d++) {
       const id = `c${c}_${d}`
       nodes.push(node(id, 'domain-name'))
-      edges.push({ source: prev, target: id, rel_type: 'resolves-to' })
+      edges.push({ source: prev, target: id })
       prev = id
     }
   }
   return { nodes, edges }
 }
 
-function report(title: string, nodes: ArrangeNode[], edges: ArrangeEdge[]) {
+const radial = (nodes: GraphNode[], edges: GraphEdge[]) =>
+  radialArrange(nodes, edges, [...SDO_ORDER, ...SCO_ORDER])
+
+function report(title: string, nodes: GraphNode[], edges: GraphEdge[]) {
   const runs: [string, Placement[]][] = [
     ['dagre TB', dagreTB(nodes, edges)],
-    ['arrange: type', arrange('type', nodes, edges)],
-    ['arrange: radial', arrange('radial', nodes, edges)],
+    ['radial', radial(nodes, edges)],
   ]
   console.log(`\n${title}: ${nodes.length} objects, ${edges.length} relationships`)
   for (const [name, placed] of runs) {
@@ -167,7 +151,7 @@ function report(title: string, nodes: ArrangeNode[], edges: ArrangeEdge[]) {
 
 describe('measurement', () => {
   it('compares the layouts', () => {
-    report('Operation Aviary', ...Object.values(load()) as [ArrangeNode[], ArrangeEdge[]])
+    report('Operation Aviary', ...Object.values(load()) as [GraphNode[], GraphEdge[]])
     const pureStar = star(17, 0, 0)
     report('pure star (17 spokes)', pureStar.nodes, pureStar.edges)
     const mixed = star(12, 5, 3)
@@ -180,7 +164,7 @@ describe('measurement', () => {
   it('never lays one object on top of another, whatever the shape', () => {
     const shapes = [load(), star(17, 0, 0), star(12, 5, 3), star(24, 8, 2), star(40, 0, 0)]
     for (const shape of shapes) {
-      expect(overlaps(arrange('radial', shape.nodes, shape.edges))).toBe(0)
+      expect(overlaps(radial(shape.nodes, shape.edges))).toBe(0)
     }
   })
 
@@ -193,7 +177,7 @@ describe('measurement', () => {
     for (const spokes of [17, 24, 40]) {
       const { nodes, edges } = star(spokes, 0, 0)
       const ranked = box(dagreTB(nodes, edges))
-      const round = box(arrange('radial', nodes, edges))
+      const round = box(radial(nodes, edges))
       expect(round.w).toBeLessThan(ranked.w * 0.7)
       // and it comes out roughly screen shaped rather than square or ribbon
       expect(round.w / round.h).toBeGreaterThan(1.2)
@@ -201,12 +185,29 @@ describe('measurement', () => {
     }
   })
 
-  it('crosses fewer relationships than an arrangement that ignores them', () => {
+  /**
+   * The shape the whole thing was built for. A hub and its spokes has a
+   * drawing with no crossings at all, and the radial has to find it: if it
+   * ever does not, the wedge arithmetic has drifted.
+   */
+  it('draws a star with nothing crossing', () => {
+    for (const spokes of [8, 17, 40]) {
+      const { nodes, edges } = star(spokes, 0, 0)
+      const placed = radial(nodes, edges)
+      expect(crossings(new Map(placed.map((p) => [p.id, p])), edges)).toBe(0)
+    }
+  })
+
+  /**
+   * And the shape it is weakest on, kept honest rather than quiet: Aviary is
+   * flow-shaped, ranks draw it with one crossing, the radial with four. The
+   * bound is there so a change that makes this much worse has to be noticed
+   * and argued for.
+   */
+  it('stays close to ranks on a graph that is really a flow', () => {
     const { nodes, edges } = load()
     const count = (placed: Placement[]) =>
       crossings(new Map(placed.map((p) => [p.id, p])), edges)
-    expect(count(arrange('radial', nodes, edges))).toBeLessThan(
-      count(arrange('type', nodes, edges)),
-    )
+    expect(count(radial(nodes, edges))).toBeLessThanOrEqual(8)
   })
 })

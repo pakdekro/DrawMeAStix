@@ -7,30 +7,24 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { arrange, type ArrangeEdge, type ArrangeNode, type Placement } from './layout'
+import { radialArrange, type GraphEdge, type GraphNode, type Placement } from './radial'
+import { SCO_ORDER, SDO_ORDER } from './stixMeta'
 
 const W = 230
 const H = 63
-const node = (id: string, stix_type = 'malware', extra: Partial<ArrangeNode> = {}): ArrangeNode => ({
+const node = (id: string, stix_type = 'malware', extra: Partial<GraphNode> = {}): GraphNode => ({
   id,
   stix_type,
-  tlp: '',
-  source: 'manual',
-  tactics: [],
-  flagged: false,
   w: W,
   h: H,
   ...extra,
 })
-const edge = (source: string, target: string, rel_type = 'related-to'): ArrangeEdge => ({
-  source,
-  target,
-  rel_type,
-})
+const edge = (source: string, target: string): GraphEdge => ({ source, target })
 
-const draw = (nodes: ArrangeNode[], edges: ArrangeEdge[]) => arrange('radial', nodes, edges)
+const draw = (nodes: GraphNode[], edges: GraphEdge[]) =>
+  radialArrange(nodes, edges, [...SDO_ORDER, ...SCO_ORDER])
 
-function overlapping(placed: Placement[], nodes: ArrangeNode[]): number {
+function overlapping(placed: Placement[], nodes: GraphNode[]): number {
   const size = new Map(nodes.map((n) => [n.id, n]))
   let n = 0
   for (let i = 0; i < placed.length; i++) {
@@ -50,7 +44,7 @@ function overlapping(placed: Placement[], nodes: ArrangeNode[]): number {
 /** A hub with `spokes` leaves, and `chains` tails `deep` long hanging off it. */
 function star(spokes: number, chains = 0, deep = 0) {
   const nodes = [node('hub')]
-  const edges: ArrangeEdge[] = []
+  const edges: GraphEdge[] = []
   for (let i = 0; i < spokes; i++) {
     nodes.push(node(`s${i}`, 'ipv4-addr'))
     edges.push(edge('hub', `s${i}`))
