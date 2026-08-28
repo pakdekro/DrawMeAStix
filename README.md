@@ -22,10 +22,11 @@ Draw Me A STIX fills the gap: **structure, annotate, curate** an investigation o
 
 - **A guided canvas.** Drag a link between two objects and only the relationships the STIX 2.1 matrix allows are offered, each with a sentence saying what it means. When no direct link exists (an actor and an IP address, say) it offers the canonical detour rather than a meaningless `related-to`.
 - **A triage tray.** Paste a report or a list of IOCs and everything lands sorted by type. Nothing reaches the canvas without your approval, and nothing you reject is lost: it is undoable.
+- **A canvas that draws itself, and answers questions.** One button lays the investigation out around what it is about: the most connected object in the middle, what it touches on a ring around it, so distance from the centre is hops from the subject of the case. Relationships take the colour of what they say rather than one hue per verb, and five questions light the objects that answer them without moving anything: what carries no indicator, what has no relationship at all, what will leave without a TLP of its own, what a tool handed you, and what the export will complain about.
 - **An annotation layer.** Pinned notes and screenshots pasted with Ctrl+V, tied to an object by a dashed line. Never exported in the bundle: they are your reasoning, not intel.
 - **Deterministic export.** Identifiers derive from each object's own properties, so re-importing the same object updates it instead of creating a second one. Two exports of the same state produce the same file, byte for byte, which is what makes the "unexported changes" indicator trustworthy.
 - **Other ways out.** The graph read back as prose, plus PNG, JPG, PDF and Markdown for the humans who will read your report.
-- **Keyboard first.** `Ctrl+K` for the command palette, `?` for the shortcut memo, `/` to search the canvas, `Ctrl+Z` to undo a deletion.
+- **Keyboard first.** `Ctrl+K` for the command palette, `?` for the shortcut memo, `/` to search the canvas, `l` to ring what the selection touches, `t` to hide the labels on the cards, `Esc` to show everything again, `Ctrl+Z` to undo a deletion.
 - **A STIX guide** at `#/guide`, built from the relationship matrix itself, for whoever has never touched the format.
 
 No account, no telemetry, no LLM anywhere near your intel.
