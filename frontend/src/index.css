@@ -909,6 +909,18 @@ label {
   margin-bottom: 20px;
 }
 
+/* The buttons keep their labels on one line and the field gives up the room.
+   Left to shrink, two of the three wrapped onto two lines while the first did
+   not, and a row of buttons at three different heights is the first thing
+   anyone sees of the app. */
+.create-row button {
+  white-space: nowrap;
+}
+
+.create-row input {
+  min-width: 0;
+}
+
 .inv-table {
   width: 100%;
   border-collapse: collapse;
