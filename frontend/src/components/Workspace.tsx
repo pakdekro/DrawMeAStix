@@ -20,7 +20,7 @@ import { ACCEPT, pageAt, textFromFile } from '../extractors'
 import { SCO_ORDER, SDO_ORDER, countByType, typeMeta } from '../stixMeta'
 import type { CaptureItem, Entity, Investigation, NoteItem, Relationship } from '../types'
 import { compressImage } from '../annotations'
-import { NODE_H, NODE_W, findFreeSpot, type Rect } from '../placement'
+import { NODE_H, NODE_W, findFreeSpot, type Rect, type Segment } from '../placement'
 import { anchor } from '../floating'
 import { relColor } from '../relMeta'
 import { radialArrange } from '../radial'
@@ -1148,15 +1148,32 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
 
   /**
    * Annotations (#136) put back next to their anchor entity once the objects
-   * have moved: first free slot to its right, no overlap. Shared by both ways
-   * of rearranging the canvas, since only the objects differ between them.
+   * have moved. Shared by both ways of rearranging the canvas, since only the
+   * objects differ between them.
+   *
+   * OUTWARD from the middle of the drawing, not to the right. "To the right"
+   * was fine on a layered layout where right is nowhere in particular; on a
+   * radial one, right is straight at the hub for everything sitting west of
+   * it, which is the busiest part of the picture. Away from the centre of mass
+   * is the quiet direction on both, and on the radial it is the empty one.
+   *
+   * And the relationships are handed to the search, so a note lands beside its
+   * object rather than across three of its spokes.
    */
   const placeAnnotations = useCallback(
     async (
       entityPositions: Record<string, { x: number; y: number }>,
       placed: Rect[],
+      links: Segment[] = [],
     ): Promise<Record<string, { x: number; y: number }>> => {
       const out: Record<string, { x: number; y: number }> = { ...entityPositions }
+      const spots = Object.values(entityPositions)
+      const middle = spots.length
+        ? {
+            x: spots.reduce((sum, p) => sum + p.x, 0) / spots.length + NODE_W / 2,
+            y: spots.reduce((sum, p) => sum + p.y, 0) / spots.length + NODE_H / 2,
+          }
+        : { x: 0, y: 0 }
       for (const nd of nodes) {
         if (nd.type !== 'annotNote' && nd.type !== 'annotCapture') continue
         const size = {
@@ -1166,8 +1183,8 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         const anchorId =
           nd.type === 'annotNote' ? nd.data.note.entity_id : nd.data.capture.entity_ids[0]
         const anchor = anchorId ? entityPositions[anchorId] : undefined
-        const preferred = anchor ? { x: anchor.x + NODE_W + 80, y: anchor.y } : nd.position
-        const pos = findFreeSpot(preferred, placed, size)
+        const preferred = anchor ? outward(anchor, size) : nd.position
+        const pos = findFreeSpot(preferred, placed, size, links)
         placed.push({ ...pos, ...size })
         out[nd.id] = pos
         if (nd.type === 'annotNote') {
@@ -1177,6 +1194,27 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         }
       }
       return out
+
+      /**
+       * One card-and-a-bit away from the anchor, pointing away from the middle
+       * of the drawing. Pushed per axis rather than along a circle, so a note
+       * ends up a note's width to the side or a note's height above, never a
+       * note's width above.
+       */
+      function outward(at: { x: number; y: number }, size: { w: number; h: number }) {
+        const cx = at.x + NODE_W / 2
+        const cy = at.y + NODE_H / 2
+        const dx = cx - middle.x
+        const dy = cy - middle.y
+        const len = Math.hypot(dx, dy)
+        // An object sitting exactly on the middle has no outward: the old
+        // answer, to its right, is as good as any.
+        const away = len === 0 ? { x: 1, y: 0 } : { x: dx / len, y: dy / len }
+        return {
+          x: cx + away.x * (NODE_W / 2 + size.w / 2 + 40) - size.w / 2,
+          y: cy + away.y * (NODE_H / 2 + size.h / 2 + 40) - size.h / 2,
+        }
+      }
     },
     [nodes, iid, showError],
   )
@@ -1234,7 +1272,16 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       placed.push({ ...pos, w: width, h: height })
     }
 
-    const newPositions = await placeAnnotations(entityPositions, placed)
+    const links: Segment[] = edges
+      .filter((e) => !e.id.startsWith('annot:'))
+      .filter((e) => entityPositions[e.source] && entityPositions[e.target])
+      .map((e) => ({
+        x1: entityPositions[e.source].x + NODE_W / 2,
+        y1: entityPositions[e.source].y + NODE_H / 2,
+        x2: entityPositions[e.target].x + NODE_W / 2,
+        y2: entityPositions[e.target].y + NODE_H / 2,
+      }))
+    const newPositions = await placeAnnotations(entityPositions, placed, links)
 
     setNodes((ns) =>
       ns.map((nd) =>
@@ -1245,11 +1292,6 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     fitSoon()
   }, [nodes, edges, iid, keepLayout, setNodes, fitSoon, placeAnnotations, showError])
 
-  /**
-   * "Group by type": the everyday button. One band per STIX type, in palette
-   * order, and no claim at all about the relationships - see layout.ts for why
-   * drawing them automatically was given up on.
-   */
   /**
    * Draws the graph around its hub (see radial.ts). The only thing left that
    * moves objects: the questions the other arrangements used to answer by
@@ -1278,7 +1320,18 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       placed.push({ x, y, w: size.w, h: size.h })
     }
 
-    const newPositions = await placeAnnotations(entityPositions, placed)
+    // Where the lines will be once everything has moved, so the annotations
+    // are laid out against the drawing that is about to exist.
+    const links: Segment[] = relations
+      .filter((r) => entityPositions[r.source] && entityPositions[r.target])
+      .map((r) => ({
+        x1: entityPositions[r.source].x + (byId.get(r.source)?.w ?? NODE_W) / 2,
+        y1: entityPositions[r.source].y + (byId.get(r.source)?.h ?? NODE_H) / 2,
+        x2: entityPositions[r.target].x + (byId.get(r.target)?.w ?? NODE_W) / 2,
+        y2: entityPositions[r.target].y + (byId.get(r.target)?.h ?? NODE_H) / 2,
+      }))
+
+    const newPositions = await placeAnnotations(entityPositions, placed, links)
     setNodes((ns) =>
       ns.map((nd) => (newPositions[nd.id] ? { ...nd, position: newPositions[nd.id] } : nd)),
     )
