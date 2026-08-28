@@ -18,7 +18,7 @@ Draw Me A STIX fills the gap: **structure, annotate, curate** an investigation o
 
 ## What it does
 
-![The Draw Me A STIX canvas showing a fictional investigation: linked STIX objects, analyst notes pinned on the graph, and the narrative panel on the right](docs/screenshot.jpg)
+![The Draw Me A STIX canvas showing a fictional investigation: the graph drawn around the intrusion set it is about, relationships coloured by what they say, analyst notes pinned on it, and the inspector open on the right](docs/screenshot.jpg)
 
 - **A guided canvas.** Drag a link between two objects and only the relationships the STIX 2.1 matrix allows are offered, each with a sentence saying what it means. When no direct link exists (an actor and an IP address, say) it offers the canonical detour rather than a meaningless `related-to`.
 - **A triage tray.** Paste a report or a list of IOCs and everything lands sorted by type. Nothing reaches the canvas without your approval, and nothing you reject is lost: it is undoable.
