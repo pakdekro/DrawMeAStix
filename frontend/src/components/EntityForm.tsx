@@ -211,7 +211,7 @@ export default function EntityForm({
           {f.help && <p className="hint">{f.help}</p>}
         </div>
       ))}
-      <div className="actions">
+      <div className="actions form-actions">
         {/* Make the modified state VISIBLE: what made the loss silent was that
             nothing said there was anything left to save before clicking
             elsewhere. */}

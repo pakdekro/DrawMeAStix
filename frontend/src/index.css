@@ -1410,6 +1410,17 @@ label {
   margin-top: 18px;
 }
 
+/* The form's own action row, laid out wherever the form is shown and not only
+   inside a modal. In the inspector it was plain block flow, so the marker's
+   `margin-right: auto` did nothing and "unsaved changes" simply shoved Save
+   along the line each time you typed a character. */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Unsaved-input marker: placed left of the buttons, it pushes "Cancel" and
    "Save" to the right without moving anything else. Warning tone, not error:
    nothing is broken, there is simply something left to do. */
@@ -2958,11 +2969,20 @@ input.checkbox {
   width: 760px;
 }
 
+/* Columns rather than a grid. A grid lines its rows up, so the shortest group
+   in a row is padded out to the height of the tallest one beside it, and
+   "Everywhere" ended up with a hand's width of nothing under it because
+   "Canvas" had grown. Columns just flow, and `break-inside` keeps a group
+   whole. */
 .shortcuts .shortcut-groups {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 18px 28px;
+  columns: 2;
+  column-gap: 28px;
   margin: 4px 0 14px;
+}
+
+.shortcut-group {
+  break-inside: avoid;
+  margin-bottom: 18px;
 }
 
 .shortcut-group h3 {
