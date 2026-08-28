@@ -21,6 +21,7 @@ import { countByType, typeMeta } from '../stixMeta'
 import type { CaptureItem, Entity, Investigation, NoteItem, Relationship } from '../types'
 import { compressImage } from '../annotations'
 import { NODE_H, NODE_W, findFreeSpot, type Rect } from '../placement'
+import { anchor } from '../floating'
 import { ARRANGEMENTS, arrange, type Arrangement } from '../layout'
 import { circleLayout, validateTemplate } from '../templates'
 import type { ScenarioTemplate, TemplatePlan } from '../templates'
@@ -587,13 +588,43 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    * others step back. On a graph where thirty edges cross the screen, the ring
    * around a neighbour says WHICH objects; only the edge says which link.
    */
-  const displayEdges = useMemo(() => {
-    if (linked.edges.size === 0) return edges
-    return edges.map((e) => ({
-      ...e,
-      className: linked.edges.has(e.id) ? 'edge-linked' : 'edge-aside',
-    }))
-  }, [edges, linked])
+  /**
+   * Where each relationship meets each card. Worked out here rather than by
+   * each edge, because an edge cannot know how many others are competing for
+   * the side it wants to leave from. Only the STIX relationships take part:
+   * a note or a capture hangs off the annotation handle, and that position IS
+   * the statement.
+   */
+  const ends = useMemo(
+    () =>
+      anchor(
+        nodes.map((nd) => ({
+          id: nd.id,
+          x: nd.position.x,
+          y: nd.position.y,
+          w: nd.measured?.width ?? NODE_W,
+          h: nd.measured?.height ?? NODE_H,
+        })),
+        edges.filter((e) => e.type === 'floating'),
+      ),
+    [nodes, edges],
+  )
+
+  const displayEdges = useMemo(
+    () =>
+      edges.map((e) => {
+        const mine = ends.get(e.id)
+        if (!mine && linked.edges.size === 0) return e
+        return {
+          ...e,
+          ...(mine ? { data: { ...e.data, ends: mine } } : {}),
+          ...(linked.edges.size === 0
+            ? {}
+            : { className: linked.edges.has(e.id) ? 'edge-linked' : 'edge-aside' }),
+        }
+      }),
+    [edges, ends, linked],
+  )
 
   const centerOnHit = useCallback(
     (index: number) => {

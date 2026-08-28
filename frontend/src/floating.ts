@@ -5,95 +5,161 @@
  * its target, because that is where the two handles are. On a graph drawn top
  * to bottom that reads fine. On a graph the analyst has arranged by hand it is
  * the main source of the spaghetti: an edge pointing UP has to leave
- * downwards, swing around the whole node and come back. The detour carries no
+ * downwards, swing around the whole card and come back. The detour carries no
  * information, and there is one per edge.
  *
- * So the anchor is not a point on the node any more, it is a point on an
- * INVISIBLE OVAL a little larger than the card, and it slides around that oval
- * to face whatever it is joining. What says which way a relationship runs is
- * the arrowhead, which it already did; where the line touches the card was
- * never carrying that meaning, it was only ever an artefact of the handles.
+ * So the anchor moves. What says which way a relationship runs is the
+ * arrowhead, which it always did; where the line touched the card was never
+ * carrying that, it was an artefact of the handles.
  *
- * The oval is a superellipse rather than a true ellipse: |x/a|^n + |y/b|^n = 1.
- * At n = 2 that is an ellipse, and an ellipse that stays outside a 230x63 card
- * has to be half as wide again, which leaves the arrowheads floating in space
- * on the left and right. Raising the exponent pulls the curve out towards the
- * corners, so the outline hugs the card at a near constant distance the whole
- * way round while staying an oval to the eye.
+ * Two rules decide where it goes, in this order:
+ *
+ *  1. It picks the SIDE that faces the other object, and sits at the middle of
+ *     that side, a little clear of the border. Not at the point where the ray
+ *     between the two centres crosses the outline: that is the honest answer
+ *     geometrically, and it looks wrong, because a card with a single link
+ *     ends up joined at a corner for no reason the eye can see.
+ *  2. It only leaves that middle when it has to. Several edges on the same
+ *     side fan out around it, in the order their targets appear along that
+ *     side, so the lines do not cross each other in the last few pixels.
+ *
+ * Which means the anchors have to be worked out for the whole graph at once,
+ * rather than by each edge on its own: an edge cannot know how many others
+ * are competing for the side it wants.
  */
 
 import { Position } from '@xyflow/react'
 
-/** The oval an edge is allowed to touch, in flow coordinates. */
-export interface Outline {
-  cx: number
-  cy: number
-  /** semi-axis across, and down */
-  a: number
-  b: number
+export interface AnchorNode {
+  id: string
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+export interface AnchorEdge {
+  id: string
+  source: string
+  target: string
 }
 
 export interface Contact {
   x: number
   y: number
-  /** which way the curve should leave, so the bezier does not fold back */
+  /** which way the curve leaves, so the bezier does not fold back on itself */
   side: Position
 }
 
-/**
- * How far outside the card the oval runs, and how square it is allowed to
- * become. The pair is not free: the oval has to clear the card's CORNERS, or
- * an edge arriving diagonally would end inside the box. `outlineFits` below is
- * the check, and the test suite runs it over every card size we draw.
- */
+export interface EdgeContacts {
+  from: Contact
+  to: Contact
+}
+
+/** How far clear of the border an anchor sits, leaving room for an arrowhead. */
 export const PAD = 14
-/**
- * 6 and not 4: an exponent of 4 draws a rounder oval and clears the corners
- * of a one-line card comfortably, but a card carrying labels and marks is
- * 230x120, nearly square, and there the rounder curve cuts the corner. 6 is
- * the roundest the tallest card we draw can take.
- */
-export const ROUNDNESS = 6
+/** Distance between two anchors sharing a side, when there is room for it. */
+export const PITCH = 18
+/** How close to a corner the fan may reach. */
+export const CORNER = 16
 
-/** The oval that hangs off a `w` x `h` card centred on `cx`, `cy`. */
-export function outline(cx: number, cy: number, w: number, h: number): Outline {
-  return { cx, cy, a: w / 2 + PAD, b: h / 2 + PAD }
+interface Slot {
+  edge: string
+  end: 'from' | 'to'
+  side: Position
+  /** direction towards the other object, used to order the fan */
+  dx: number
+  dy: number
 }
 
 /**
- * Whether that oval clears the corners of the card it belongs to. A corner
- * sits at (w/2, h/2), so it is outside the outline when the superellipse
- * evaluates to less than 1 there.
+ * The side a ray leaves a card through. `|dy| * w` against `|dx| * h` is the
+ * rectangle's own diagonal test: it accounts for the card being nearly four
+ * times wider than it is tall, so a target up and to the right of a wide card
+ * leaves through the TOP, which is the short way out.
  */
-export function outlineFits(w: number, h: number): boolean {
-  const o = outline(0, 0, w, h)
-  return (w / 2 / o.a) ** ROUNDNESS + (h / 2 / o.b) ** ROUNDNESS <= 1
-}
-
-/** The point where the ray from `from` towards `to` crosses `from`'s oval. */
-export function contact(from: Outline, to: Outline): Contact {
-  const dx = to.cx - from.cx
-  const dy = to.cy - from.cy
-  // Two cards exactly on top of each other: no direction to speak of. Any
-  // answer is wrong, so return the centre rather than dividing by zero.
-  if (dx === 0 && dy === 0) return { x: from.cx, y: from.cy, side: Position.Top }
-
-  const t =
-    1 /
-    (Math.abs(dx / from.a) ** ROUNDNESS + Math.abs(dy / from.b) ** ROUNDNESS) **
-      (1 / ROUNDNESS)
-  return { x: from.cx + dx * t, y: from.cy + dy * t, side: sideOf(dx, dy, from) }
-}
-
-/**
- * The quarter of the oval the ray leaves through, which is what the curve
- * uses to decide where to bulge. Compared as `|dx|*b` against `|dy|*a` rather
- * than as an angle: same test without a trig call, and it accounts for the
- * card being far wider than it is tall.
- */
-function sideOf(dx: number, dy: number, o: Outline): Position {
-  if (Math.abs(dx) * o.b >= Math.abs(dy) * o.a) {
-    return dx >= 0 ? Position.Right : Position.Left
+function sideOf(dx: number, dy: number, node: AnchorNode): Position {
+  if (Math.abs(dy) * node.w > Math.abs(dx) * node.h) {
+    return dy >= 0 ? Position.Bottom : Position.Top
   }
-  return dy >= 0 ? Position.Bottom : Position.Top
+  return dx >= 0 ? Position.Right : Position.Left
+}
+
+function place(node: AnchorNode, side: Position, offset: number): Contact {
+  const cx = node.x + node.w / 2
+  const cy = node.y + node.h / 2
+  switch (side) {
+    case Position.Top:
+      return { x: cx + offset, y: node.y - PAD, side }
+    case Position.Bottom:
+      return { x: cx + offset, y: node.y + node.h + PAD, side }
+    case Position.Left:
+      return { x: node.x - PAD, y: cy + offset, side }
+    default:
+      return { x: node.x + node.w + PAD, y: cy + offset, side }
+  }
+}
+
+/**
+ * The offsets for `count` anchors sharing one side, centred on its middle.
+ * One anchor gets the middle itself. The fan widens by `PITCH` until it would
+ * reach the corners, then tightens to fit rather than spilling over them.
+ */
+function fan(count: number, span: number): number[] {
+  if (count <= 1) return [0]
+  const pitch = Math.min(PITCH, span / (count - 1))
+  return Array.from({ length: count }, (_, i) => (i - (count - 1) / 2) * pitch)
+}
+
+/**
+ * Both ends of every edge, keyed by edge id. Edges whose endpoints are not in
+ * `nodes` are left out; so is an edge whose two cards share a centre, which
+ * has no direction to speak of.
+ */
+export function anchor(
+  nodes: AnchorNode[],
+  edges: AnchorEdge[],
+): Map<string, EdgeContacts> {
+  const byId = new Map(nodes.map((n) => [n.id, n]))
+  const slots = new Map<string, Slot[]>()
+  const add = (id: string, slot: Slot) => {
+    const list = slots.get(id)
+    if (list) list.push(slot)
+    else slots.set(id, [slot])
+  }
+
+  for (const e of edges) {
+    const a = byId.get(e.source)
+    const b = byId.get(e.target)
+    if (!a || !b) continue
+    const dx = b.x + b.w / 2 - (a.x + a.w / 2)
+    const dy = b.y + b.h / 2 - (a.y + a.h / 2)
+    if (dx === 0 && dy === 0) continue
+    add(a.id, { edge: e.id, end: 'from', side: sideOf(dx, dy, a), dx, dy })
+    add(b.id, { edge: e.id, end: 'to', side: sideOf(-dx, -dy, b), dx: -dx, dy: -dy })
+  }
+
+  const out = new Map<string, EdgeContacts>()
+  const contact = (edge: string, end: 'from' | 'to', c: Contact) => {
+    const pair = out.get(edge)
+    if (pair) pair[end] = c
+    else out.set(edge, { from: c, to: c })
+  }
+
+  for (const [id, list] of slots) {
+    const node = byId.get(id)
+    if (!node) continue
+    for (const side of [Position.Top, Position.Bottom, Position.Left, Position.Right]) {
+      const here = list.filter((s) => s.side === side)
+      if (here.length === 0) continue
+      // Ordered the way their targets lie along the side, so two edges leaving
+      // the same border do not swap places and cross on the doorstep.
+      const across = side === Position.Top || side === Position.Bottom
+      here.sort((p, q) => (across ? p.dx - q.dx : p.dy - q.dy))
+      const span = Math.max((across ? node.w : node.h) - 2 * CORNER, 0)
+      const offsets = fan(here.length, span)
+      here.forEach((slot, i) => contact(slot.edge, slot.end, place(node, side, offsets[i])))
+    }
+  }
+  return out
 }

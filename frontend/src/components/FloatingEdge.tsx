@@ -1,51 +1,38 @@
-import { BaseEdge, getBezierPath, useInternalNode } from '@xyflow/react'
+import { BaseEdge, getBezierPath } from '@xyflow/react'
 import type { EdgeProps } from '@xyflow/react'
-import { contact, outline } from '../floating'
+import type { EdgeContacts } from '../floating'
 
 /**
- * A relationship drawn between two ovals rather than between two handles (see
- * `floating.ts` for why). The handles stay on the card - they are what you
- * drag from to create a link - they simply no longer decide where the line is
- * drawn.
+ * A relationship drawn between two anchors rather than between two handles
+ * (see `floating.ts` for why, and for where the anchors come from). The
+ * handles stay on the card - they are what you drag from to create a link -
+ * they simply no longer decide where the line is drawn.
+ *
+ * The two ends arrive through `data`, worked out for the whole graph at once:
+ * an edge cannot know on its own how many others are competing for the side
+ * it wants to leave from.
  */
 export default function FloatingEdge({
   id,
-  source,
-  target,
   markerEnd,
   style,
+  data,
   label,
   labelStyle,
   labelBgStyle,
   labelBgPadding,
   labelBgBorderRadius,
 }: EdgeProps) {
-  const from = useInternalNode(source)
-  const to = useInternalNode(target)
-  if (!from || !to) return null
-
-  const a = outline(
-    from.internals.positionAbsolute.x + (from.measured.width ?? 0) / 2,
-    from.internals.positionAbsolute.y + (from.measured.height ?? 0) / 2,
-    from.measured.width ?? 0,
-    from.measured.height ?? 0,
-  )
-  const b = outline(
-    to.internals.positionAbsolute.x + (to.measured.width ?? 0) / 2,
-    to.internals.positionAbsolute.y + (to.measured.height ?? 0) / 2,
-    to.measured.width ?? 0,
-    to.measured.height ?? 0,
-  )
-  const start = contact(a, b)
-  const end = contact(b, a)
+  const ends = data?.ends as EdgeContacts | undefined
+  if (!ends) return null
 
   const [path, labelX, labelY] = getBezierPath({
-    sourceX: start.x,
-    sourceY: start.y,
-    sourcePosition: start.side,
-    targetX: end.x,
-    targetY: end.y,
-    targetPosition: end.side,
+    sourceX: ends.from.x,
+    sourceY: ends.from.y,
+    sourcePosition: ends.from.side,
+    targetX: ends.to.x,
+    targetY: ends.to.y,
+    targetPosition: ends.to.side,
     // Well under the 0.25 default: with the anchors already pointing the right
     // way, a pronounced curve only adds length and crossings.
     curvature: 0.15,

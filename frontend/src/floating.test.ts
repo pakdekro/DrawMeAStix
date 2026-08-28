@@ -1,86 +1,146 @@
 import { describe, expect, it } from 'vitest'
 import { Position } from '@xyflow/react'
-import { PAD, contact, outline, outlineFits } from './floating'
+import { CORNER, PAD, PITCH, anchor, type AnchorEdge, type AnchorNode } from './floating'
 
-/** The card sizes the canvas actually draws: 120 to 230 wide, one to four rows. */
-const CARDS = [
-  [120, 40],
-  [120, 63],
-  [180, 63],
-  [230, 63],
-  [230, 88],
-  [230, 120],
-] as const
-
-const at = (cx: number, cy: number, w = 230, h = 63) => outline(cx, cy, w, h)
-
-describe('the oval an edge hangs off', () => {
-  it('sits outside the card on every side', () => {
-    const o = at(0, 0)
-    expect(o.a).toBe(115 + PAD)
-    expect(o.b).toBe(31.5 + PAD)
-  })
-
-  // The one thing the shape MUST do. An oval that cuts the corners would let
-  // a diagonal edge end inside the box, arrowhead and all.
-  it('clears the corners of every card the canvas draws', () => {
-    for (const [w, h] of CARDS) expect(outlineFits(w, h)).toBe(true)
-  })
-
-  it('never puts a contact point inside the card', () => {
-    for (const [w, h] of CARDS) {
-      const from = at(0, 0, w, h)
-      for (const angle of [0.1, 0.5, 0.9, 1.4, 2.0, 2.6, 3.1, 3.9, 4.7, 5.5, 6.1]) {
-        const c = contact(from, at(Math.cos(angle) * 900, Math.sin(angle) * 900, w, h))
-        const outside = Math.abs(c.x) > w / 2 || Math.abs(c.y) > h / 2
-        expect(outside).toBe(true)
-      }
-    }
-  })
+const W = 230
+const H = 63
+const card = (id: string, x: number, y: number, w = W, h = H): AnchorNode => ({
+  id,
+  x,
+  y,
+  w,
+  h,
 })
+const link = (id: string, source: string, target: string): AnchorEdge => ({
+  id,
+  source,
+  target,
+})
+const middleX = (n: AnchorNode) => n.x + n.w / 2
+const middleY = (n: AnchorNode) => n.y + n.h / 2
 
-describe('contact', () => {
-  it('leaves through the side facing the other card', () => {
-    expect(contact(at(0, 0), at(400, 0)).side).toBe(Position.Right)
-    expect(contact(at(0, 0), at(-400, 0)).side).toBe(Position.Left)
-    expect(contact(at(0, 0), at(0, 400)).side).toBe(Position.Bottom)
-    expect(contact(at(0, 0), at(0, -400)).side).toBe(Position.Top)
-  })
-
-  it('touches the semi-axis exactly when the ray runs along one', () => {
-    const o = at(0, 0)
-    expect(contact(o, at(400, 0)).x).toBeCloseTo(o.a)
-    expect(contact(o, at(0, -400)).y).toBeCloseTo(-o.b)
-  })
-
-  // The whole point of the change: an edge pointing up used to be drawn
-  // leaving downwards, because the source handle was at the bottom.
-  it('does not leave downwards when the target is above', () => {
-    expect(contact(at(0, 0), at(30, -400)).y).toBeLessThan(0)
+describe('one edge on a side', () => {
+  it('leaves from the middle of the side, clear of the border', () => {
+    const a = card('a', 0, 0)
+    const b = card('b', 900, 0)
+    const ends = anchor([a, b], [link('e', 'a', 'b')]).get('e')!
+    expect(ends.from).toEqual({ x: a.x + W + PAD, y: middleY(a), side: Position.Right })
+    expect(ends.to).toEqual({ x: b.x - PAD, y: middleY(b), side: Position.Left })
   })
 
   /**
-   * The anchor has to travel, not snap: two targets a degree apart must give
-   * two contact points a hair apart, all the way round. A jump would show up
-   * as an edge flicking from one side of the card to the other while the
-   * analyst drags a neighbour past it.
+   * The reason the ray-to-outline answer was dropped. Cobalt Strike hangs off
+   * one relationship, arriving from up and to the left; anchored where the
+   * ray crosses the outline it met the card at a corner, which reads as a
+   * mistake.
    */
-  it('slides continuously around the oval', () => {
-    const from = at(0, 0)
-    let previous = contact(from, at(600, 0))
-    for (let deg = 1; deg <= 360; deg++) {
-      const angle = (deg * Math.PI) / 180
-      const here = contact(from, at(Math.cos(angle) * 600, Math.sin(angle) * 600))
-      expect(Math.hypot(here.x - previous.x, here.y - previous.y)).toBeLessThan(6)
-      previous = here
+  it('still uses a middle when the other card is diagonally away', () => {
+    const a = card('a', 0, 0)
+    const b = card('b', 300, 260)
+    const ends = anchor([a, b], [link('e', 'a', 'b')]).get('e')!
+    expect(ends.from.x).toBe(middleX(a))
+    expect(ends.from.side).toBe(Position.Bottom)
+    expect(ends.to.x).toBe(middleX(b))
+    expect(ends.to.side).toBe(Position.Top)
+  })
+
+  // A card is nearly four times wider than it is tall, so the short way out of
+  // it is up and down far more often than a square would suggest.
+  it('reads the card as wide when it picks the side', () => {
+    const a = card('a', 0, 0)
+    const ends = anchor([a, card('b', 300, 60)], [link('e', 'a', 'b')]).get('e')!
+    expect(ends.from.side).toBe(Position.Right)
+    const steeper = anchor([a, card('b', 300, 300)], [link('e', 'a', 'b')]).get('e')!
+    expect(steeper.from.side).toBe(Position.Bottom)
+  })
+})
+
+describe('several edges on the same side', () => {
+  const hub = card('hub', 0, 0)
+  const below = (n: number) =>
+    Array.from({ length: n }, (_, i) => card(`n${i}`, (i - n / 2) * 260, 400))
+  const spokes = (n: number) =>
+    Array.from({ length: n }, (_, i) => link(`e${i}`, 'hub', `n${i}`))
+
+  it('fans out around the middle instead of piling up on it', () => {
+    const map = anchor([hub, ...below(3)], spokes(3))
+    const xs = ['e0', 'e1', 'e2'].map((id) => map.get(id)!.from.x)
+    expect(new Set(xs).size).toBe(3)
+    expect(xs[1]).toBe(middleX(hub)) // the odd one keeps the middle
+  })
+
+  it('stays centred on the middle, whatever the count', () => {
+    for (const n of [2, 3, 4, 7]) {
+      const map = anchor([hub, ...below(n)], spokes(n))
+      const xs = Array.from({ length: n }, (_, i) => map.get(`e${i}`)!.from.x)
+      expect((Math.min(...xs) + Math.max(...xs)) / 2).toBeCloseTo(middleX(hub))
     }
   })
 
-  it('reads the wide card as wide: a shallow diagonal still leaves sideways', () => {
-    expect(contact(at(0, 0), at(300, 60)).side).toBe(Position.Right)
+  it('never reaches the corners, however many edges want the side', () => {
+    const map = anchor([hub, ...below(20)], spokes(20))
+    const onTheBottom = Array.from({ length: 20 }, (_, i) => map.get(`e${i}`)!.from).filter(
+      (c) => c.side === Position.Bottom,
+    )
+    expect(onTheBottom.length).toBeGreaterThan(4)
+    for (const c of onTheBottom) {
+      expect(c.x).toBeGreaterThanOrEqual(hub.x + CORNER - 0.001)
+      expect(c.x).toBeLessThanOrEqual(hub.x + W - CORNER + 0.001)
+    }
   })
 
-  it('gives up gracefully on two cards sharing a centre', () => {
-    expect(contact(at(10, 10), at(10, 10))).toEqual({ x: 10, y: 10, side: Position.Top })
+  it('keeps a full pitch between anchors while there is room for it', () => {
+    const map = anchor([hub, ...below(3)], spokes(3))
+    const xs = ['e0', 'e1', 'e2'].map((id) => map.get(id)!.from.x).sort((p, q) => p - q)
+    expect(xs[1] - xs[0]).toBeCloseTo(PITCH)
+  })
+
+  /**
+   * Order matters as much as spacing: the leftmost target has to get the
+   * leftmost anchor, or two edges leaving the same border cross each other in
+   * the last few pixels, which is the very thing this is meant to stop.
+   */
+  it('orders the fan the way the targets lie along the side', () => {
+    const nodes = [hub, card('left', -600, 400), card('mid', 0, 400), card('right', 600, 400)]
+    const map = anchor(nodes, [
+      link('toRight', 'hub', 'right'),
+      link('toLeft', 'hub', 'left'),
+      link('toMid', 'hub', 'mid'),
+    ])
+    expect(map.get('toLeft')!.from.x).toBeLessThan(map.get('toMid')!.from.x)
+    expect(map.get('toMid')!.from.x).toBeLessThan(map.get('toRight')!.from.x)
+  })
+
+  it('fans a tall side down its height, not across its width', () => {
+    // Barely off the hub's own line: a card is wide enough that a steeper
+    // spread would leave through the top and the bottom instead.
+    const stack = [card('a', 600, -70), card('b', 600, 0), card('c', 600, 70)]
+    const map = anchor([hub, ...stack], [
+      link('e0', 'hub', 'a'),
+      link('e1', 'hub', 'b'),
+      link('e2', 'hub', 'c'),
+    ])
+    const ys = ['e0', 'e1', 'e2'].map((id) => map.get(id)!.from.y)
+    expect(new Set(ys).size).toBe(3)
+    expect(new Set(['e0', 'e1', 'e2'].map((id) => map.get(id)!.from.x)).size).toBe(1)
+  })
+})
+
+describe('the edges it cannot place', () => {
+  it('skips an edge whose endpoint is gone', () => {
+    expect(anchor([card('a', 0, 0)], [link('e', 'a', 'ghost')]).size).toBe(0)
+  })
+
+  it('skips two cards sharing a centre, which point nowhere', () => {
+    expect(anchor([card('a', 0, 0), card('b', 0, 0)], [link('e', 'a', 'b')]).size).toBe(0)
+  })
+
+  it('counts both ends of every edge it does place', () => {
+    const map = anchor(
+      [card('a', 0, 0), card('b', 600, 0), card('c', 0, 400)],
+      [link('e1', 'a', 'b'), link('e2', 'a', 'c'), link('e3', 'b', 'c')],
+    )
+    expect(map.size).toBe(3)
+    for (const pair of map.values()) expect(pair.from).not.toBe(pair.to)
   })
 })
