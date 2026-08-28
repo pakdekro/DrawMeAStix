@@ -1834,6 +1834,17 @@ input.checkbox {
   margin-top: 3px;
 }
 
+/* T hides the labels written on the cards. They earn their room on a small
+   canvas and cost it on a big one: three chips is a third line of text on
+   every object, and the labels an analyst tags with are the same handful over
+   and over, so on a crowded graph they say almost nothing while taking almost
+   as much ink as the names. Hidden and not shrunk, because a smaller chip is
+   still a chip. */
+.no-labels .entity-node .node-labels {
+  display: none;
+}
+
+
 .entity-node .node-label {
   font-size: 9px;
   color: var(--text-dim);

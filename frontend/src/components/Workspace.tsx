@@ -196,6 +196,9 @@ function toNode(entity: Entity): EntityNodeType {
 // they survive the html-to-image capture of the image export (CSS variables,
 // for their part, are not resolved in the cloned SVG → invisible strokes and
 // black label backgrounds). If the theme changes, adjust here too.
+/** Where the card labels toggle (T) is remembered. */
+const LABELS_KEY = 'dmas.card-labels'
+
 function toEdge(rel: Relationship): Edge {
   // The colour groups the verb rather than naming it (see relMeta.ts). It
   // travels as a custom property rather than as a stroke, so the link focus
@@ -304,6 +307,25 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    * the answer is a SET and a set is best shown where the objects already are.
    */
   const [lens, setLens] = useState<Lens | null>(null)
+  /**
+   * The labels written on the cards (T).
+   *
+   * They earn their room on a small canvas and cost it on a big one: three
+   * chips per card is a third line of text on every object, and the labels an
+   * analyst tags with are the same handful over and over, so on a crowded
+   * graph they say almost nothing while taking almost as much ink as the
+   * names. A way of looking rather than a property of the case, so it is
+   * remembered in localStorage and never travels in a bundle.
+   */
+  const [showLabels, setShowLabels] = useState(() => {
+    try {
+      return window.localStorage.getItem(LABELS_KEY) !== 'off'
+    } catch {
+      // a private window and blocked site data both throw here
+      return true
+    }
+  })
+  const toggleLabelsRef = useRef<() => void>(() => undefined)
   const lensRef = useRef<Lens | null>(null)
   lensRef.current = lens
   const toggleLinkFocusRef = useRef<() => void>(() => undefined)
@@ -775,6 +797,19 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    * ways: the toolbar button stays lit while it is on, and the toggle says so
    * out loud for the times it was reached by the keyboard.
    */
+  const toggleLabels = useCallback(() => {
+    setShowLabels((on) => {
+      try {
+        window.localStorage.setItem(LABELS_KEY, on ? 'off' : 'on')
+      } catch {
+        /* see the reader, above */
+      }
+      showInfo(on ? 'Labels hidden on the cards' : 'Labels shown on the cards')
+      return !on
+    })
+  }, [showInfo])
+  toggleLabelsRef.current = toggleLabels
+
   const toggleLinkFocus = useCallback(() => {
     setLinkFocus((on) => {
       showInfo(on ? 'Link focus off' : 'Link focus on: select an object to see what it touches')
@@ -827,6 +862,19 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       ) {
         e.preventDefault()
         toggleLinkFocusRef.current()
+        return
+      }
+      // "t" for the tags written on the cards. A bare letter, like "/" and
+      // "l": the canvas owns the keyboard whenever no field does.
+      if (
+        e.key.toLowerCase() === 't' &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey &&
+        !el?.closest('input, textarea, [contenteditable]')
+      ) {
+        e.preventDefault()
+        toggleLabelsRef.current()
         return
       }
       // Escape puts the canvas back the way it was. Only when a lens is on,
@@ -2612,7 +2660,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
           panel={sidePanel}
           onPanel={choosePanel}
         />
-        <div className="canvas-wrap">
+        <div className={`canvas-wrap${showLabels ? '' : ' no-labels'}`}>
           <ReactFlow
             nodes={displayNodes}
             edges={displayEdges}

@@ -53,6 +53,11 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
         note: "off by default, because it dims the rest and that gets in the way while you rearrange",
       },
       {
+        keys: ["t"],
+        what: "Show or hide the labels written on the cards",
+        note: "three chips per object is a third line of text on every one of them",
+      },
+      {
         keys: ["Esc"],
         what: "Show everything again, when a lens is dimming the canvas",
       },
