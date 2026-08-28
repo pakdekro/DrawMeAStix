@@ -316,6 +316,30 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
   const [lightbox, setLightbox] = useState<CaptureItem | null>(null)
   const { screenToFlowPosition, getNodes, deleteElements, fitView, setCenter } = useReactFlow()
 
+  /**
+   * Fit the canvas once React Flow has taken the new positions in.
+   *
+   * Two frames and not one, which is measured rather than assumed: the same
+   * arrangement chosen twice from a fresh load fitted to the PREVIOUS layout
+   * the first time and to the right one the second. React commits the moved
+   * nodes on its own schedule, and a single frame lands on the wrong side of
+   * that commit often enough to see.
+   *
+   * These calls used to pass `minZoom: 0.1` to escape React Flow's floor of
+   * 0.5, and that never worked: the option only changes the viewport being
+   * COMPUTED, and d3-zoom then clamps the transform it is handed to the scale
+   * extent the canvas was built with. Which is why every arrangement ran off
+   * the sides of the screen. The floor is set on the canvas now, where it
+   * takes effect, and the analyst gets to zoom out that far by hand too - on
+   * a canvas that can be four screens wide, that is a gain and not a side
+   * effect.
+   */
+  const fitSoon = useCallback(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15 }))
+    })
+  }, [fitView])
+
   /* -- canvas search (#122) ---------------------------------------------- */
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [undoStack, setUndoStack] = useState<UndoAction[]>([])
@@ -1146,12 +1170,8 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       ),
     )
     await api.savePositions(iid, entityPositions).catch(showError)
-    // `minZoom` here, and not on the canvas: React Flow refuses to zoom out
-    // past 0.5 by default, so on any graph worth re-laying out the fit stopped
-    // there and left the result running off the screen. Lowered for this one
-    // call, so what the analyst can do by hand is unchanged.
-    requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15, minZoom: 0.1 }))
-  }, [nodes, edges, iid, keepLayout, setNodes, fitView, placeAnnotations, showError])
+    fitSoon()
+  }, [nodes, edges, iid, keepLayout, setNodes, fitSoon, placeAnnotations, showError])
 
   /**
    * "Group by type": the everyday button. One band per STIX type, in palette
@@ -1208,7 +1228,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       ns.map((nd) => (newPositions[nd.id] ? { ...nd, position: newPositions[nd.id] } : nd)),
     )
     await api.savePositions(iid, entityPositions).catch(showError)
-    requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15, minZoom: 0.1 }))
+    fitSoon()
     },
     [
       nodes,
@@ -1217,7 +1237,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       lintFlagged,
       keepLayout,
       setNodes,
-      fitView,
+      fitSoon,
       placeAnnotations,
       showError,
     ],
@@ -1245,8 +1265,8 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       }
     }
     await api.savePositions(iid, entityPositions).catch(showError)
-    requestAnimationFrame(() => fitView({ duration: 400, padding: 0.15, minZoom: 0.1 }))
-  }, [layoutBackup, iid, setNodes, fitView, showError])
+    fitSoon()
+  }, [layoutBackup, iid, setNodes, fitSoon, showError])
 
   // narrative data (#116): derived from the canvas nodes/edges, memoised so
   // the text is only recomputed when the graph actually changes
@@ -2524,6 +2544,9 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
             // the expected gesture everywhere anyway.
             multiSelectionKeyCode={['Control', 'Meta', 'Shift']}
             fitView
+            // See `fitSoon`: a whole investigation does not fit on a screen at
+            // half size, and this is the only place the limit is real.
+            minZoom={0.15}
             colorMode="dark"
             proOptions={{ hideAttribution: true }}
           >

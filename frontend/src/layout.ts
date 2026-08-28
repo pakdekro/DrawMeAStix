@@ -17,6 +17,12 @@
  * arrangement of meaning stays the analyst's job - which is what it was in
  * practice anyway.
  *
+ * One arrangement is not like the others. "By structure" DOES draw the graph,
+ * and it lives in `radial.ts`; it became possible once the edges stopped
+ * leaving from a fixed handle. It is first in the menu because it answers the
+ * question people ask first, and the rest of this file is what to reach for
+ * when the drawing is not the thing you need.
+ *
  * Each group is drawn as a CLUSTER: a near-square block of its own, with air
  * all around it. Full-width bands stacked on top of each other were the first
  * try and they read badly - two rows of objects separated by a slightly bigger
@@ -26,6 +32,7 @@
  * a cost: no edge has to stay short any more.
  */
 
+import { radialArrange } from './radial'
 import { SCO_ORDER, SDO_ORDER } from './stixMeta'
 
 export interface ArrangeNode {
@@ -56,6 +63,7 @@ export interface Placement {
 }
 
 export type Arrangement =
+  | 'radial'
   | 'type'
   | 'indicators'
   | 'tlp'
@@ -66,6 +74,11 @@ export type Arrangement =
 
 /** The menu, in the order it is shown. `hint` says what the bands mean. */
 export const ARRANGEMENTS: { id: Arrangement; label: string; hint: string }[] = [
+  {
+    id: 'radial',
+    label: 'By structure',
+    hint: 'The graph itself: hubs in the middle, rings by distance',
+  },
   { id: 'type', label: 'By type', hint: 'One block per STIX type, palette order' },
   {
     id: 'indicators',
@@ -299,6 +312,8 @@ export function arrange(
   if (nodes.length === 0) return []
   const unit = unitOf(nodes)
   switch (kind) {
+    case 'radial':
+      return radialArrange(nodes, edges, [...SDO_ORDER, ...SCO_ORDER])
     case 'indicators':
       return spread(byDetection(nodes, edges), unit)
     case 'tlp':
