@@ -1419,6 +1419,9 @@ label {
   justify-content: flex-end;
   align-items: center;
   gap: 8px;
+  /* Air above, which the modal got from its own rule and the inspector did
+     not: the row sat straight against the field above it. */
+  margin-top: 14px;
 }
 
 /* Unsaved-input marker: placed left of the buttons, it pushes "Cancel" and
@@ -2969,20 +2972,27 @@ input.checkbox {
   width: 760px;
 }
 
-/* Columns rather than a grid. A grid lines its rows up, so the shortest group
-   in a row is padded out to the height of the tallest one beside it, and
-   "Everywhere" ended up with a hand's width of nothing under it because
-   "Canvas" had grown. Columns just flow, and `break-inside` keeps a group
-   whole. */
+/* Two columns filled top to bottom rather than left to right.
+   
+   Filling across put "Everywhere" beside "Canvas", and a grid lines its rows
+   up, so the short group was padded out to the height of the tall one and
+   left a hand's width of nothing in the middle of the sheet. Letting the
+   groups simply flow fixed that and broke something else: the second heading
+   in each column then started at whatever height the first one happened to
+   end, and the two columns no longer read as columns.
+   
+   Filling downwards gets both. "Everywhere" pairs with "Triage tray", which
+   are near enough the same size, and the one big group pairs with the one
+   small one, so what slack is left sits in the bottom corner where it reads
+   as a margin. Two rows means four groups; a fifth would start a third
+   column and want a wider sheet. */
 .shortcuts .shortcut-groups {
-  columns: 2;
-  column-gap: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(2, auto);
+  grid-auto-flow: column;
+  gap: 18px 28px;
   margin: 4px 0 14px;
-}
-
-.shortcut-group {
-  break-inside: avoid;
-  margin-bottom: 18px;
 }
 
 .shortcut-group h3 {
