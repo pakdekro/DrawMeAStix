@@ -2570,7 +2570,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
                   and the arranging of meaning stays the analyst's. */}
               <TopbarMenu
                 label="Shape"
-                icon={<Icon name="target" size={15} />}
+                icon={<Icon name="grid" size={15} />}
                 buttonClass="rf-btn"
               >
                 {(close) =>
