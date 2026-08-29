@@ -152,7 +152,7 @@ const TLP_ORDER = ["white", "green", "amber", "red"] as const;
 // tlp/confidence: handled explicitly (per-object marking, precedence).
 const INTERNAL_KEYS = new Set([
   "id", "type", "spec_version", "created", "modified",
-  "identity_class", "location_type", "x_mitre_id", "pattern",
+  "identity_class", "location_type", "x_mitre_id", "mitre_framework", "pattern",
   "pattern_type", "valid_from",
   "hashes", "file_name", "actor_kind", "country", "region",
   "latitude", "longitude", "published", "is_family", "number", "as_name",
@@ -312,7 +312,12 @@ function sdoIdFor(stixType: string, name: string, props: Props): string {
   throw new Error(`unsupported type: ${stixType}`);
 }
 
-function withExternalRef(extra: Props, sourceName: string, externalId: string): JsonValue[] {
+function withExternalRef(
+  extra: Props,
+  sourceName: string,
+  externalId: string,
+  url?: string,
+): JsonValue[] {
   const refs = [...((extra.external_references as JsonValue[] | undefined) ?? [])];
   const exists = refs.some(
     (r) =>
@@ -323,7 +328,11 @@ function withExternalRef(extra: Props, sourceName: string, externalId: string): 
       r.external_id === externalId,
   );
   if (!exists) {
-    refs.push({ source_name: sourceName, external_id: externalId });
+    refs.push({
+      source_name: sourceName,
+      external_id: externalId,
+      ...(url === undefined ? {} : { url }),
+    });
   }
   return refs;
 }
@@ -593,8 +602,22 @@ function buildSdo(e: EntityRow, props: Props, commonBase: Props): StixObject {
   switch (e.stix_type) {
     case "attack-pattern":
       if (props.x_mitre_id) {
+        // What the reference CLAIMS follows the framework, never the shape of
+        // the identifier: F3 reuses 43 ATT&CK numbers verbatim, so reading
+        // "starts with an F" would hand ATT&CK a fraud technique, and reading
+        // "starts with a T" would do the reverse. Absent means ATT&CK, which
+        // is every technique created before F3 was supported.
+        const framework = props.mitre_framework === "mitre-f3" ? "mitre-f3" : "mitre-attack";
         base.external_references = withExternalRef(
-          base, "mitre-attack", props.x_mitre_id as string,
+          base,
+          framework,
+          props.x_mitre_id as string,
+          // A url for F3 only, and not for want of symmetry: an ATT&CK number
+          // resolves itself for any consumer on the planet, F1001 resolves
+          // nowhere without one.
+          framework === "mitre-f3"
+            ? `https://ctid.mitre.org/fraud/techniques/${props.x_mitre_id as string}`
+            : undefined,
         );
       }
       return base;

@@ -95,10 +95,23 @@ export const TYPE_FIELDS: Record<string, FieldDef[]> = {
   'attack-pattern': [
     {
       key: 'x_mitre_id',
-      label: 'MITRE ATT&CK ID',
+      label: 'MITRE ID',
       type: 'text',
       placeholder: 'T1566',
       help: 'Used as the deduplication key on import when filled in',
+    },
+    /* Which framework the number above belongs to, because the number cannot
+       say on its own: F3 reuses 43 ATT&CK identifiers verbatim. Left alone it
+       stays absent from the properties, and absent means ATT&CK. */
+    {
+      key: 'mitre_framework',
+      label: 'Framework',
+      type: 'select',
+      options: [
+        { value: 'mitre-attack', label: 'ATT&CK' },
+        { value: 'mitre-f3', label: 'F3 (fraud)' },
+      ],
+      help: 'What the exported reference claims about the ID',
     },
     DESCRIPTION,
   ],
@@ -319,6 +332,10 @@ export function toProperties(
     if (raw === '' || raw === undefined || raw === null || raw === false) continue
     props[key] = raw
   }
+  // ATT&CK is the default, and a default has ONE representation. Storing it
+  // explicitly would leave two ways of saying the same thing, and the second
+  // one only appears if the analyst opens the select and comes back.
+  if (props.mitre_framework === 'mitre-attack') delete props.mitre_framework
   for (const key of ['aliases', 'labels'] as const) {
     if (typeof props[key] !== 'string') continue
     const list = (props[key] as string)

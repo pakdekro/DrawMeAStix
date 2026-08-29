@@ -190,11 +190,21 @@ function entityProperties(obj: StixLike): Record<string, JsonValue> {
   if (obj.type === "directory") delete props.path;
   if (obj.type === "user-account") delete props.account_login;
   if (obj.type === "attack-pattern" && !props.x_mitre_id) {
-    const mitre = asArray(obj.external_references)
-      .filter((r): r is StixLike => typeof r === "object" && r !== null)
-      .map((r) => (r.source_name === "mitre-attack" ? asText(r.external_id) : undefined))
-      .find((id) => id !== undefined);
-    if (mitre) props.x_mitre_id = mitre;
+    const refs = asArray(obj.external_references).filter(
+      (r): r is StixLike => typeof r === "object" && r !== null && !Array.isArray(r),
+    );
+    // ATT&CK first. A bundle carrying both references describes a technique F3
+    // borrowed from ATT&CK, and it is the ATT&CK number that deduplicates it
+    // against the rest of the world.
+    for (const source of ["mitre-attack", "mitre-f3"] as const) {
+      const mitre = refs
+        .map((r) => (r.source_name === source ? asText(r.external_id) : undefined))
+        .find((id) => id !== undefined);
+      if (mitre === undefined) continue;
+      props.x_mitre_id = mitre;
+      if (source === "mitre-f3") props.mitre_framework = "mitre-f3";
+      break;
+    }
   }
   return props;
 }

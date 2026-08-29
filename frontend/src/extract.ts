@@ -86,6 +86,7 @@ const TRIM_TRAILING = /[.,;:!?…()]+$/;
 
 const CVE_RE = /^CVE-\d{4}-\d{4,7}$/i;
 const TID_RE = /^T\d{4}(?:\.\d{3})?$/i;
+const FID_RE = /^F\d{4}(?:\.\d{3})?$/i;
 
 interface Sighting {
   candidate: ExtractedCandidate;
@@ -95,6 +96,7 @@ interface Sighting {
 function classifyToken(
   token: string,
   attackById: Map<string, AttackEntry>,
+  f3ById: Map<string, AttackEntry>,
 ): Omit<ExtractedCandidate, "context" | "offset"> | null {
   if (CVE_RE.test(token)) {
     return { stix_type: "vulnerability", name: token.toUpperCase(), properties: {} };
@@ -103,6 +105,16 @@ function classifyToken(
     // T-id quoted in the text: only if it exists in the embedded dictionary
     // (an invented "T1234" must not create a phantom technique)
     const entry = attackById.get(token.toUpperCase());
+    return entry ? entryToCreation(entry) : null;
+  }
+  // F3 numbers, resolved the same way. Deliberately against the F3 dictionary
+  // ONLY, and deliberately by NUMBER only: F3 names fraud techniques in plain
+  // English ("Bank Deposit", "Account Takeover", "Phishing"), and matching
+  // those as words in prose would trade precision for recall in the one place
+  // where a guess is asserted rather than offered. A T-id never reaches here,
+  // so a technique F3 shares with ATT&CK still resolves through ATT&CK above.
+  if (FID_RE.test(token)) {
+    const entry = f3ById.get(token.toUpperCase());
     return entry ? entryToCreation(entry) : null;
   }
   const detected = detectIoc(token);
@@ -139,11 +151,13 @@ function findWholeWord(lower: string, term: string): number {
 /**
  * Sweeps a long text and returns deduplicated candidates, each with its
  * context excerpt. `attack`: entries of the embedded dataset (empty = no
- * dictionary matching and no T-id resolution).
+ * dictionary matching and no T-id resolution). `f3`: the F3 corpus, read for
+ * its numbers alone and never for its names, see `classifyToken`.
  */
 export function extractFromText(
   text: string,
   attack: AttackEntry[] = [],
+  f3: AttackEntry[] = [],
 ): ExtractedCandidate[] {
   // Only the entries that carry an ATT&CK number can be reached by one. This
   // corpus is ATT&CK-only today, so the filter changes nothing; it is here so
@@ -151,6 +165,9 @@ export function extractFromText(
   // rather than indexed under "UNDEFINED".
   const attackById = new Map(
     attack.filter((e) => e.id !== undefined).map((e) => [e.id!.toUpperCase(), e]),
+  );
+  const f3ById = new Map(
+    f3.filter((e) => e.id !== undefined).map((e) => [e.id!.toUpperCase(), e]),
   );
   const sightings: Sighting[] = [];
   const seen = new Set<string>();
@@ -166,7 +183,7 @@ export function extractFromText(
     const trimmed = m[0].replace(TRIM_LEADING, "").replace(TRIM_TRAILING, "");
     if (trimmed.length < 4) continue;
     const token = refang(trimmed);
-    const classified = classifyToken(token, attackById);
+    const classified = classifyToken(token, attackById, f3ById);
     if (classified === null) continue;
     const leading = TRIM_LEADING.exec(m[0])?.[0].length ?? 0;
     const start = m.index + leading;
