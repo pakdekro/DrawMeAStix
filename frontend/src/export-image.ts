@@ -139,9 +139,11 @@ export async function captureGraph(
 export async function composeReport(
   graphUrl: string,
   title: string,
-  narr: Narrative,
+  narr: Narrative | null,
   format: ImageFormat,
   background: string,
+  notes: ReportNote[] = [],
+  subjects: ReportSubject[] = [],
 ): Promise<string> {
   const graph = await loadImage(graphUrl)
   await document.fonts.ready
@@ -175,20 +177,35 @@ export async function composeReport(
   const head = (t: string) =>
     blocks.push({ lines: [t.toUpperCase()], font: `700 13px ${SANS}`, color: '#7e9cd8', lh: 22, gap: 4 })
 
-  head('Narrative')
-  narr.story.forEach(para)
-  if (narr.detection.length) {
-    head('Detection')
-    narr.detection.forEach(para)
+  // The object a note is about, and the "this is an opinion" line: quieter
+  // than a section heading, louder than the prose, so the eye can tell whose
+  // words it is reading without needing a legend.
+  const sub = (t: string) =>
+    blocks.push({ lines: wrap(t, `700 15px ${SANS}`), font: `700 15px ${SANS}`, color: '#dcd7ba', lh: 23, gap: 2 })
+  const aside = (t: string) =>
+    blocks.push({ lines: wrap(t, `italic 14px ${SANS}`), font: `italic 14px ${SANS}`, color: '#9a9782', lh: 21, gap: 2 })
+
+  if (narr) {
+    head('Narrative')
+    narr.story.forEach(para)
+    if (narr.detection.length) {
+      head('Detection')
+      narr.detection.forEach(para)
+    }
+    if (narr.isolated.length) aside(`Unlinked: ${narr.isolated.join(', ')}.`)
   }
-  if (narr.isolated.length) {
-    blocks.push({
-      lines: wrap(`Unlinked: ${narr.isolated.join(', ')}.`, `italic 14px ${SANS}`),
-      font: `italic 14px ${SANS}`,
-      color: '#9a9782',
-      lh: 21,
-      gap: 0,
-    })
+
+  const groups = groupNotes(notes, subjects)
+  if (groups.length > 0) {
+    head('Analyst notes')
+    aside('Written by the analyst: how the case was reasoned about.')
+    for (const { subject, notes: mine } of groups) {
+      sub(subject ? subject.name : 'About the case')
+      for (const note of mine) {
+        if (note.kind === 'opinion') aside(opinionLabel(note))
+        note.content.split('\n').forEach(para)
+      }
+    }
   }
 
   const titleLines = wrap(title, `700 26px ${SANS}`)

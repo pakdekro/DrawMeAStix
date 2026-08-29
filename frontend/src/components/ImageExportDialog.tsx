@@ -98,9 +98,20 @@ export default function ImageExportDialog({
       } else {
         const imgFormat = format as ImageFormat
         const ext = imgFormat === 'jpeg' ? 'jpg' : 'png'
-        if (withNarrative) {
+        if (withNarrative || withNotes) {
           const graph = await captureGraph(nodes, 'png', bg())
-          downloadUrl(await composeReport(graph, title, narr, imgFormat, bg()), `${slug}-rapport.${ext}`)
+          downloadUrl(
+            await composeReport(
+              graph,
+              title,
+              withNarrative ? narr : null,
+              imgFormat,
+              bg(),
+              mine,
+              entities,
+            ),
+            `${slug}-rapport.${ext}`,
+          )
         } else {
           const graph = await captureGraph(nodes, 'png', bg())
           downloadUrl(await withFooter(graph, imgFormat, bg()), `${slug}.${ext}`)
@@ -146,19 +157,17 @@ export default function ImageExportDialog({
       {/* The STIX export has its own checkbox for the same material. These are
           two audiences, not one setting: a bundle going to a platform and a
           report going to a person do not want the same candour. */}
-      {(format === 'md' || format === 'pdf') && (
-        <label className="checkbox-row">
-          <input
-            type="checkbox"
-            className="checkbox"
-            checked={withNotes}
-            onChange={(e) => setWithNotes(e.target.checked)}
-            disabled={notes.length === 0}
-          />
-          Include my notes and opinions
-          {notes.length === 0 && <em className="hint"> (none written yet)</em>}
-        </label>
-      )}
+      <label className="checkbox-row">
+        <input
+          type="checkbox"
+          className="checkbox"
+          checked={withNotes}
+          onChange={(e) => setWithNotes(e.target.checked)}
+          disabled={notes.length === 0}
+        />
+        Include my notes and opinions
+        {notes.length === 0 && <em className="hint"> (none written yet)</em>}
+      </label>
       {error && <p className="lint-warn">{error}</p>}
       <div className="actions" style={{ justifyContent: 'flex-start' }}>
         <button className="primary" onClick={run} disabled={busy || nodes.length === 0}>
