@@ -198,7 +198,6 @@ export async function composeReport(
   const groups = groupNotes(notes, subjects)
   if (groups.length > 0) {
     head('Analyst notes')
-    aside('Written by the analyst: how the case was reasoned about.')
     for (const { subject, notes: mine } of groups) {
       sub(subject ? subject.name : 'About the case')
       for (const note of mine) {
@@ -355,7 +354,6 @@ export async function graphToPdf(
     // same face, becomes a finding by the time it is read aloud.
     if (groups.length > 0) {
       heading('Analyst notes')
-      block(['Written by the analyst: how the case was reasoned about.'], 9, 130)
       for (const { subject, notes: mine } of groups) {
         y += 6
         pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(60)

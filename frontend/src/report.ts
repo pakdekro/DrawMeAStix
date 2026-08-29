@@ -10,8 +10,10 @@
  *
  * The two outputs answer to different people and should each be allowed to
  * carry this, on the analyst's say-so, which is a checkbox in both dialogs.
- * What they must never do is print a doubt in the same voice as a finding,
- * hence the quoting and the heading that says whose words these are.
+ * What they must never do is print a doubt in the same voice as a finding.
+ * The heading names them, they are quoted, and an opinion says it is one:
+ * three signals, which is enough. A fourth sentence explaining the section to
+ * its reader was written and then removed, as nagging.
  */
 
 export interface ReportNote {

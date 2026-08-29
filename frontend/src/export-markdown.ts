@@ -77,11 +77,6 @@ export function buildMarkdown(
   const groups = groupNotes(notes, entities)
   if (groups.length > 0) {
     out.push('## Analyst notes', '')
-    out.push(
-      '_Written by the analyst: how the case was reasoned about, not what it',
-      'establishes._',
-      '',
-    )
     for (const { subject, notes: mine } of groups) {
       out.push(
         subject
