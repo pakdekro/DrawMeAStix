@@ -8,6 +8,7 @@
  */
 
 import { buildNarrative, type NarrEntity, type NarrRelation } from './narrative'
+import { groupNotes, opinionLabel, type ReportNote } from './report'
 import { typeMeta } from './stixMeta'
 
 const SOURCE_URL = 'https://app.drawmeastix.io'
@@ -22,6 +23,7 @@ export function buildMarkdown(
   entities: NarrEntity[],
   relations: NarrRelation[],
   includeNarrative: boolean,
+  notes: ReportNote[] = [],
 ): string {
   const idOf = new Map(entities.map((e, i) => [e.id, `n${i}`]))
   const rels = relations.filter((r) => idOf.has(r.source) && idOf.has(r.target))
@@ -64,6 +66,34 @@ export function buildMarkdown(
     }
     if (narr.isolated.length) {
       out.push(`_Unlinked: ${narr.isolated.join(', ')}._`, '')
+    }
+  }
+
+  // --- the analyst's own reasoning ---
+  //
+  // Last, and after the narrative, on purpose: the facts first, then what the
+  // person who assembled them makes of the facts. Quoted rather than run into
+  // the prose, so that nobody reads a doubt as a finding.
+  const groups = groupNotes(notes, entities)
+  if (groups.length > 0) {
+    out.push('## Analyst notes', '')
+    out.push(
+      '_Written by the analyst: how the case was reasoned about, not what it',
+      'establishes._',
+      '',
+    )
+    for (const { subject, notes: mine } of groups) {
+      out.push(
+        subject
+          ? `### ${subject.name} _(${typeMeta(subject.stix_type).label})_`
+          : '### About the case',
+        '',
+      )
+      for (const note of mine) {
+        if (note.kind === 'opinion') out.push(`**${opinionLabel(note)}**`, '')
+        for (const line of note.content.split('\n')) out.push(`> ${line}`)
+        out.push('')
+      }
     }
   }
 

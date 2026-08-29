@@ -679,6 +679,21 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     [nodes, lintFlagged],
   )
 
+  /**
+   * What the analyst wrote, on its way to a report. Never to the bundle: the
+   * export builder reads named fields and this is not one of them.
+   */
+  const reasoning = useMemo(
+    () =>
+      notes.map((n) => ({
+        entityId: n.entity_id,
+        kind: n.kind,
+        value: n.opinion_value,
+        content: n.content,
+      })),
+    [notes],
+  )
+
   /** The analyst's own vocabulary, listed in the objects panel. */
   const labels = useMemo(() => labelIndex(asked), [asked])
 
@@ -3019,6 +3034,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
           nodes={nodes}
           entities={narrativeEntities}
           relations={narrativeRelations}
+          notes={reasoning}
           onClose={() => setShowImageExport(false)}
         />
       )}

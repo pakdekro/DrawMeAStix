@@ -40,3 +40,46 @@ describe('buildMarkdown', () => {
     expect(md).toContain('https://app.drawmeastix.io')
   })
 })
+
+describe('buildMarkdown: the analyst notes', () => {
+  const NOTES = [
+    { entityId: 'a', kind: 'note' as const, value: null, content: 'Evidence stays thin.' },
+    { entityId: 'a', kind: 'opinion' as const, value: 'agree', content: 'Two sources corroborate.' },
+    { entityId: null, kind: 'note' as const, value: null, content: 'Reopen in a month.' },
+  ]
+
+  it('says nothing when nothing was written', () => {
+    expect(buildMarkdown('T', E, R, false)).not.toContain('## Analyst notes')
+    expect(buildMarkdown('T', E, R, false, [])).not.toContain('## Analyst notes')
+  })
+
+  it('files each note under the object it is about', () => {
+    const md = buildMarkdown('T', E, R, false, NOTES)
+    expect(md).toContain('## Analyst notes')
+    expect(md).toContain('### Corax _(Intrusion Set)_')
+    expect(md.indexOf('### Corax')).toBeLessThan(md.indexOf('> Evidence stays thin.'))
+    expect(md.indexOf('> Evidence stays thin.')).toBeLessThan(md.indexOf('### About the case'))
+    expect(md).toContain('### About the case')
+    expect(md).toContain('> Reopen in a month.')
+  })
+
+  /**
+   * A doubt set in the same voice as a finding becomes a finding by the time
+   * it is read aloud, so it is quoted and the opinion says it is one.
+   */
+  it('marks an opinion as an opinion, with the scale the analyst chose', () => {
+    expect(buildMarkdown('T', E, R, false, NOTES)).toContain('**Opinion: agree**')
+  })
+
+  it('comes after the narrative: the facts, then what is made of them', () => {
+    const md = buildMarkdown('T', E, R, true, NOTES)
+    expect(md.indexOf('## Narrative')).toBeLessThan(md.indexOf('## Analyst notes'))
+  })
+
+  it('keeps a note written over several lines readable as one quote', () => {
+    const md = buildMarkdown('T', E, R, false, [
+      { entityId: 'a', kind: 'note' as const, value: null, content: 'first\nsecond' },
+    ])
+    expect(md).toContain('> first\n> second')
+  })
+})

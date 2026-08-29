@@ -11,6 +11,7 @@
 import { getNodesBounds, getViewportForBounds } from '@xyflow/react'
 import type { Node } from '@xyflow/react'
 import type { Narrative } from './narrative'
+import { groupNotes, opinionLabel, type ReportNote, type ReportSubject } from './report'
 
 export type ImageFormat = 'png' | 'jpeg'
 
@@ -275,6 +276,8 @@ export async function graphToPdf(
   graphUrl: string,
   title: string,
   narr: Narrative | null,
+  notes: ReportNote[] = [],
+  subjects: ReportSubject[] = [],
 ): Promise<Blob> {
   const { jsPDF } = await import('jspdf')
   const img = await loadImage(graphUrl)
@@ -295,7 +298,8 @@ export async function graphToPdf(
   pdf.setFont('helvetica', 'normal').setFontSize(8).setTextColor(150)
   pdf.text(SOURCE_URL, pageW - M, pageH - 14, { align: 'right' })
 
-  if (narr) {
+  const groups = groupNotes(notes, subjects)
+  if (narr || groups.length > 0) {
     pdf.addPage()
     let y = M
     const block = (lines: string[], size: number, color: number) => {
@@ -318,14 +322,33 @@ export async function graphToPdf(
       pdf.text(t, M, y)
       y += 16
     }
-    heading('Narrative')
-    block(narr.story, 10, 55)
-    if (narr.detection.length) {
-      heading('Detection')
-      block(narr.detection, 10, 55)
+    if (narr) {
+      heading('Narrative')
+      block(narr.story, 10, 55)
+      if (narr.detection.length) {
+        heading('Detection')
+        block(narr.detection, 10, 55)
+      }
+      if (narr.isolated.length) {
+        block([`Unlinked: ${narr.isolated.join(', ')}.`], 10, 120)
+      }
     }
-    if (narr.isolated.length) {
-      block([`Unlinked: ${narr.isolated.join(', ')}.`], 10, 120)
+    // The facts first, then what the person who assembled them makes of the
+    // facts, and said to be that: a doubt printed next to a finding, in the
+    // same face, becomes a finding by the time it is read aloud.
+    if (groups.length > 0) {
+      heading('Analyst notes')
+      block(['Written by the analyst: how the case was reasoned about.'], 9, 130)
+      for (const { subject, notes: mine } of groups) {
+        y += 6
+        pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(60)
+        pdf.text(subject ? subject.name : 'About the case', M, y)
+        y += 14
+        for (const note of mine) {
+          if (note.kind === 'opinion') block([opinionLabel(note)], 9, 130)
+          block([note.content], 10, 55)
+        }
+      }
     }
   }
   return pdf.output('blob')
