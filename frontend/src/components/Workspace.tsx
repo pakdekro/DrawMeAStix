@@ -683,6 +683,55 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
    * What the analyst wrote, on its way to a report. Never to the bundle: the
    * export builder reads named fields and this is not one of them.
    */
+  /**
+   * Opening the image export puts the canvas back to neutral, and closing it
+   * puts your view back.
+   *
+   * The capture is taken from the live viewport, so whatever you were doing to
+   * look at the graph is baked into the picture: a lens dims two thirds of the
+   * objects, the link focus rings some and fades the rest, the search does the
+   * same, the selection draws a ring. None of that belongs in a report - it is
+   * a question you were asking, not a property of the case - and you would not
+   * find out until you opened the file.
+   *
+   * Cleared in the state rather than painted over in the stylesheet, because
+   * the link focus now sets its colour ON the element so the image export can
+   * see it, and no rule can win against that. One mechanism that is provably
+   * total beats two that each cover half.
+   */
+  const [viewAside, setViewAside] = useState<{
+    lens: LensChoice | null
+    linkFocus: boolean
+    selection: string[]
+  } | null>(null)
+
+  const openImageExport = useCallback(() => {
+    setViewAside({
+      lens,
+      linkFocus,
+      selection: nodes.filter((nd) => nd.selected).map((nd) => nd.id),
+    })
+    setLens(null)
+    setLinkFocus(false)
+    setSearchOpen(false)
+    setQuery('')
+    setNodes((ns) => ns.map((nd) => (nd.selected ? { ...nd, selected: false } : nd)))
+    setShowImageExport(true)
+  }, [lens, linkFocus, nodes, setNodes])
+
+  const closeImageExport = useCallback(() => {
+    setShowImageExport(false)
+    if (!viewAside) return
+    const kept = viewAside
+    setViewAside(null)
+    setLens(kept.lens)
+    setLinkFocus(kept.linkFocus)
+    const back = new Set(kept.selection)
+    if (back.size > 0) {
+      setNodes((ns) => ns.map((nd) => (back.has(nd.id) ? { ...nd, selected: true } : nd)))
+    }
+  }, [viewAside, setNodes])
+
   const reasoning = useMemo(
     () =>
       notes.map((n) => ({
@@ -2529,7 +2578,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
   const paletteActions = useMemo(
     () => [
       { label: 'Export STIX bundle…', hint: 'export', run: () => setShowExport(true) },
-      { label: 'Export image / PDF / Markdown…', hint: 'share', run: () => setShowImageExport(true) },
+      { label: 'Export image / PDF / Markdown…', hint: 'share', run: openImageExport },
       { label: 'Paste IOCs…', hint: 'import', run: openPaste },
       { label: 'Arrange the canvas by structure', hint: 'canvas', run: arrangeCanvas },
       // every lens is searchable, so the menu is a shortcut and not the only
@@ -2684,7 +2733,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
             <button
               className="menu-item"
               onClick={() => {
-                setShowImageExport(true)
+                openImageExport()
                 close()
               }}
             >
@@ -3035,7 +3084,7 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
           entities={narrativeEntities}
           relations={narrativeRelations}
           notes={reasoning}
-          onClose={() => setShowImageExport(false)}
+          onClose={closeImageExport}
         />
       )}
       {showShortcuts && <ShortcutsOverlay onClose={() => setShowShortcuts(false)} />}
