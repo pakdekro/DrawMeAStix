@@ -25,7 +25,7 @@ import { anchor } from '../floating'
 import { relColor, relLabelColor } from '../relMeta'
 import { radialArrange } from '../radial'
 import { LENSES, labelHits, labelIndex, lensHits, type LensChoice } from '../lens'
-import { circleLayout, validateTemplate } from '../templates'
+import { validateTemplate } from '../templates'
 import type { ScenarioTemplate, TemplatePlan } from '../templates'
 import { findBridges } from '../bridges'
 import type { BridgeMatch, BridgeRecipe } from '../bridges'
@@ -1716,7 +1716,37 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     })
-    const positions = circleLayout(plan.entities.length, center)
+    // Laid out the way Arrange would lay it out, and not in a ring of its
+    // own: a scenario arrives with its relationships already decided, so the
+    // drawing that answers them exists before the objects do. A ring said
+    // nothing about which object the scenario is about; the radial puts it in
+    // the middle, which is the first thing you want to see.
+    const placed = radialArrange(
+      plan.entities.map((e) => ({
+        id: e.key,
+        stix_type: e.stix_type,
+        w: NODE_W,
+        h: NODE_H,
+      })),
+      plan.relations.map((r) => ({ source: r.fromKey, target: r.toKey })),
+      [...SDO_ORDER, ...SCO_ORDER],
+    )
+    // Centred on what you are looking at, like the ring was.
+    const at = new Map(placed.map((pl) => [pl.id, pl]))
+    const left = Math.min(...placed.map((pl) => pl.x))
+    const top = Math.min(...placed.map((pl) => pl.y))
+    const width = Math.max(...placed.map((pl) => pl.x)) + NODE_W - left
+    const height = Math.max(...placed.map((pl) => pl.y)) + NODE_H - top
+    const offset = {
+      x: center.x - left - width / 2,
+      y: center.y - top - height / 2,
+    }
+    const positions = plan.entities.map((e) => {
+      const spot = at.get(e.key)
+      return spot
+        ? { x: spot.x + offset.x, y: spot.y + offset.y }
+        : { x: center.x, y: center.y }
+    })
     const keyToId = new Map<string, string>()
     const problems: string[] = []
     for (const [i, planned] of plan.entities.entries()) {
@@ -1750,6 +1780,9 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       }
     }
     if (problems.length > 0) showError(problems.join(' ; '))
+    // The ring was small enough to land inside the viewport; a radial is not,
+    // and a scenario you cannot see is not a scenario you have been given.
+    fitSoon()
   }
 
   const loadCustomTemplate = useCallback(

@@ -241,24 +241,3 @@ export function planIsolation(tpl: ScenarioTemplate, plan: TemplatePlan): PlanIs
   return { isolated, connectors: [...connectors] };
 }
 
-/**
- * Positions on a circle around a centre, to lay the subgraph out.
- *
- * The radius follows the number of nodes: a fixed one was fine for the eight
- * or so a scenario used to produce, and stacked them on top of each other as
- * soon as a slot started holding several values (#6).
- */
-export function circleLayout(
-  count: number,
-  center: { x: number; y: number },
-  radius = Math.max(240, count * 26),
-): { x: number; y: number }[] {
-  if (count === 1) return [center];
-  return Array.from({ length: count }, (_, i) => {
-    const angle = (2 * Math.PI * i) / count - Math.PI / 2;
-    return {
-      x: center.x + radius * Math.cos(angle),
-      y: center.y + radius * Math.sin(angle),
-    };
-  });
-}

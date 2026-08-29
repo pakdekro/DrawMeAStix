@@ -10,7 +10,6 @@ import { describe, expect, it } from "vitest";
 import {
   BUILTIN_TEMPLATES,
   buildPlan,
-  circleLayout,
   planIsolation,
   validateTemplate,
 } from "./templates";
@@ -250,16 +249,6 @@ describe("isolement sans hub (#82)", () => {
         isolated.map((e) => e.slotKey),
         `${tpl.name} : victime isolée sans acteur`,
       ).not.toContain("victim");
-    }
-  });
-});
-
-describe("layout", () => {
-  it("répartit en cercle autour du centre", () => {
-    const positions = circleLayout(4, { x: 0, y: 0 }, 100);
-    expect(positions).toHaveLength(4);
-    for (const p of positions) {
-      expect(Math.hypot(p.x, p.y)).toBeCloseTo(100, 6);
     }
   });
 });
