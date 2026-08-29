@@ -5,6 +5,48 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
+## 1.6.1 - 29 August 2026
+
+- **A report carries your reasoning, and the picture no longer carries your
+  mood.** Notes and opinions already travelled in the STIX bundle, by
+  default, and reached none of the outputs a person reads: the Markdown, the
+  PDF and the image carried the graph and the narrative and nothing else. So
+  a receiving platform was told "the evidence stays thin, do not publish as
+  is" while the colleague reading the report was not, which is the wrong way
+  round. Each output now has its own checkbox for them, because a bundle
+  going to a platform and a report going to a person do not want the same
+  candour and only the analyst knows which is which. They are filed under the
+  object they are about, after the narrative, and quoted: a doubt set in the
+  same voice as a finding becomes a finding by the time it is read aloud.
+
+- **The image export takes a neutral canvas.** It captures the live viewport,
+  so whatever you were doing to look at the graph was baked into the picture:
+  a lens dims two thirds of the objects, the link focus rings some and fades
+  the rest, the search does the same, the selection draws a ring. None of it
+  is a property of the case, all of it is a question you happened to be
+  asking, and you would not have found out until you opened the file. Worse,
+  it would have exported half of it, since the highlight is drawn on the
+  element where the capture sees it and the fade is in the stylesheet where
+  it mostly does not. Opening the export dialog now puts the canvas back to
+  neutral and closing it puts your view back, which is also what tells you
+  what you are about to export.
+
+- **A scenario arrives drawn the way the Arrange button would draw it.** A
+  template landed in a ring of its own, and a ring has no centre that means
+  anything, so the object the scenario is about sat wherever the alphabet put
+  it. A scenario knows its relationships before its objects exist, so the
+  drawing that answers them is computed from the plan itself, with the same
+  function the button uses: the operator or the strain of a ransomware plan
+  ends up in the middle, which is the first thing you want to see. It is
+  framed once it lands, too, which the ring never needed.
+
+- **The narrative names a subject once.** One sentence per verb meant a hub
+  produced ten paragraphs opening with the same six words, and the reader
+  spent each sentence finding out it was still the same subject. Each object
+  now gets a block: its name, then a clause per verb. A block with a single
+  clause stays a sentence, because a one-item bullet list is worse prose than
+  the sentence it replaces.
+
 ## 1.6.0 - 28 August 2026
 
 - **The graph gets drawn after all, because the edges stopped leaving from a
