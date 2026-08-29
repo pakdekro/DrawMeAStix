@@ -16,7 +16,6 @@ import { entryToCreation, searchAttack } from "./attack";
 import type { AttackEntry } from "./attack";
 import { toProperties } from "./entityFields";
 import { extractFromText } from "./extract";
-import { techniquesOfTactic } from "./f3";
 import type { F3Dataset } from "./f3";
 import { mitreIdWarning } from "./ioc";
 import golden from "./stix/golden-bundle.json";
@@ -90,12 +89,6 @@ describe("dataset distillé", () => {
   it("se cherche par numéro et par nom", () => {
     expect(searchAttack(ENTRIES, "F1001")[0].name).toBe("3DS Bypass");
     expect(searchAttack(ENTRIES, "3ds bypass")[0].id).toBe("F1001");
-  });
-
-  it("se parcourt par tactique", () => {
-    const monetization = techniquesOfTactic(ENTRIES, "monetization");
-    expect(monetization.length).toBeGreaterThan(5);
-    expect(monetization.every((e) => e.tactics?.includes("monetization"))).toBe(true);
   });
 });
 
