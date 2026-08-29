@@ -29,7 +29,13 @@ export interface F3Tactic {
 
 export interface F3Dataset {
   f3_version: string;
-  /** In matrix order, which is the order of the fraud lifecycle, not alphabetical. */
+  /**
+   * In matrix order, which is the order of the fraud lifecycle, not
+   * alphabetical. Nothing reads them today: the palette searches, it does not
+   * teach. They are shipped because the matrix is the only thing that makes
+   * this framework legible to someone meeting it, and that belongs on a page
+   * with room for it rather than in 180 pixels of palette.
+   */
   tactics: F3Tactic[];
   entries: AttackEntry[];
 }
@@ -45,9 +51,4 @@ export function loadF3Dataset(): Promise<F3Dataset> {
     return r.json() as Promise<F3Dataset>;
   });
   return cache;
-}
-
-/** Techniques of one tactic, by short name, in identifier order. */
-export function techniquesOfTactic(entries: AttackEntry[], shortname: string): AttackEntry[] {
-  return entries.filter((e) => e.tactics?.includes(shortname));
 }
