@@ -25,9 +25,28 @@ export interface NarrRelation {
   type: string
   target: string
 }
+/**
+ * One subject and everything it does, so its name is written once.
+ *
+ * It used to be one sentence per verb, which on a hub meant ten paragraphs
+ * opening with the same six words: "The campaign Operation Aviary targets…",
+ * "The campaign Operation Aviary uses…". The reader spends the sentence
+ * finding out it is still the same subject.
+ *
+ * A block with a single clause stays a sentence. A one-item bullet list is
+ * worse prose than the sentence it replaces, and the repetition this fixes
+ * only exists from two clauses up.
+ */
+export interface NarrBlock {
+  /** "The campaign Operation Aviary", already capitalised */
+  subject: string
+  /** "targets the identity Aerodyne Defence and the location France" */
+  clauses: string[]
+}
+
 export interface Narrative {
-  /** sentences describing objects and observables */
-  story: string[]
+  /** what each object does, one block per object */
+  story: NarrBlock[]
   /** sentences describing indicators (detection rules) */
   detection: string[]
   /** entities with no relation at all */
@@ -183,7 +202,7 @@ export function buildNarrative(
     push(outBySource, r.source, r)
   }
 
-  const story: string[] = []
+  const story: NarrBlock[] = []
   const detection: string[] = []
 
   // main story: each source (indicators excluded), one sentence per verb
@@ -195,9 +214,10 @@ export function buildNarrative(
   for (const src of sources) {
     const byVerb = new Map<string, NarrEntity[]>()
     for (const r of outBySource.get(src.id)!) push(byVerb, r.type, byId.get(r.target)!)
-    for (const [type, targets] of byVerb) {
-      story.push(cap(`${singular(src)} ${verbOf(type)} ${targetPhrases(targets)}.`))
-    }
+    story.push({
+      subject: cap(singular(src)),
+      clauses: [...byVerb].map(([type, targets]) => `${verbOf(type)} ${targetPhrases(targets)}`),
+    })
   }
 
   // indicators: their own "Detection" section, worded as detection

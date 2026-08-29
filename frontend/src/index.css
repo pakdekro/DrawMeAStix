@@ -1227,6 +1227,26 @@ label {
   font-size: 12.5px;
   line-height: 1.5;
 }
+/* A subject and what it does: the name is written once, its verbs follow.
+   Tight against its list, because the two are one statement. */
+.narr-block {
+  margin: 0 0 10px;
+}
+
+.narrative-body .narr-subject {
+  margin: 0 0 2px;
+  font-weight: 600;
+}
+
+.narr-block ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.narr-block li {
+  margin: 1px 0;
+}
+
 
 .narrative-body p {
   margin: 0 0 8px;

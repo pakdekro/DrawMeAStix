@@ -59,7 +59,15 @@ export function buildMarkdown(
     const narr = buildNarrative(entities, relations)
     out.push('## Narrative', '')
     if (narr.story.length === 0) out.push('_No relationship yet._', '')
-    narr.story.forEach((s) => out.push(s, ''))
+    for (const block of narr.story) {
+      if (block.clauses.length === 1) {
+        out.push(`${block.subject} ${block.clauses[0]}.`, '')
+        continue
+      }
+      out.push(`**${block.subject}**`, '')
+      for (const clause of block.clauses) out.push(`- ${clause}`)
+      out.push('')
+    }
     if (narr.detection.length) {
       out.push('### Detection', '')
       narr.detection.forEach((s) => out.push(s, ''))

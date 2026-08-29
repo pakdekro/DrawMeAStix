@@ -10,7 +10,7 @@
 
 import { getNodesBounds, getViewportForBounds } from '@xyflow/react'
 import type { Node } from '@xyflow/react'
-import type { Narrative } from './narrative'
+import type { Narrative, NarrBlock } from './narrative'
 import { groupNotes, opinionLabel, type ReportNote, type ReportSubject } from './report'
 
 export type ImageFormat = 'png' | 'jpeg'
@@ -185,9 +185,19 @@ export async function composeReport(
   const aside = (t: string) =>
     blocks.push({ lines: wrap(t, `italic 14px ${SANS}`), font: `italic 14px ${SANS}`, color: '#9a9782', lh: 21, gap: 2 })
 
+  /** A subject, then what it does: one line if that is all, a list if more. */
+  const storyBlock = (block: NarrBlock, one: (t: string) => void, many: (t: string) => void) => {
+    if (block.clauses.length === 1) {
+      one(`${block.subject} ${block.clauses[0]}.`)
+      return
+    }
+    many(block.subject)
+    for (const clause of block.clauses) one(`· ${clause}`)
+  }
+
   if (narr) {
     head('Narrative')
-    narr.story.forEach(para)
+    narr.story.forEach((b) => storyBlock(b, para, sub))
     if (narr.detection.length) {
       head('Detection')
       narr.detection.forEach(para)
@@ -340,7 +350,20 @@ export async function graphToPdf(
     }
     if (narr) {
       heading('Narrative')
-      block(narr.story, 10, 55)
+      for (const b of narr.story) {
+        if (b.clauses.length === 1) {
+          block([`${b.subject} ${b.clauses[0]}.`], 10, 55)
+          continue
+        }
+        pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(60)
+        if (y > pageH - M) {
+          pdf.addPage()
+          y = M
+        }
+        pdf.text(b.subject, M, y)
+        y += 14
+        block(b.clauses.map((c) => `· ${c}`), 10, 55)
+      }
       if (narr.detection.length) {
         heading('Detection')
         block(narr.detection, 10, 55)

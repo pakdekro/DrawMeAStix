@@ -36,9 +36,22 @@ function Narrative({
           {nothing && (
             <p className="hint">No relationship yet: link some entities.</p>
           )}
-          {n.story.map((s, i) => (
-            <p key={`s${i}`}>{s}</p>
-          ))}
+          {/* The subject is written once. On a hub, one paragraph per verb
+              meant ten of them opening with the same six words. */}
+          {n.story.map((block, i) =>
+            block.clauses.length === 1 ? (
+              <p key={`s${i}`}>{`${block.subject} ${block.clauses[0]}.`}</p>
+            ) : (
+              <div key={`s${i}`} className="narr-block">
+                <p className="narr-subject">{block.subject}</p>
+                <ul>
+                  {block.clauses.map((clause) => (
+                    <li key={clause}>{clause}</li>
+                  ))}
+                </ul>
+              </div>
+            ),
+          )}
           {n.detection.length > 0 && (
             <>
               <h4>Detection</h4>

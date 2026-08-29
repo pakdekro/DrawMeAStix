@@ -21,18 +21,24 @@ const R: NarrRelation[] = [
   { source: 'ind', type: 'indicates', target: 'eggshell' },
 ]
 
+/** The sentence a block reads as, so the tests keep asserting on prose. */
+const sentences = (story: { subject: string; clauses: string[] }[]) =>
+  story.flatMap((b) => b.clauses.map((c) => `${b.subject} ${c}.`))
+
 describe('buildNarrative', () => {
   it("regroupe les cibles d'un même verbe par type", () => {
     const { story } = buildNarrative(E, R)
-    expect(story).toContain(
+    expect(sentences(story)).toContain(
       'The intrusion set Corax uses the malware NestDrop and EggShell and the tool Cobalt Strike.',
     )
   })
 
   it('décrit les observables comme des artefacts concrets', () => {
     const { story } = buildNarrative(E, R)
-    expect(story).toContain('The malware EggShell communicates with the domain nest.example.')
-    expect(story).toContain('The domain nest.example resolves to the IP 1.2.3.4.')
+    expect(sentences(story)).toContain(
+      'The malware EggShell communicates with the domain nest.example.',
+    )
+    expect(sentences(story)).toContain('The domain nest.example resolves to the IP 1.2.3.4.')
   })
 
   it('range les indicateurs dans la section détection, pas dans le récit', () => {
@@ -40,7 +46,32 @@ describe('buildNarrative', () => {
     expect(detection).toContain(
       'The indicator "C2 domain" is based on the domain nest.example and detects the malware EggShell.',
     )
-    expect(story.some((s) => s.includes('C2 domain'))).toBe(false)
+    expect(sentences(story).some((s) => s.includes('C2 domain'))).toBe(false)
+  })
+
+  /**
+   * The point of grouping: a hub used to produce one paragraph per verb, each
+   * opening with the same six words, and the reader spent the sentence finding
+   * out it was still the same subject.
+   */
+  it('names a subject once, however many verbs it has', () => {
+    const { story } = buildNarrative(
+      [
+        { id: 'c', stix_type: 'campaign', name: 'Aviary' },
+        { id: 'v', stix_type: 'identity', name: 'ACME' },
+        { id: 'm', stix_type: 'malware', name: 'EggShell' },
+        { id: 'l', stix_type: 'location', name: 'France' },
+      ],
+      [
+        { source: 'c', type: 'targets', target: 'v' },
+        { source: 'c', type: 'uses', target: 'm' },
+        { source: 'c', type: 'targets', target: 'l' },
+      ],
+    )
+    expect(story).toHaveLength(1)
+    expect(story[0].subject).toBe('The campaign Aviary')
+    // one clause per verb, and the two targets of the same verb share theirs
+    expect(story[0].clauses).toHaveLength(2)
   })
 
   it('liste les entités non rattachées', () => {
@@ -74,8 +105,8 @@ describe('buildNarrative', () => {
         { source: 'a', type: 'controls', target: 'i2' },
       ],
     )
-    expect(story).toContain('The threat actor A uses the malware M1 and M2.')
-    expect(story).toContain('The threat actor A controls the infrastructure I1 and I2.')
+    expect(sentences(story)).toContain('The threat actor A uses the malware M1 and M2.')
+    expect(sentences(story)).toContain('The threat actor A controls the infrastructure I1 and I2.')
   })
 
   it('signale un graphe vide', () => {
