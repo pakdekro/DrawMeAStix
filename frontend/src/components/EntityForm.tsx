@@ -125,6 +125,10 @@ export default function EntityForm({
       ...v,
       ...(entry.aliases?.length ? { aliases: entry.aliases.join(', ') } : {}),
       ...(entry.type === 'attack-pattern' ? { x_mitre_id: entry.id } : {}),
+      // the suggestion corpus is ATT&CK today, so this never fires; it is here
+      // so a suggestion that DOES come from F3 cannot arrive stripped of the
+      // one property that says what its number means
+      ...(entry.framework === 'mitre-f3' ? { mitre_framework: 'mitre-f3' } : {}),
     }))
   }
 

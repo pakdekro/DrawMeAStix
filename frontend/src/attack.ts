@@ -18,6 +18,17 @@ export interface AttackEntry {
   name: string;
   aliases?: string[];
   tactics?: string[];
+  /**
+   * MITRE framework the identifier belongs to. ABSENT means ATT&CK, so every
+   * dataset and every investigation written before F3 keeps its meaning.
+   *
+   * Only the 80 fraud-specific techniques carry "mitre-f3". The 43 that F3
+   * reuses by number are emitted as ATT&CK techniques by the dataset build:
+   * F3 flags them `isAttack` itself, and forking them would defeat the one
+   * thing that makes a fraud case and an intrusion case meet on the same
+   * object.
+   */
+  framework?: "mitre-attack" | "mitre-f3";
 }
 
 export interface AttackDataset {
@@ -88,6 +99,13 @@ export function entryToCreation(entry: AttackEntry): {
   } else if (entry.type === "attack-pattern") {
     // x_mitre_id drives the deterministic OpenCTI ID and the external reference
     properties.x_mitre_id = entry.id;
+    // …and the framework decides what that reference CLAIMS. Without it the
+    // builder stamps every technique `mitre-attack`, so an F1001 would go out
+    // asserting an ATT&CK number that does not exist - the same fabricated
+    // reference the branch above refuses to write for an actor.
+    if (entry.framework === "mitre-f3") {
+      properties.mitre_framework = "mitre-f3";
+    }
   } else {
     properties.external_references = [
       { source_name: "mitre-attack", external_id: entry.id, url: mitreUrl(entry.id) },

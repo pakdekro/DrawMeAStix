@@ -5,6 +5,44 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
+## 1.7.0 - 29 August 2026
+
+- **F3 alongside ATT&CK, and a case that crosses from one to the other.**
+  MITRE's Fight Financial Fraud matrix is offered in the framework panel, next
+  to ATT&CK rather than instead of it. There are tools that model fraud and
+  tools that model intrusions, and almost none that let one case be both,
+  which is odd given that a great many frauds start as an intrusion. Nothing
+  here is a mode: F3 needs no new verb, because its own bundle carries only
+  `subtechnique-of`, which describes the catalogue and never reaches a canvas.
+  On the canvas a fraud technique is an `attack-pattern` like any other,
+  reached through the `uses` and `targets` the matrix already allows, and
+  `impersonates` was already the most fraud-shaped verb we had. So the same
+  actor can be shown spearphishing its way in and cashing out, in one graph
+  and one bundle, and each half stays readable by the team that owns it.
+
+- **The two frameworks meet on the technique instead of forking it.** F3
+  reuses 43 ATT&CK techniques by number, and six of its eight tactics ARE
+  ATT&CK tactics. That overlap is the whole point, and it is also a trap: our
+  identifiers derive from the MITRE number alone, so a technique reached
+  through F3 and the same one reached through ATT&CK are one object, and any
+  disagreement about its NAME would put two cards on the canvas for it. F3
+  spells sub-techniques by full path where ATT&CK spells the leaf, so the
+  dataset build takes ATT&CK's name back for the shared ones and a test holds
+  that line against future regenerations. Those techniques are then plain
+  ATT&CK techniques, which is what makes the crossing above work at all.
+
+- **A technique no longer claims ATT&CK just because it carries a number.**
+  The export used to stamp `mitre-attack` on every `attack-pattern` that had
+  one, which was true while ATT&CK was the only source. It is a fabricated
+  reference the moment F1001 goes out claiming an ATT&CK identifier that does
+  not exist, and the shape of the identifier cannot arbitrate: F3 publishes
+  T-numbers of its own. So the framework is recorded next to the number, on
+  the object, set by whichever palette created it and editable in the
+  inspector. Absent still means ATT&CK, so nothing already on a canvas
+  changed meaning, and the import reads the provenance back out of the
+  reference. F3 references also carry a url, which ATT&CK does not need and
+  F1001 does.
+
 ## 1.6.1 - 29 August 2026
 
 - **A report carries your reasoning, and the picture no longer carries your

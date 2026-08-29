@@ -44,8 +44,10 @@ jobs:
         working-directory: backend
         run: uv sync
 
-      # Order matters: the actor arbitration reads the ATT&CK file to know
-      # which names are already resolved, so it runs after it.
+      # Order matters, twice over: the actor arbitration reads the ATT&CK file
+      # to know which names are already resolved, and the F3 build reads it to
+      # take ATT&CK's spelling back for the techniques the two frameworks
+      # share. Both run after it.
       - name: Regenerate
         id: build
         working-directory: backend
@@ -53,6 +55,7 @@ jobs:
           {
             echo 'report<<REPORT'
             uv run python scripts/build_attack_dataset.py
+            uv run python scripts/build_f3_dataset.py
             uv run python scripts/build_actors_dataset.py
             uv run python scripts/build_countries_dataset.py
             echo REPORT
@@ -72,7 +75,9 @@ jobs:
       # The tests are the reason this can be merged on sight. `actors.test.ts`
       # checks the property the arbitration exists for: nothing in the galaxy
       # file contradicts a name ATT&CK already resolves. If MITRE adopts a
-      # name the galaxy also carries, this is where it surfaces.
+      # name the galaxy also carries, this is where it surfaces. `f3.test.ts`
+      # does the same for the 43 techniques F3 and ATT&CK share: they carry one
+      # identifier, so they have to carry one name.
       - name: Tests against the new datasets
         if: steps.diff.outputs.changed == 'true'
         working-directory: frontend

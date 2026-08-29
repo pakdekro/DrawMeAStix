@@ -258,9 +258,11 @@ export function hashWarning(algo: "MD5" | "SHA-1" | "SHA-256", rawValue: string)
 export function mitreIdWarning(rawValue: string): string | null {
   const value = rawValue.trim();
   if (!value) return null;
-  return /^TA?\d{4}(\.\d{3})?$/i.test(value)
+  // F and FA cover F3, whose technique numbers follow ATT&CK's shape with its
+  // own letter (F1001, F1005.006) and whose two fraud tactics are FA0001/FA0002.
+  return /^[TF]A?\d{4}(\.\d{3})?$/i.test(value)
     ? null
-    : "unexpected format (e.g. T1566, T1566.001, TA0001)";
+    : "unexpected format (e.g. T1566, T1566.001, TA0001, F1001)";
 }
 
 interface DetectionResult {

@@ -231,6 +231,25 @@ label {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
 }
 
+/* An F3 technique that is ATT&CK's own, by number. Same token as the canvas
+   uses for "related to": it is the one place where the two frameworks are
+   literally the same object, and the palette should say so before the
+   analyst discovers it by finding one card where they expected two. */
+.attack-id.shared {
+  color: var(--linked);
+}
+
+/* Two frameworks, side by side: the switch is a choice between two, not a
+   list of two. `chip-grid` is a single column everywhere else. */
+.fw-switch {
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 6px;
+}
+
+.f3-tactics {
+  margin-bottom: 6px;
+}
+
 .triage-tray {
   position: absolute;
   left: 12px;

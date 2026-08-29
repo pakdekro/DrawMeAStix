@@ -10,7 +10,7 @@ import type { IconName } from './Icon'
 /**
  * Rail + single panel.
  *
- * The three sections (ATT&CK, entity creation, scenarios) used to be stacked
+ * The three sections (frameworks, entity creation, scenarios) used to be stacked
  * in one scrolling column: scenarios fell below the fold and the whole rail
  * scrolled while the canvas stayed put. The rail now switches ONE panel at a
  * time, and clicking the active section folds it away - the canvas takes the
@@ -29,7 +29,7 @@ type PanelId = 'objects' | 'attack' | 'scenarios' | 'labels'
 
 const PANELS: { id: PanelId; icon: IconName; label: string }[] = [
   { id: 'objects', icon: 'grid', label: 'Objects and observables' },
-  { id: 'attack', icon: 'search', label: 'ATT&CK' },
+  { id: 'attack', icon: 'search', label: 'Frameworks (ATT&CK, F3)' },
   { id: 'scenarios', icon: 'scenario', label: 'Scenarios' },
   { id: 'labels', icon: 'tag', label: 'Labels in use' },
 ]
