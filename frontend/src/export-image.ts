@@ -406,6 +406,30 @@ export async function withFooter(
   return canvas.toDataURL(format === 'jpeg' ? 'image/jpeg' : 'image/png', 0.95)
 }
 
+/**
+ * The three channels of a `#rgb` or `#rrggbb`, or null for anything else.
+ * The canvas background comes from a CSS custom property, so it is whatever
+ * the stylesheet says: read rather than assumed, and never guessed at.
+ */
+function channels(color: string): [number, number, number] | null {
+  const hex = color.trim()
+  const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(hex)
+  if (short) {
+    const [, r, g, b] = short
+    return [parseInt(r + r, 16), parseInt(g + g, 16), parseInt(b + b, 16)]
+  }
+  const full = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex)
+  if (full) return [parseInt(full[1], 16), parseInt(full[2], 16), parseInt(full[3], 16)]
+  return null
+}
+
+/** Whether text over that colour has to be light. Unreadable colours are not. */
+function isDark(color: string): boolean {
+  const c = channels(color)
+  if (c === null) return false
+  return 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2] < 128
+}
+
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -424,30 +448,62 @@ export async function graphToPdf(
   subjects: ReportSubject[] = [],
   /** draw the chronology on a rail rather than listing it */
   drawTimeline = false,
+  /** the canvas background, which is the graph page's own colour */
+  background = '#ffffff',
 ): Promise<Blob> {
   const { jsPDF } = await import('jspdf')
   const img = await loadImage(graphUrl)
   const landscape = img.width >= img.height
   const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'pt', format: 'a4' })
-  const pageW = pdf.internal.pageSize.getWidth()
-  const pageH = pdf.internal.pageSize.getHeight()
   const M = 36
 
-  pdf.setFont('helvetica', 'bold').setFontSize(16).setTextColor(30)
-  pdf.text(title, M, M + 8)
+  /**
+   * The graph gets a page and takes all of it.
+   *
+   * The page is painted in the graph's own background first, so what the
+   * aspect ratio leaves over is that colour rather than a white band down one
+   * side of a dark picture: the eye reads one full page instead of a stamp on
+   * a sheet. The picture itself is never cropped to make it fit, since a
+   * cropped graph is a wrong graph.
+   *
+   * Its orientation follows the graph, and the pages of prose that follow are
+   * portrait whichever way this one went: 130 characters to the line is not a
+   * line anybody reads twice.
+   */
+  const gw = pdf.internal.pageSize.getWidth()
+  const gh = pdf.internal.pageSize.getHeight()
+  const dark = isDark(background)
+  const paper = channels(background) ?? [255, 255, 255]
+  pdf.setFillColor(paper[0], paper[1], paper[2])
+  pdf.rect(0, 0, gw, gh, 'F')
 
-  const maxW = pageW - M * 2
-  const maxH = pageH - (M + 20) - M
-  const scale = Math.min(maxW / img.width, maxH / img.height)
+  const TITLE_H = 30
+  pdf.setFont('helvetica', 'bold').setFontSize(16)
+  if (dark) pdf.setTextColor(126, 156, 216)
+  else pdf.setTextColor(30)
+  pdf.text(title, M, M)
+
+  const top = M + TITLE_H
+  const scale = Math.min((gw - M * 2) / img.width, (gh - top - M) / img.height)
+  const w = img.width * scale
+  const h = img.height * scale
   const type = graphUrl.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG'
-  pdf.addImage(graphUrl, type, M, M + 20, img.width * scale, img.height * scale)
-  pdf.setFont('helvetica', 'normal').setFontSize(8).setTextColor(150)
-  pdf.text(SOURCE_URL, pageW - M, pageH - 14, { align: 'right' })
+  pdf.addImage(graphUrl, type, (gw - w) / 2, top + (gh - top - M - h) / 2, w, h)
+  pdf.setFont('helvetica', 'normal').setFontSize(8)
+  pdf.setTextColor(dark ? 130 : 150)
+  pdf.text(SOURCE_URL, gw - M, gh - 14, { align: 'right' })
 
   const groups = groupNotes(notes, subjects)
   if (narr || groups.length > 0) {
-    pdf.addPage()
+    pdf.addPage('a4', 'portrait')
+    const pageW = pdf.internal.pageSize.getWidth()
+    const pageH = pdf.internal.pageSize.getHeight()
     let y = M
+    /** A page of prose, always portrait, always started at the top. */
+    const newPage = () => {
+      pdf.addPage('a4', 'portrait')
+      y = M
+    }
     const RAIL_X = M + 4
     const RAIL_INDENT = 18
     /**
@@ -461,10 +517,7 @@ export async function graphToPdf(
       const x = M + indent
       for (const raw of lines) {
         for (const ln of pdf.splitTextToSize(raw, pageW - M * 2 - indent) as string[]) {
-          if (y > pageH - M) {
-            pdf.addPage()
-            y = M
-          }
+          if (y > pageH - M) newPage()
           if (rail) {
             pdf.setDrawColor(180)
             pdf.setLineWidth(0.7)
@@ -478,10 +531,7 @@ export async function graphToPdf(
     }
     /** A moment on the rail: its dot, then the events that happened then. */
     const moment = (when: string, events: string[]) => {
-      if (y > pageH - M) {
-        pdf.addPage()
-        y = M
-      }
+      if (y > pageH - M) newPage()
       pdf.setFillColor(90, 120, 190)
       pdf.circle(RAIL_X, y - 3, 2.4, 'F')
       pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(70)
@@ -496,11 +546,10 @@ export async function graphToPdf(
      * bold and grey.
      */
     const heading = (t: string) => {
-      y += 18
-      if (y > pageH - M) {
-        pdf.addPage()
-        y = M
-      }
+      // A section starts its own page. The parts of a report are read one at a
+      // time, and a section title landing three lines above the fold is most
+      // of what makes a document look thrown together.
+      if (y > M) newPage()
       pdf.setFont('helvetica', 'bold').setFontSize(11).setTextColor(70, 95, 160)
       pdf.setCharSpace(0.8)
       pdf.text(t.toUpperCase(), M, y)
@@ -512,20 +561,14 @@ export async function graphToPdf(
     }
     const subheading = (t: string) => {
       y += 8
-      if (y > pageH - M) {
-        pdf.addPage()
-        y = M
-      }
+      if (y > pageH - M) newPage()
       pdf.setFont('helvetica', 'bold').setFontSize(11).setTextColor(45)
       pdf.text(t, M, y)
       y += 16
     }
     const who = (t: string) => {
       y += 6
-      if (y > pageH - M) {
-        pdf.addPage()
-        y = M
-      }
+      if (y > pageH - M) newPage()
       pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(115)
       pdf.text(t, M, y)
       y += 15
