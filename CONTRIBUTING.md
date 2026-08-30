@@ -64,11 +64,14 @@ and the two failure modes worth being careful about.
 
 ## Shipped datasets
 
-`frontend/public/attack-dataset.json`, `actors-dataset.json` and
-`countries.json` are committed but generated, by three scripts under
+`frontend/public/attack-dataset.json`, `f3-dataset.json`, `actors-dataset.json`
+and `countries.json` are committed but generated, by four scripts under
 `backend/scripts/`. Same rule as the golden vectors: never edit them by hand.
 The `Datasets` workflow regenerates them every Monday and opens a pull request
-when the content moved, so most of the time you have nothing to do.
+when the content moved, so most of the time you have nothing to do. It opens
+one even when the tests then fail, and says so in the body: what fails there is
+a disagreement between the new files and something written down beside them,
+and the fix belongs on that branch.
 
 They decide which spelling an analyst is offered, and our identifiers are
 computed from names, so a dataset is not decoration: it decides whether two
@@ -85,7 +88,16 @@ adopted a name the galaxy also carries, and the arbitration did its job.
 **The corpora are not interchangeable.** The ATT&CK dataset feeds the palettes
 and text extraction; the actor aliases feed only the name fields. Extraction
 matches every name in its corpus against pasted prose, so a name that lands
-there is asserted rather than offered, which is a much higher bar.
+there is asserted rather than offered, which is a much higher bar. The F3
+dataset is a third case: it is searched like ATT&CK and extracted **by number
+only**, because a fraud technique called "Bank Deposit" is also a sentence.
+
+## Adding a knowledge base
+
+A third framework beside ATT&CK and F3 is a documented path rather than a
+design exercise: [`docs/adding-a-framework.md`](docs/adding-a-framework.md) has
+the four questions to answer from the framework's published data first, the
+files to touch in order, and the traps that have already been paid for once.
 
 ## Conventions
 
