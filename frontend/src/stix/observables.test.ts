@@ -106,6 +106,62 @@ describe("the node name lands on the identifying property", () => {
   });
 });
 
+/**
+ * A login is what you type to sign in. Writing an IBAN there was a fabricated
+ * claim, and the identifier that came out of it was the identifier of an
+ * account that does not exist.
+ */
+describe("an account name is one of three, and the analyst says which", () => {
+  const IBAN = "FR7630004000031234567890143";
+
+  it("says nothing, and it is a login, exactly as before", async () => {
+    const obj = await observable("user-account", "jdoe");
+    expect(obj.account_login).toBe("jdoe");
+    expect(obj.user_id).toBeUndefined();
+  });
+
+  it("an account identifier lands in user_id, and moves the identifier with it", async () => {
+    const asLogin = await observable("user-account", IBAN);
+    const asUserId = await observable("user-account", IBAN, { account_name_is: "user_id" });
+    expect(asUserId.user_id).toBe(IBAN);
+    expect(asUserId.account_login).toBeUndefined();
+    // the point of the choice: two different accounts, and two identifiers
+    expect(asUserId.id).not.toBe(asLogin.id);
+  });
+
+  it("a display name is emitted as one, and identified by what is beside it", async () => {
+    const obj = await observable("user-account", "Jane Doe", {
+      account_name_is: "display_name",
+      user_id: "1001",
+    });
+    expect(obj.display_name).toBe("Jane Doe");
+    expect(obj.user_id).toBe("1001");
+    expect(obj.account_login).toBeUndefined();
+  });
+
+  it("a display name alone is refused rather than turned into a login", async () => {
+    // STIX answers "no identifying property" with a random identifier, which
+    // is the one thing this application cannot do.
+    await expect(
+      observable("user-account", "Jane Doe", { account_name_is: "display_name" }),
+    ).rejects.toThrow(/identifies no account/);
+  });
+
+  it("the name wins over a leftover in the field it occupies", async () => {
+    // The form hides that field, so a value left in it predates the choice.
+    const obj = await observable("user-account", IBAN, {
+      account_name_is: "user_id",
+      user_id: "stale",
+    });
+    expect(obj.user_id).toBe(IBAN);
+  });
+
+  it("an unknown value falls back on the default rather than on nothing", async () => {
+    const obj = await observable("user-account", "jdoe", { account_name_is: "nickname" });
+    expect(obj.account_login).toBe("jdoe");
+  });
+});
+
 describe("x509-certificate, which the spec gives no name at all", () => {
   it("a node named after its fingerprint comes out as a hash, not as a serial", async () => {
     const sha256 = "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f";
@@ -182,6 +238,10 @@ describe("export → import → export keeps the identifier", () => {
     ["directory", "C:\\Windows\\Temp", {}],
     ["software", "Apache HTTP Server", { vendor: "Apache", version: "2.4.49" }],
     ["user-account", "jdoe", { account_type: "windows-domain", user_id: "1001" }],
+    // an account known by its identifier and not by a login: it used to come
+    // back from an import as an `account_login`, which is another account
+    ["user-account", "FR7630004000031234567890143", { account_name_is: "user_id" }],
+    ["user-account", "Jane Doe", { account_name_is: "display_name", user_id: "1001" }],
     ["x509-certificate", "36:f7:d4:2e:1a", { subject: "CN=example.com" }],
     [
       "x509-certificate",

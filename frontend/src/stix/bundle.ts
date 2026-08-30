@@ -14,6 +14,12 @@
 import { v5 as uuidv5 } from "uuid";
 
 import {
+  ACCOUNT_NAME_PROPERTIES,
+  DEFAULT_ACCOUNT_NAME_PROPERTY,
+} from "../entityFields";
+import { frameworkOf } from "../frameworks";
+
+import {
   attackPatternId,
   campaignId,
   groupingId,
@@ -156,7 +162,7 @@ const INTERNAL_KEYS = new Set([
   "pattern_type", "valid_from",
   "hashes", "file_name", "actor_kind", "country", "region",
   "latitude", "longitude", "published", "is_family", "number", "as_name",
-  "tlp", "confidence",
+  "tlp", "confidence", "account_name_is",
 ]);
 
 /** Valid STIX confidence (integer 0-100), else null: we emit nothing. */
@@ -354,7 +360,15 @@ const SCO_INTERNAL_BY_TYPE: Record<string, readonly string[]> = {
   file: ["file_name"],
   directory: ["path"],
   software: ["cpe", "swid", "vendor", "version"],
-  "user-account": ["account_login", "account_type", "user_id", "display_name"],
+  // `account_name_is` is ours, not the spec's: it says which of the three
+  // names the node name is, and it is consumed here rather than exported.
+  "user-account": [
+    "account_login",
+    "account_type",
+    "user_id",
+    "display_name",
+    "account_name_is",
+  ],
   "x509-certificate": ["serial_number", "subject", "issuer"],
 };
 
@@ -490,12 +504,31 @@ function buildSco(e: EntityRow, props: Props, marking: string | null): StixObjec
       };
     }
     case "user-account": {
-      // The node name is the login: it is the readable half of an account,
-      // and the one an analyst has in front of them.
-      const contributing: Props = { account_login: value };
-      for (const key of ["account_type", "user_id"] as const) {
+      // WHICH name the node name is, said by the analyst rather than assumed.
+      // It used to always be the login, which is right for j.smith and a
+      // fabricated claim for an IBAN: a login is what you type to sign in.
+      // The default stays `account_login`, so every account drawn before this
+      // choice existed keeps the identifier it already has.
+      const nameIs = ACCOUNT_NAME_PROPERTIES.some((o) => o.value === props.account_name_is)
+        ? (props.account_name_is as string)
+        : DEFAULT_ACCOUNT_NAME_PROPERTY;
+      const contributing: Props = {};
+      if (nameIs !== "display_name") contributing[nameIs] = value;
+      for (const key of ["account_type", "user_id", "account_login"] as const) {
+        // the name wins over a field of the same property: the form hides
+        // that field, so anything left in it is a leftover from before
+        if (key === nameIs) continue;
         const raw = props[key];
         if (raw != null && !isBlank(raw)) contributing[key] = raw;
+      }
+      // A display name identifies nobody. STIX answers that with a random
+      // identifier, which is the one thing this application cannot do, so it
+      // says so instead - the same refusal as a certificate with neither
+      // fingerprint nor serial number.
+      if (contributing.account_login === undefined && contributing.user_id === undefined) {
+        throw new ExportError([
+          `user-account "${value}": a display name identifies no account - fill in the login or the account identifier`,
+        ]);
       }
       const obj: StixObject = {
         type: "user-account",
@@ -503,9 +536,8 @@ function buildSco(e: EntityRow, props: Props, marking: string | null): StixObjec
         id: scoId("user-account", contributing),
         ...contributing,
       };
-      if (props.display_name != null && !isBlank(props.display_name)) {
-        obj.display_name = props.display_name;
-      }
+      const display = nameIs === "display_name" ? value : props.display_name;
+      if (display != null && !isBlank(display)) obj.display_name = display;
       return obj;
     }
     case "x509-certificate": {
@@ -607,19 +639,13 @@ function buildSdo(e: EntityRow, props: Props, commonBase: Props): StixObject {
         // "starts with an F" would hand ATT&CK a fraud technique, and reading
         // "starts with a T" would do the reverse. Absent means ATT&CK, which
         // is every technique created before F3 was supported.
-        const framework = props.mitre_framework === "mitre-f3" ? "mitre-f3" : "mitre-attack";
+        const framework = frameworkOf(props.mitre_framework);
+        const mitreId = props.x_mitre_id as string;
         base.external_references = withExternalRef(
           base,
-          framework,
-          props.x_mitre_id as string,
-          // A url for F3 only, and not for want of symmetry: an ATT&CK number
-          // resolves itself for any consumer on the planet, F1001 resolves
-          // nowhere without one. The hash is not a typo and not ours: the F3
-          // site is hash routed on /technique/:id, and the flat path the F3
-          // bundle itself publishes is served by nothing.
-          framework === "mitre-f3"
-            ? `https://ctid.mitre.org/fraud#/technique/${props.x_mitre_id as string}`
-            : undefined,
+          framework.id,
+          mitreId,
+          framework.url?.(mitreId),
         );
       }
       return base;

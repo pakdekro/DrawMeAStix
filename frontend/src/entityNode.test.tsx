@@ -31,14 +31,16 @@ const card = (properties: Record<string, unknown>, stix_type = 'attack-pattern')
 }
 
 describe('the framework mark on a card', () => {
-  it('marks an F3 technique', () => {
+  it('names F3', () => {
     expect(card({ x_mitre_id: 'F1050', mitre_framework: 'mitre-f3' })).toContain('>F3<')
   })
 
-  it('leaves an ATT&CK technique unmarked, absent meaning ATT&CK', () => {
-    expect(card({ x_mitre_id: 'T1566' })).not.toContain('node-framework')
-    expect(card({ x_mitre_id: 'T1566', mitre_framework: 'mitre-attack' })).not.toContain(
-      'node-framework',
+  it('names ATT&CK too, said rather than implied', () => {
+    // Two frameworks is where "no mark means ATT&CK" still reads as a rule,
+    // three is where it reads as an oversight.
+    expect(card({ x_mitre_id: 'T1566' })).toContain('>ATT&amp;CK<')
+    expect(card({ x_mitre_id: 'T1566', mitre_framework: 'mitre-attack' })).toContain(
+      '>ATT&amp;CK<',
     )
   })
 
@@ -47,7 +49,13 @@ describe('the framework mark on a card', () => {
     expect(card({ x_mitre_id: 'T1110.003', mitre_framework: 'mitre-f3' })).toContain('>F3<')
   })
 
+  it('claims nothing for a technique with no number', () => {
+    expect(card({})).not.toContain('node-framework')
+  })
+
   it('marks nothing on an object that is not a technique', () => {
-    expect(card({ mitre_framework: 'mitre-f3' }, 'malware')).not.toContain('node-framework')
+    expect(card({ x_mitre_id: 'F1050', mitre_framework: 'mitre-f3' }, 'malware')).not.toContain(
+      'node-framework',
+    )
   })
 })

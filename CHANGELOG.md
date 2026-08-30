@@ -59,6 +59,40 @@ this file is the one meant for people reading the code.
   still share a clause. A graph with no date reads exactly as it did before,
   and the rule holds inside a paragraph as well as between them.
 
+- **A technique says which knowledge base its number belongs to, and both
+  are named.** ATT&CK and F3 look identical on a canvas, same shape and same
+  word, while a case that crosses from an intrusion to a fraud is made of
+  both. The card now carries the name of the framework, ATT&CK included:
+  marking only the newcomer works while there are two and reads as an
+  oversight the day there is a third. The three places that used to spell
+  those names their own way (the export, the form, the card) read one list,
+  so adding a framework is one entry and nothing else. The mark is read off
+  the property and never off the number, which cannot arbitrate in either
+  direction: F3 reuses 43 ATT&CK numbers and publishes T-numbers of its own.
+
+- **The command palette knows the fraud matrix too.** Ctrl+K searched ATT&CK
+  and only ATT&CK, so half the techniques the app ships were reachable from
+  the side panel alone. F3 gets its own group, next to ATT&CK rather than
+  merged into it, and only its own 80 techniques: the 43 it borrows are
+  already there under ATT&CK and build the very same object, and offering
+  them twice would be asking the analyst to choose between a thing and
+  itself.
+
+- **The name of an account says which name it is.** An account has three in
+  STIX and they are not interchangeable: `account_login` is what you type to
+  sign in, `user_id` is what the system calls the account (a SID, a UUID, an
+  IBAN), `display_name` is what a human reads. The node name went to
+  `account_login` whatever it was, which is right for `j.smith` and a
+  fabricated claim for an IBAN, and the identifier that came out of it was
+  the identifier of an account that does not exist. The analyst says which
+  one, `account_login` stays the default so nothing already drawn moves, and
+  the form hides the field the name occupies so the same value is never
+  entered twice. An import records what it read, so an account known only by
+  its `user_id` stops coming home as a login. A display name identifies
+  nobody: STIX answers that with a random identifier, which is the one thing
+  this application cannot do, so the export refuses and the lint says so
+  first.
+
 - **An email address is part of what the actor set up, and an account is
   asked for in the words of an account.** Dragging a link from an actor to an
   email address offered a detection indicator and nothing else, while a

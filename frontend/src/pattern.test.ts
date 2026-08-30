@@ -152,6 +152,11 @@ describe("couverture du constructeur de pattern", () => {
     expect(patternFromObservable("user-account", iban)).toBe(
       `[user-account:account_login = '${iban}']`,
     );
+    // and when the analyst says the name IS the account identifier, the
+    // pattern follows the export rather than the shape of the string
+    expect(
+      patternFromObservable("user-account", iban, { account_name_is: "user_id" }),
+    ).toBe(`[user-account:user_id = '${iban}']`);
     expect(patternFromObservable("user-account", "", { user_id: iban })).toBe(
       `[user-account:user_id = '${iban}']`,
     );

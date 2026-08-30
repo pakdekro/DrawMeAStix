@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { INFRASTRUCTURE_TYPE_OV, fieldsFor, toFormValues, toProperties } from './entityFields'
+import {
+  ACCOUNT_NAME_PROPERTIES,
+  DEFAULT_ACCOUNT_NAME_PROPERTY,
+  INFRASTRUCTURE_TYPE_OV,
+  fieldsFor,
+  toFormValues,
+  toProperties,
+} from './entityFields'
 import schema from './stix/schemas/sdos/infrastructure.json'
 import { SCO_TYPES, SDO_TYPES } from './stix/relationships'
 import { SCO_ORDER, SDO_ORDER } from './stixMeta'
@@ -75,6 +82,31 @@ describe('infrastructure_types', () => {
     // that the analyst never made
     expect(toProperties('infrastructure', { infrastructure_types: [] })).not.toHaveProperty(
       'infrastructure_types',
+    )
+  })
+})
+
+describe("le nom d'un compte", () => {
+  it('propose les trois noms de la spec, avec le login par défaut', () => {
+    const keys = fieldsFor('user-account').map((f) => f.key)
+    expect(keys).toContain('account_name_is')
+    // the three properties are all offered as fields too: the form hides the
+    // one the name occupies, so they are never two ways of saying one thing
+    expect(keys).toEqual(expect.arrayContaining(['account_login', 'user_id', 'display_name']))
+    expect(ACCOUNT_NAME_PROPERTIES.map((o) => o.value)).toEqual([
+      'account_login',
+      'user_id',
+      'display_name',
+    ])
+    expect(DEFAULT_ACCOUNT_NAME_PROPERTY).toBe('account_login')
+  })
+
+  it("ne stocke pas le défaut : un compte d'avant ce choix garde son id", () => {
+    expect(
+      toProperties('user-account', { account_name_is: 'account_login' }),
+    ).not.toHaveProperty('account_name_is')
+    expect(toProperties('user-account', { account_name_is: 'user_id' }).account_name_is).toBe(
+      'user_id',
     )
   })
 })

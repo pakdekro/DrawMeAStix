@@ -51,6 +51,27 @@ function state(
 }
 
 describe("règles unitaires", () => {
+  it("a display name identifies no account, and the lint says it before the export does", () => {
+    const findings = lintInvestigation(
+      state([
+        {
+          stix_type: "user-account",
+          name: "Jane Doe",
+          properties: JSON.stringify({ account_name_is: "display_name" }),
+        },
+        {
+          stix_type: "user-account",
+          name: "Jane Doe",
+          properties: JSON.stringify({ account_name_is: "display_name", user_id: "1001" }),
+        },
+        { stix_type: "user-account", name: "jdoe", properties: "{}" },
+      ]),
+    );
+    const blocked = findings.filter((f) => f.message.includes("identifies no account"));
+    expect(blocked).toHaveLength(1);
+    expect(blocked[0].entityId).toBe("e0");
+  });
+
   it("entités importées confirmées sans triage : warn de provenance", () => {
     const findings = lintInvestigation(
       state([

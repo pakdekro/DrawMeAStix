@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { loadAttackDataset, searchAttack } from '../attack'
 import type { AttackEntry } from '../attack'
 import { findBridges } from '../bridges'
+import { loadF3Dataset } from '../f3'
+import { DEFAULT_FRAMEWORK, frameworkOf } from '../frameworks'
 import { allowedRelationships } from '../stix/relationships'
 import { SCO_ORDER, SDO_ORDER, typeMeta } from '../stixMeta'
 import { BUILTIN_TEMPLATES } from '../templates'
@@ -13,12 +15,12 @@ import Icon from './Icon'
  *
  * Every capability of the app used to live behind its own panel: you had to
  * know WHERE to look before you could look. A single index now covers the
- * canvas objects, creation, ATT&CK, scenarios and actions - discovery no
- * longer depends on the geography of the interface.
+ * canvas objects, creation, the frameworks, scenarios and actions - discovery
+ * no longer depends on the geography of the interface.
  *
- * The ATT&CK dataset (several hundred entries) is loaded on the FIRST open
- * only, never at startup: the palette must open instantly even offline, even
- * if that means not having its techniques yet.
+ * The datasets (several hundred entries) are loaded on the FIRST open only,
+ * never at startup: the palette must open instantly even offline, even if
+ * that means not having its techniques yet.
  */
 
 export interface Command {
@@ -119,6 +121,7 @@ export default function CommandPalette({
   const [query, setQuery] = useState('')
   const [cursor, setCursor] = useState(0)
   const [attack, setAttack] = useState<AttackEntry[]>([])
+  const [f3, setF3] = useState<AttackEntry[]>([])
   /**
    * "Relate" mode: `null` outside the mode, `{}` waiting for the source,
    * `{ sources }` waiting for the target.
@@ -152,6 +155,18 @@ export default function CommandPalette({
         /* no dataset: the palette works without it, and says nothing */
       })
   }, [open, attack.length])
+
+  // F3's own techniques only. The 43 it reuses from ATT&CK by number are
+  // already above, and they build the very same object: offered twice, the
+  // palette would be asking the analyst to choose between a thing and itself.
+  useEffect(() => {
+    if (!open || f3.length > 0) return
+    loadF3Dataset()
+      .then((d) => setF3(d.entries.filter((e) => e.framework === 'mitre-f3')))
+      .catch(() => {
+        /* same as above: no dataset, no group, no noise */
+      })
+  }, [open, f3.length])
 
   const byId = useMemo(() => new Map(entities.map((e) => [e.id, e])), [entities])
 
@@ -242,19 +257,27 @@ export default function CommandPalette({
     )
 
     // searchAttack does its own ranking (exact ID, prefix, aliases…), far
-    // better than the subsequence: we let it decide
+    // better than the subsequence: we let it decide. One group per framework,
+    // named after it, because "Impersonate Account Holder" and "Spearphishing"
+    // are not the same body of knowledge and the analyst is entitled to know
+    // which one answered.
     if (query.trim().length >= 2) {
-      const hits = searchAttack(attack, query.trim(), PER_GROUP)
-      for (const entry of hits) {
-        out.push({
-          id: `attack:${entry.id}`,
-          group: 'ATT&CK',
-          label: entry.name,
-          hint: entry.id,
-          color: typeMeta(entry.type).color,
-          haystack: '',
-          run: () => onPickAttack(entry),
-        })
+      const corpora = [
+        { entries: attack, framework: DEFAULT_FRAMEWORK },
+        { entries: f3, framework: frameworkOf('mitre-f3') },
+      ]
+      for (const { entries, framework } of corpora) {
+        for (const entry of searchAttack(entries, query.trim(), PER_GROUP)) {
+          out.push({
+            id: `${framework.id}:${entry.id}`,
+            group: framework.label,
+            label: entry.name,
+            hint: entry.id,
+            color: typeMeta(entry.type).color,
+            haystack: '',
+            run: () => onPickAttack(entry),
+          })
+        }
       }
     }
 
@@ -318,6 +341,7 @@ export default function CommandPalette({
     query,
     entities,
     attack,
+    f3,
     actions,
     relate,
     selectedEntityId,

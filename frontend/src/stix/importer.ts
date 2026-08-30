@@ -9,6 +9,8 @@
  * back the same version fingerprint.
  */
 
+import { DEFAULT_ACCOUNT_NAME_PROPERTY } from "../entityFields";
+import { DEFAULT_FRAMEWORK, FRAMEWORKS } from "../frameworks";
 import { refang } from "../ioc";
 import { STIXIT_EXTENSION_ID, TOOL_IDENTITY_ID } from "./bundle";
 import type { JsonValue } from "./jcs";
@@ -116,6 +118,20 @@ function now(): string {
   return new Date().toISOString();
 }
 
+/**
+ * Which of an account's three names became the node name, most identifying
+ * first. The builder is told which one, so that a roundtrip writes the value
+ * back where it came from: an account known only by its `user_id` used to come
+ * home as an `account_login`, which is a different account.
+ */
+function accountNameProperty(obj: StixLike): string {
+  // truthiness and not a null check: `asText` yields undefined, and an empty
+  // string is not a name either
+  if (asText(obj.account_login)) return "account_login";
+  if (asText(obj.user_id)) return "user_id";
+  return "display_name";
+}
+
 function scoName(obj: StixLike): string | null {
   // refang on import: a third-party bundle may be defanged (evil[.]com); we
   // store the canonical form, as the store does on manual entry, otherwise the
@@ -139,9 +155,7 @@ function scoName(obj: StixLike): string | null {
   // import → export roundtrip lands on the same identifier.
   if (obj.type === "mutex" || obj.type === "software") return asText(obj.name) ?? null;
   if (obj.type === "directory") return asText(obj.path) ?? null;
-  if (obj.type === "user-account") {
-    return asText(obj.account_login) ?? asText(obj.user_id) ?? asText(obj.display_name) ?? null;
-  }
+  if (obj.type === "user-account") return asText(obj[accountNameProperty(obj)]) ?? null;
   if (obj.type === "x509-certificate") {
     const hashes =
       typeof obj.hashes === "object" && obj.hashes !== null && !Array.isArray(obj.hashes)
@@ -188,21 +202,26 @@ function entityProperties(obj: StixLike): Record<string, JsonValue> {
   // Leaving a copy in the properties lets the two drift apart the moment the
   // node is renamed, and the builder reads the name, never the copy.
   if (obj.type === "directory") delete props.path;
-  if (obj.type === "user-account") delete props.account_login;
+  if (obj.type === "user-account") {
+    const from = accountNameProperty(obj);
+    if (from !== DEFAULT_ACCOUNT_NAME_PROPERTY) props.account_name_is = from;
+    delete props[from];
+  }
   if (obj.type === "attack-pattern" && !props.x_mitre_id) {
     const refs = asArray(obj.external_references).filter(
       (r): r is StixLike => typeof r === "object" && r !== null && !Array.isArray(r),
     );
-    // ATT&CK first. A bundle carrying both references describes a technique F3
-    // borrowed from ATT&CK, and it is the ATT&CK number that deduplicates it
-    // against the rest of the world.
-    for (const source of ["mitre-attack", "mitre-f3"] as const) {
+    // In registry order, so ATT&CK first. A bundle carrying both references
+    // describes a technique F3 borrowed from ATT&CK, and it is the ATT&CK
+    // number that deduplicates it against the rest of the world.
+    for (const framework of FRAMEWORKS) {
       const mitre = refs
-        .map((r) => (r.source_name === source ? asText(r.external_id) : undefined))
+        .map((r) => (r.source_name === framework.id ? asText(r.external_id) : undefined))
         .find((id) => id !== undefined);
       if (mitre === undefined) continue;
       props.x_mitre_id = mitre;
-      if (source === "mitre-f3") props.mitre_framework = "mitre-f3";
+      // the default is stored as absent, the one representation it has
+      if (framework !== DEFAULT_FRAMEWORK) props.mitre_framework = framework.id;
       break;
     }
   }

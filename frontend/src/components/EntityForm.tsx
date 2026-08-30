@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { AttackEntry } from '../attack'
 import type { Country } from '../countries'
 import {
+  DEFAULT_ACCOUNT_NAME_PROPERTY,
   fieldOption,
   fieldsFor,
   requiredFilled,
@@ -63,7 +64,19 @@ export default function EntityForm({
     toFormValues(initialProperties),
   )
   const meta = typeMeta(stixType)
-  const fields = fieldsFor(stixType)
+  /**
+   * The account property the node name occupies is not offered twice.
+   *
+   * The name IS one of `account_login`, `user_id` or `display_name`, and a
+   * text field for the same property, next to it, would let the analyst type
+   * two different values into one place and never be told which one the
+   * bundle took.
+   */
+  const fields = fieldsFor(stixType).filter(
+    (f) =>
+      stixType !== 'user-account' ||
+      f.key !== (values.account_name_is ?? DEFAULT_ACCOUNT_NAME_PROPERTY),
+  )
 
   /**
    * What the form was handed the last time it resynced.

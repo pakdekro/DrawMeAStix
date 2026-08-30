@@ -4,6 +4,7 @@
  * backend side (app/stix_core/bundle.py).
  */
 
+import { DEFAULT_FRAMEWORK, FRAMEWORKS } from './frameworks'
 import { typeMeta } from './stixMeta'
 
 export interface FieldOption {
@@ -66,6 +67,28 @@ export const INFRASTRUCTURE_TYPE_OV = [
   'staging',
   'unknown',
 ] as const
+
+/**
+ * What the name of a `user-account` node actually is.
+ *
+ * STIX gives an account three names and they are not interchangeable:
+ * `account_login` is what you type to sign in, `user_id` is what the system
+ * calls the account (a SID, a UUID, an IBAN), and `display_name` is what a
+ * human reads. Only the first two identify it, and writing an IBAN into
+ * `account_login` is a fabricated claim of the same family as stamping
+ * `mitre-attack` on an F1001.
+ *
+ * `account_login` stays the default, and not only because it is the common
+ * case: it is what every account drawn before this choice existed was written
+ * as, so any other default would silently move identifiers already exported.
+ */
+export const ACCOUNT_NAME_PROPERTIES: FieldOption[] = [
+  { value: 'account_login', label: 'A login (account_login)' },
+  { value: 'user_id', label: 'An account identifier: IBAN, SID… (user_id)' },
+  { value: 'display_name', label: 'A display name (display_name)' },
+]
+
+export const DEFAULT_ACCOUNT_NAME_PROPERTY = 'account_login'
 
 const DESCRIPTION: FieldDef = {
   key: 'description',
@@ -133,10 +156,7 @@ export const TYPE_FIELDS: Record<string, FieldDef[]> = {
       key: 'mitre_framework',
       label: 'Framework',
       type: 'select',
-      options: [
-        { value: 'mitre-attack', label: 'ATT&CK' },
-        { value: 'mitre-f3', label: 'F3 (fraud)' },
-      ],
+      options: FRAMEWORKS.map((f) => ({ value: f.id, label: f.label })),
       help: 'What the exported reference claims about the ID',
     },
     DESCRIPTION,
@@ -239,6 +259,22 @@ export const TYPE_FIELDS: Record<string, FieldDef[]> = {
     { key: 'swid', label: 'SWID tag', type: 'text' },
   ],
   'user-account': [
+    {
+      key: 'account_name_is',
+      label: 'The value above is',
+      type: 'select',
+      options: ACCOUNT_NAME_PROPERTIES,
+      help: 'Part of the deterministic identifier: changing it changes it',
+    },
+    // The property the name occupies is hidden by the form, so these three
+    // are never two ways of saying the same thing.
+    {
+      key: 'account_login',
+      label: 'Login',
+      type: 'text',
+      placeholder: 'j.smith',
+      help: 'Part of the deterministic identifier: filling it in later changes it',
+    },
     {
       key: 'user_id',
       label: 'User ID',
@@ -372,7 +408,11 @@ export function toProperties(
   // ATT&CK is the default, and a default has ONE representation. Storing it
   // explicitly would leave two ways of saying the same thing, and the second
   // one only appears if the analyst opens the select and comes back.
-  if (props.mitre_framework === 'mitre-attack') delete props.mitre_framework
+  if (props.mitre_framework === DEFAULT_FRAMEWORK.id) delete props.mitre_framework
+  // Same rule for the account name: the default has ONE representation, so an
+  // account drawn before the choice existed and one drawn after it are the
+  // same object with the same identifier.
+  if (props.account_name_is === DEFAULT_ACCOUNT_NAME_PROPERTY) delete props.account_name_is
   for (const key of ['aliases', 'labels'] as const) {
     if (typeof props[key] !== 'string') continue
     const list = (props[key] as string)
