@@ -128,6 +128,11 @@ export default function AttackPalette({ onPick }: { onPick: (entry: AttackEntry)
             >
               <span className="dot" style={{ background: typeMeta(entry.type).color }} />
               <span className="attack-name">{entry.name}</span>
+              {/* Mobile and ICS are ATT&CK, and they are not the matrix most
+                  people are in: the mark costs four characters and saves the
+                  analyst from placing a technique about a PLC on an office
+                  intrusion without noticing. */}
+              {entry.domain && <span className="attack-domain">{entry.domain}</span>}
               <span className={`attack-id${shared ? ' shared' : ''}`}>{entry.id}</span>
             </button>
           )

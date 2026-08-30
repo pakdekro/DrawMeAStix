@@ -21,6 +21,15 @@ export interface AttackEntry {
   aliases?: string[];
   tactics?: string[];
   /**
+   * ATT&CK matrix this technique belongs to, when it is not Enterprise.
+   *
+   * The three domains are one knowledge base with one identifier space: they
+   * share no number, so they are searched as one corpus. The domain is worth
+   * showing all the same, because a technique numbered T0855 answers a
+   * question nobody working an office intrusion asked.
+   */
+  domain?: "mobile" | "ics";
+  /**
    * MITRE framework the identifier belongs to. ABSENT means ATT&CK, so every
    * dataset and every investigation written before there was a second one
    * keeps its meaning.

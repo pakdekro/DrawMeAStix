@@ -77,6 +77,13 @@ They decide which spelling an analyst is offered, and our identifiers are
 computed from names, so a dataset is not decoration: it decides whether two
 people's objects merge. Two consequences worth knowing before touching them.
 
+**ATT&CK means its three matrices.** Enterprise, Mobile and ICS are one
+knowledge base with one identifier space, so they are merged into one corpus
+and a technique that is not Enterprise carries its domain. The build checks at
+every run that no number is claimed by two of them: that is the only thing that
+could put two names on one identifier. Cloud, Containers and the other matrices
+of the website are platforms of Enterprise, not domains, and need nothing.
+
 **ATT&CK is authoritative on actor names.** The actor aliases come from the
 MISP galaxy, which disagrees with MITRE on where an actor ends: MITRE folds
 UNC2452 into APT29, the galaxy keeps it apart. `build_actors_dataset.py`

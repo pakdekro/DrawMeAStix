@@ -272,7 +272,7 @@ export default function CommandPalette({
             id: `${framework.id}:${entry.id}`,
             group: framework.label,
             label: entry.name,
-            hint: entry.id,
+            hint: entry.domain ? `${entry.id} ${entry.domain}` : entry.id,
             color: typeMeta(entry.type).color,
             haystack: '',
             run: () => onPickAttack(entry),

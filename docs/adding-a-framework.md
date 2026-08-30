@@ -15,6 +15,13 @@ by MITRE-style identifiers**. Everything below assumes that shape. A framework
 that is not that (a control catalogue, a maturity model, a taxonomy of losses)
 does not fit this path and needs a design conversation first.
 
+Nor is every new corpus a framework. ATT&CK's Mobile and ICS matrices went in
+as three lines of build script and no registry entry at all, because they are
+the same knowledge base as Enterprise: one identifier space, one external
+reference, no numbers in common. A domain is not a framework, and neither is a
+platform: the Cloud matrix on the ATT&CK website is Enterprise filtered on
+`x_mitre_platforms`, and there is no data behind it to fetch.
+
 ## Decide before writing anything
 
 Four questions. Answer them from the framework's own published data, not from
