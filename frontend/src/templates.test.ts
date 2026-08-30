@@ -16,6 +16,7 @@ import {
   linkKey,
   newLinks,
   planAgainstCanvas,
+  TEMPLATE_FAMILIES,
   templatesOfFamily,
   buildPlan,
   planIsolation,
@@ -361,14 +362,35 @@ describe("the numbers the scenarios carry", () => {
   });
 });
 
-describe("the two families", () => {
-  it("split the built-ins, and every fraud scenario says so", () => {
-    const fraud = templatesOfFamily("fraud");
-    const intrusion = templatesOfFamily("intrusion");
-    expect(fraud.length + intrusion.length).toBe(BUILTIN_TEMPLATES.length);
-    expect(fraud.map((t) => t.name)).toContain("Fraud - Account takeover");
-    // absent means intrusion, so the fifteen written before the split are all there
-    expect(intrusion.every((t) => t.family === undefined)).toBe(true);
+describe("the families", () => {
+  it("account for every built-in, and none is in two of them", () => {
+    const counted = TEMPLATE_FAMILIES.flatMap((f) => templatesOfFamily(f.id));
+    expect(counted).toHaveLength(BUILTIN_TEMPLATES.length);
+    expect(new Set(counted.map((t) => t.name)).size).toBe(BUILTIN_TEMPLATES.length);
+    // absent means intrusion, so the scenarios written before the split are
+    // all in the family they were written for
+    expect(templatesOfFamily("intrusion").every((t) => t.family === undefined)).toBe(true);
+  });
+
+  it("each hold enough to be a family", () => {
+    // A heading over a single scenario is a heading over nothing.
+    for (const family of TEMPLATE_FAMILIES) {
+      expect(templatesOfFamily(family.id).length, family.label).toBeGreaterThan(1);
+    }
+  });
+
+  it("the AI scenarios reach for ATLAS, and the fraud ones for F3 or AADAPT", () => {
+    const numbersOf = (family: "fraud" | "ai") =>
+      templatesOfFamily(family)
+        .flatMap((t) => t.slots)
+        .map((s) => s.prefill?.x_mitre_id as string | undefined)
+        .filter((n): n is string => n !== undefined);
+    expect(numbersOf("ai").every((n) => n.startsWith("AML."))).toBe(true);
+    const fraud = numbersOf("fraud");
+    expect(fraud.some((n) => n.startsWith("F1"))).toBe(true);
+    expect(fraud.some((n) => n.startsWith("ADT"))).toBe(true);
+    // and one case reaches across: a deepfake is an ATLAS technique in a fraud
+    expect(fraud.some((n) => n.startsWith("AML."))).toBe(true);
   });
 
   it("the fraud scenarios reach for the fraud frameworks", () => {

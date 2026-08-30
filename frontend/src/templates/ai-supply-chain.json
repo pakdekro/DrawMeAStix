@@ -1,0 +1,133 @@
+{
+  "name": "AI - Poisoned model from a hub",
+  "family": "ai",
+  "description": "A model published to look useful carries something else, and arrives through the pipeline that installs it.",
+  "labels": [
+    "ai",
+    "supply-chain",
+    "atlas"
+  ],
+  "slots": [
+    {
+      "key": "actor",
+      "type": "threat-actor",
+      "label": "Actor"
+    },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Organisation that uses the model",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "hub",
+      "type": "identity",
+      "label": "Hub or registry it was published on",
+      "prefill": {
+        "identity_class": "organization"
+      }
+    },
+    {
+      "key": "artifact",
+      "type": "file",
+      "label": "Published artefact",
+      "placeholder": "model.safetensors",
+      "hash": true
+    },
+    {
+      "key": "account",
+      "type": "user-account",
+      "label": "Publishing account",
+      "placeholder": "helpful-ai-labs"
+    },
+    {
+      "key": "infra",
+      "type": "infrastructure",
+      "label": "Publishing infrastructure"
+    },
+    {
+      "key": "t0115",
+      "type": "attack-pattern",
+      "label": "Publishing",
+      "fixed": "Models",
+      "prefill": {
+        "x_mitre_id": "AML.T0115.001",
+        "mitre_framework": "mitre-atlas"
+      }
+    },
+    {
+      "key": "t0018",
+      "type": "attack-pattern",
+      "label": "What is in it",
+      "fixed": "Poison AI Model",
+      "prefill": {
+        "x_mitre_id": "AML.T0018.000",
+        "mitre_framework": "mitre-atlas"
+      }
+    },
+    {
+      "key": "t0010",
+      "type": "attack-pattern",
+      "label": "How it arrives",
+      "fixed": "Model",
+      "prefill": {
+        "x_mitre_id": "AML.T0010.003",
+        "mitre_framework": "mitre-atlas"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "from": "actor",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t0115"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t0018"
+    },
+    {
+      "from": "actor",
+      "rel": "uses",
+      "to": "t0010"
+    },
+    {
+      "from": "t0010",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t0018",
+      "rel": "targets",
+      "to": "victim"
+    },
+    {
+      "from": "t0115",
+      "rel": "targets",
+      "to": "hub"
+    },
+    {
+      "from": "actor",
+      "rel": "owns",
+      "to": "infra"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "account"
+    },
+    {
+      "from": "infra",
+      "rel": "consists-of",
+      "to": "artifact"
+    }
+  ]
+}

@@ -1116,12 +1116,28 @@ label {
 }
 
 
-/* The rule between two families of scenario in the sidebar: a heading alone
-   reads as a continuation of the list above it. */
-.micro.tpl-family {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
+/* The family switch above the scenarios. One per line, unlike the framework
+   switch: "Intrusion" and "AI systems" do not fit in a third of a 180 pixel
+   panel, and three truncated words are worse than three lines. The count sits
+   on the chip because "how many fraud ones are there" is the question asked
+   before clicking one. */
+.chip-grid.tpl-families {
+  margin-bottom: 8px;
+}
+
+.tpl-families .chip {
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.tpl-families .chip-count {
+  flex: none;
+  color: var(--text-dim);
+  font-size: 10px;
+}
+
+.tpl-families .chip.on .chip-count {
+  color: var(--accent);
 }
 
 /* Which ATT&CK matrix a result comes from, when it is not the usual one.

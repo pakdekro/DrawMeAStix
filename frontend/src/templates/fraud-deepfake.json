@@ -1,0 +1,71 @@
+{
+  "name": "Fraud - Deepfake-assisted transfer",
+  "family": "fraud",
+  "description": "The executive on the call is generated. The transfer that follows is not: F3 for the fraud, ATLAS for what made it convincing.",
+  "labels": ["fraud", "deepfake", "fovi", "f3", "atlas"],
+  "slots": [
+    { "key": "actor", "type": "threat-actor", "label": "Fraud actor" },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Defrauded organisation",
+      "prefill": { "identity_class": "organization" }
+    },
+    {
+      "key": "spoofed",
+      "type": "identity",
+      "label": "Person impersonated",
+      "prefill": { "identity_class": "individual" }
+    },
+    { "key": "infra", "type": "infrastructure", "label": "Actor infrastructure" },
+    {
+      "key": "beneficiary",
+      "type": "user-account",
+      "label": "Account the money went to",
+      "placeholder": "FR7630004000031234567890143",
+      "prefill": { "account_name_is": "user_id" }
+    },
+    {
+      "key": "t0088",
+      "type": "attack-pattern",
+      "label": "Making the face and the voice",
+      "fixed": "Generate Deepfakes",
+      "prefill": { "x_mitre_id": "AML.T0088", "mitre_framework": "mitre-atlas" }
+    },
+    {
+      "key": "t0052",
+      "type": "attack-pattern",
+      "label": "Using them",
+      "fixed": "Deepfake-Assisted Phishing",
+      "prefill": { "x_mitre_id": "AML.T0052.001", "mitre_framework": "mitre-atlas" }
+    },
+    {
+      "key": "f1031",
+      "type": "attack-pattern",
+      "label": "Passing for the holder",
+      "fixed": "Impersonate Account Holder",
+      "prefill": { "x_mitre_id": "F1031", "mitre_framework": "mitre-f3" }
+    },
+    {
+      "key": "f1025",
+      "type": "attack-pattern",
+      "label": "The transfer",
+      "fixed": "Electronic Funds Transfer: Wire Transfer",
+      "prefill": { "x_mitre_id": "F1025.003", "mitre_framework": "mitre-f3" }
+    }
+  ],
+  "relations": [
+    { "from": "actor", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "impersonates", "to": "spoofed" },
+    { "from": "actor", "rel": "uses", "to": "t0088" },
+    { "from": "actor", "rel": "uses", "to": "t0052" },
+    { "from": "actor", "rel": "uses", "to": "f1031" },
+    { "from": "actor", "rel": "uses", "to": "f1025" },
+    { "from": "t0052", "rel": "targets", "to": "victim" },
+    { "from": "f1031", "rel": "targets", "to": "victim" },
+    { "from": "f1025", "rel": "targets", "to": "victim" },
+    { "from": "t0088", "rel": "targets", "to": "spoofed" },
+    { "from": "actor", "rel": "owns", "to": "infra" },
+    { "from": "infra", "rel": "consists-of", "to": "beneficiary" }
+  ]
+}

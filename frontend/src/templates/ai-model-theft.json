@@ -1,0 +1,52 @@
+{
+  "name": "AI - Model theft through the API",
+  "family": "ai",
+  "description": "Nobody breaks in: the model is queried until enough of it comes back to rebuild it.",
+  "labels": ["ai", "model-theft", "atlas"],
+  "slots": [
+    { "key": "actor", "type": "threat-actor", "label": "Actor" },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Organisation that owns the model",
+      "prefill": { "identity_class": "organization" }
+    },
+    {
+      "key": "endpoint",
+      "type": "url",
+      "label": "Inference endpoint queried",
+      "placeholder": "https://api.example/v1/predict"
+    },
+    {
+      "key": "account",
+      "type": "user-account",
+      "label": "Account used to query",
+      "placeholder": "trial-4471"
+    },
+    { "key": "infra", "type": "infrastructure", "label": "Querying infrastructure" },
+    {
+      "key": "t0013",
+      "type": "attack-pattern",
+      "label": "Learning its shape",
+      "fixed": "Discover AI Model Ontology",
+      "prefill": { "x_mitre_id": "AML.T0013", "mitre_framework": "mitre-atlas" }
+    },
+    {
+      "key": "t0024",
+      "type": "attack-pattern",
+      "label": "Taking it out",
+      "fixed": "Extract AI Model",
+      "prefill": { "x_mitre_id": "AML.T0024.002", "mitre_framework": "mitre-atlas" }
+    }
+  ],
+  "relations": [
+    { "from": "actor", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "uses", "to": "t0013" },
+    { "from": "actor", "rel": "uses", "to": "t0024" },
+    { "from": "t0013", "rel": "targets", "to": "victim" },
+    { "from": "t0024", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "owns", "to": "infra" },
+    { "from": "infra", "rel": "consists-of", "to": "endpoint" },
+    { "from": "infra", "rel": "consists-of", "to": "account" }
+  ]
+}
