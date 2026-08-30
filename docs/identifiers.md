@@ -49,7 +49,7 @@ identifier.
 
 | Type | Identifying properties | Notes |
 |---|---|---|
-| `attack-pattern` | `x_mitre_id`, else `name` | the ATT&CK id wins when present, so two spellings of the same technique meet |
+| `attack-pattern` | `x_mitre_id`, else `name` | the MITRE number wins when present, so two spellings of one technique meet. Any of the four frameworks: `T1566`, `F1001`, `AML.T0051`, `ADT3003` |
 | `campaign` | `name` | |
 | `grouping` | `name`, `context`, `created` | `created` only when set |
 | `identity` | `name`, `identity_class` | `identity_class` is lowercased, not trimmed |

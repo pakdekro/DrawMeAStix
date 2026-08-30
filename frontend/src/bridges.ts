@@ -182,7 +182,16 @@ export function findBridges(a: BridgeEndpoint, b: BridgeEndpoint): BridgeMatch |
   if (OPERATORS.has(sdo.stix_type) && sco.stix_type === "file") {
     recipes.push(MALWARE_RECIPE);
   }
-  if (INDICABLE.has(sdo.stix_type)) {
+  // The indicator bridge, but only when there is a pattern to put in it. An
+  // indicator without one cannot be exported, and a recipe that offers in one
+  // click an object the export then refuses is worse than no recipe: the
+  // analyst gets two problems where they had one. The case exists since an
+  // account can be named by its display name, which identifies nobody and
+  // detects nothing.
+  if (
+    INDICABLE.has(sdo.stix_type) &&
+    patternFromObservable(sco.stix_type, sco.name, sco.properties) !== null
+  ) {
     recipes.push(INDICATOR_RECIPE);
   }
   return recipes.length > 0 ? { sdo, sco, recipes } : null;
