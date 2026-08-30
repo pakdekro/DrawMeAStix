@@ -43,7 +43,10 @@ this file is the one meant for people reading the code.
   reference. F3 references also carry a url, which ATT&CK does not need and
   F1001 does, and it is the one the F3 site actually serves, hash route and
   all, rather than the flat path F3's own bundle publishes and nothing
-  answers.
+  answers. On the canvas a fraud technique wears a small F3 mark and an
+  ATT&CK one wears none, because absent means ATT&CK there as everywhere
+  else, and because a mixed case is exactly where you want to see which half
+  of it you are looking at.
 
 - **The narrative reads the case in the order it happened.** A relation has
   carried an activity window since the first release and the narrative

@@ -41,6 +41,12 @@ export default function EntityNode({ id, data, selected }: NodeProps<EntityNodeT
   const labels = Array.isArray(props.labels)
     ? props.labels.filter((l): l is string => typeof l === 'string')
     : []
+  // Which knowledge base a technique came from. Marked for F3 only: absent
+  // means ATT&CK everywhere else in the app, ATT&CK is what most graphs are
+  // made of, and a chip on every technique would say nothing on either. Read
+  // off the property and never off the number, since F3 reuses 43 ATT&CK
+  // numbers and publishes T-numbers of its own.
+  const isF3 = data.entity.stix_type === 'attack-pattern' && props.mitre_framework === 'mitre-f3'
   return (
     <div
       className={`entity-node${selected ? ' selected' : ''}`}
@@ -59,6 +65,11 @@ export default function EntityNode({ id, data, selected }: NodeProps<EntityNodeT
       </button>
       <div className="node-type" style={{ color: meta.color }}>
         {meta.label}
+        {isF3 && (
+          <span className="node-framework" title="MITRE F3, the fraud framework">
+            F3
+          </span>
+        )}
       </div>
       <div className="node-name" title={data.entity.name}>
         {data.entity.name}
