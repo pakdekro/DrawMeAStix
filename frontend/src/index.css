@@ -1397,6 +1397,20 @@ label {
   font-weight: 700;
 }
 
+/* The framework mark on a technique card (F3 only, see EntityNode): quiet,
+   inline with the type, and not in the type's colour, because it qualifies
+   the object rather than naming it. */
+.entity-node .node-framework {
+  margin-left: 5px;
+  font-size: 9px;
+  letter-spacing: 0;
+  font-weight: 600;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 3px;
+}
+
 .entity-node .node-name {
   font-size: 13px;
   font-weight: 600;
