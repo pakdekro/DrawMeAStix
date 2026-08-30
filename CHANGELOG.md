@@ -5,7 +5,18 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
-## 1.7.0 - 29 August 2026
+## 2.0.0 "CyberFraud Edition" - 30 August 2026
+
+The release where the answer to "what is this for" changes. One canvas now
+carries four knowledge bases, ATT&CK with its three matrices, F3 for fraud,
+ATLAS for AI systems and AADAPT for digital assets, and a case can run from a
+phishing message to a wire transfer to a bridge in one graph and one bundle.
+The narrative reads that case in the order it happened, and what comes out at
+the end of it is laid out to be handed to somebody.
+
+Nothing you saved changes. Bundles stay valid, canvases written by 1.x open
+exactly as they did, and the file format has not moved: the major number is
+about what the tool is for, not about a break.
 
 - **F3 alongside ATT&CK, and a case that crosses from one to the other.**
   MITRE's Fight Financial Fraud matrix is offered in the framework panel, next
