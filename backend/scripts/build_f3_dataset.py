@@ -33,18 +33,51 @@ Usage: cd backend && uv run python scripts/build_f3_dataset.py
 from __future__ import annotations
 
 import json
+import re
 import urllib.request
 from pathlib import Path
 
-# The native series is published per version; a new F3 release means bumping
-# this (the repo has no unversioned copy of it).
-URL = (
-    "https://raw.githubusercontent.com/center-for-threat-informed-defense/"
-    "fight-fraud-framework/main/public/f3-v1.1.json"
-)
+# The native series is published one file per version, with no unversioned
+# copy: `f3-v1.1.json` today, `f3-v1.2.json` the day there is one. A pinned
+# URL would therefore keep rebuilding v1.1 for ever, and the weekly refresh
+# would report "unchanged" about a framework that had moved. So the published
+# files are listed and the highest version wins.
+#
+# The repository ALSO carries `src/data/matrix-data.json`, which is what the
+# site builds from and is always current. It is deliberately not used: it is
+# working state on a branch, and this application ships what MITRE published,
+# never what it happens to be drafting.
+REPO = "center-for-threat-informed-defense/fight-fraud-framework"
+LISTING = f"https://api.github.com/repos/{REPO}/contents/public"
+RAW = f"https://raw.githubusercontent.com/{REPO}/main/public/{{name}}"
+NATIVE = re.compile(r"^f3-v(\d+(?:\.\d+)*)\.json$")
 ROOT = Path(__file__).resolve().parents[2] / "frontend" / "public"
 OUT = ROOT / "f3-dataset.json"
 ATTACK = ROOT / "attack-dataset.json"
+
+
+def fetch(url: str):
+    req = urllib.request.Request(url, headers={"User-Agent": "drawmeastix-dataset/1.0"})
+    with urllib.request.urlopen(req) as resp:  # noqa: S310
+        return json.load(resp)
+
+
+def latest_native() -> str:
+    """Name of the most recent published native file.
+
+    `f3-v1.json` and `f3-v1.1.json` both exist and hold the same thing: the
+    first is the series, the second the release. Comparing the numbers as
+    tuples rather than as strings is what keeps `(1,)` from outranking
+    `(1, 1)`, and `(1, 10)` from losing to `(1, 9)`.
+    """
+    published = [
+        (tuple(int(part) for part in match.group(1).split(".")), entry["name"])
+        for entry in fetch(LISTING)
+        if (match := NATIVE.match(entry["name"]))
+    ]
+    if not published:
+        raise SystemExit(f"no f3-v<version>.json under {LISTING}")
+    return max(published)[1]
 
 
 def shortname(name: str) -> str:
@@ -54,9 +87,8 @@ def shortname(name: str) -> str:
 
 
 def main() -> None:
-    req = urllib.request.Request(URL, headers={"User-Agent": "drawmeastix-dataset/1.0"})
-    with urllib.request.urlopen(req) as resp:  # noqa: S310
-        data = json.load(resp)
+    source = latest_native()
+    data = fetch(RAW.format(name=source))
 
     attack_names: dict[str, str] = {}
     if ATTACK.exists():
@@ -89,9 +121,7 @@ def main() -> None:
             "name": name,
             "framework": "mitre-attack" if borrowed else "mitre-f3",
         }
-        phases = sorted(
-            by_tactic_id[t] for t in obj.get("tactics", []) if t in by_tactic_id
-        )
+        phases = sorted(by_tactic_id[t] for t in obj.get("tactics", []) if t in by_tactic_id)
         if phases:
             entry["tactics"] = phases
         entries.append(entry)
@@ -124,6 +154,9 @@ def main() -> None:
         f"({borrowed_n} ATT&CK, {len(entries) - borrowed_n} F3), "
         f"{len(payload['tactics'])} tactics -> {OUT.name} ({size_kb} Ko)"
     )
+    # Named in the report, not just fetched: this is the line that says the
+    # framework itself moved, in the pull request the weekly refresh opens.
+    print(f"  read from {source}, the most recent published native file")
     print(f"  {renamed} names taken back from ATT&CK (F3 spells sub-techniques by full path)")
     if unknown_attack_ids:
         print("  flagged isAttack but absent from our Enterprise dataset, F3 spelling kept:")

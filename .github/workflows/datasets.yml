@@ -6,6 +6,10 @@
 # people name the same thing the same way. Left alone they simply rot: the
 # tool went from ATT&CK 17 to 19.1 without anything saying so.
 #
+# Four corpora now: the framework pages at /attack and /f3 describe these
+# files in prose, and a test holds the two in step, so an enrichment upstream
+# reaches the documentation through the same weekly run.
+#
 # This job regenerates them weekly and OPENS A PULL REQUEST when the content
 # moved. Deliberately not a commit: a dataset bump changes what analysts see,
 # so the detection is automated and the decision stays human and reviewable.
@@ -77,13 +81,36 @@ jobs:
       # file contradicts a name ATT&CK already resolves. If MITRE adopts a
       # name the galaxy also carries, this is where it surfaces. `f3.test.ts`
       # does the same for the 43 techniques F3 and ATT&CK share: they carry one
-      # identifier, so they have to carry one name.
+      # identifier, so they have to carry one name. And
+      # `frameworks.static.test.tsx` holds the framework pages against the
+      # files they describe: the eight F3 tactics printed at /f3 are the eight
+      # in the dataset, and the count of techniques F3 borrows is the count in
+      # it. A framework that grows a ninth tactic is a documentation change,
+      # and this is what asks for it.
+      #
+      # A failure does NOT cancel the pull request. What fails here is a
+      # disagreement between the new files and something written down beside
+      # them, and the fix belongs on this branch, next to the diff that caused
+      # it. Opening it and saying so beats a red scheduled run with nothing to
+      # look at, which is how a dataset stays stale for a month.
       - name: Tests against the new datasets
+        id: tests
+        continue-on-error: true
         if: steps.diff.outputs.changed == 'true'
         working-directory: frontend
         run: |
           npm ci
           npm test
+
+      - name: What the tests said
+        id: verdict
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          if [ "${{ steps.tests.outcome }}" = "failure" ]; then
+            echo "note=**The frontend tests FAILED against these files.** Something written down beside the datasets no longer agrees with them: a name arbitration, or a number in the framework pages. The run log says which. Fix it on this branch rather than merging." >> "$GITHUB_OUTPUT"
+          else
+            echo "note=The frontend tests ran green against these files before this PR was opened." >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Open a pull request
         if: steps.diff.outputs.changed == 'true'
@@ -105,5 +132,14 @@ jobs:
             Worth reading the diff for, rather than merging blind: a name that
             moves between the two actor corpora changes which spelling
             analysts are offered, and therefore which identifier their objects
-            get. The frontend tests ran against these files before this PR was
-            opened.
+            get.
+
+            ${{ steps.verdict.outputs.note }}
+
+      # After the pull request, never before it: the point is to have both the
+      # regenerated files and the red mark that says they need a hand.
+      - name: Fail the run when the tests did
+        if: steps.tests.outcome == 'failure'
+        run: |
+          echo "::error::the datasets moved and the tests no longer pass - see the pull request"
+          exit 1
