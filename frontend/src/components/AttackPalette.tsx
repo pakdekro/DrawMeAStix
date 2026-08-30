@@ -4,6 +4,7 @@ import type { AttackDataset, AttackEntry } from '../attack'
 import { loadF3Dataset } from '../f3'
 import type { F3Dataset } from '../f3'
 import { typeMeta } from '../stixMeta'
+import Icon from './Icon'
 
 /**
  * Framework palette (#10): searches the bundled datasets and adds to the
@@ -82,6 +83,23 @@ export default function AttackPalette({ onPick }: { onPick: (entry: AttackEntry)
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
+      {/* Both guides, under the search box and named. An icon beside the
+          title had to be found and then guessed at, and the panel has the room
+          to say what it opens. Both are offered whichever framework is
+          selected: the question "what is the other one" is exactly the one
+          somebody in front of this switch is asking. A new tab, because the
+          reader has a canvas open and answering it is not a reason to take it
+          away from them. */}
+      <p className="attack-docs">
+        <a href="#/attack" target="_blank" rel="noreferrer">
+          <Icon name="help" size={12} />
+          What ATT&CK is
+        </a>
+        <a href="#/f3" target="_blank" rel="noreferrer">
+          <Icon name="help" size={12} />
+          What F3 is
+        </a>
+      </p>
       {failed && <p className="hint">Dataset unavailable.</p>}
       {searching && loaded && results.length === 0 && <p className="hint">No results.</p>}
       <div className="attack-results">

@@ -24,6 +24,8 @@ export default defineConfig({
         main: 'index.html',
         guide: 'guide.html',
         about: 'about.html',
+        attack: 'attack.html',
+        f3: 'f3.html',
       },
     },
   },

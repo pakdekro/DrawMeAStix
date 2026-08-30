@@ -14,12 +14,23 @@ import { SMALL_SCREEN_QUERY, hasOptedIn, rememberOptIn } from './smallScreen'
  * point and ships as plain HTML.
  */
 const StixGuide = lazy(() => import('./components/StixGuide'))
+const AttackGuide = lazy(() => import('./components/AttackGuide'))
+const F3Guide = lazy(() => import('./components/F3Guide'))
 
-/** Tiny hash router: #/ (list), #/guide (STIX help) or #/inv/<id>. */
-function parseHash(): { view: 'home' | 'guide' } | { view: 'workspace'; id: string } {
+/** The prose pages, by the route that serves them. */
+const PROSE = { guide: StixGuide, attack: AttackGuide, f3: F3Guide }
+type ProseRoute = keyof typeof PROSE
+
+/**
+ * Tiny hash router: #/ (list), #/inv/<id>, or one of the prose pages
+ * (#/guide, #/attack, #/f3). Each of those has a pre-rendered twin at its own
+ * address, built from the same component.
+ */
+function parseHash(): { view: ProseRoute | 'home' } | { view: 'workspace'; id: string } {
   const match = window.location.hash.match(/^#\/inv\/(.+)$/)
   if (match) return { view: 'workspace', id: match[1] }
-  if (window.location.hash === '#/guide') return { view: 'guide' }
+  const route = window.location.hash.replace(/^#\//, '')
+  if (route in PROSE) return { view: route as ProseRoute }
   return { view: 'home' }
 }
 
@@ -43,13 +54,14 @@ export default function App() {
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
-  // The guide comes BEFORE the small-screen guard: it is prose, and prose
-  // reads perfectly well on a phone. Handing a "come back on a desktop" card
-  // to someone who came to read what an observable is would be absurd.
-  if (route.view === 'guide') {
+  // Prose comes BEFORE the small-screen guard: it reads perfectly well on a
+  // phone. Handing a "come back on a desktop" card to someone who came to
+  // read what an observable is would be absurd.
+  if (route.view !== 'home' && route.view !== 'workspace') {
+    const Page = PROSE[route.view]
     return (
       <Suspense fallback={<p className="hint guide-loading">Loading the guide...</p>}>
-        <StixGuide />
+        <Page />
       </Suspense>
     )
   }

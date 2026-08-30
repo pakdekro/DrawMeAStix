@@ -11,7 +11,9 @@
  */
 
 import { renderToString, renderToStaticMarkup } from 'react-dom/server'
+import AttackGuide from './components/AttackGuide'
 import DataPage from './components/DataPage'
+import F3Guide from './components/F3Guide'
 import StixGuide from './components/StixGuide'
 
 /**
@@ -29,4 +31,17 @@ export function renderGuide(): string {
  */
 export function renderAbout(): string {
   return renderToStaticMarkup(<DataPage />)
+}
+
+/**
+ * The framework pages, static like "Your data" and for the same reason: they
+ * are prose with nothing to bring to life, so they ship no script and need no
+ * hydration markers.
+ */
+export function renderAttack(): string {
+  return renderToStaticMarkup(<AttackGuide mode="static" />)
+}
+
+export function renderF3(): string {
+  return renderToStaticMarkup(<F3Guide mode="static" />)
 }

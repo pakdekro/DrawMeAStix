@@ -20,9 +20,10 @@
 
 import { useEffect, useState } from 'react'
 import { byVerb, canLink, incoming, label, outgoing, patternExamples } from '../guide'
-import type { BridgeOption, RelationLine, VerbGroup } from '../guide'
+import type { BridgeOption, RelationLine } from '../guide'
 import { SCO_ORDER, SDO_ORDER, typeMeta } from '../stixMeta'
 import Icon from './Icon'
+import VerbList from './VerbList'
 
 export type GuideMode = 'app' | 'static'
 
@@ -194,6 +195,30 @@ export default function StixGuide({ mode = 'app' }: { mode?: GuideMode }) {
         </section>
 
         <section className="guide-section">
+          <h2>The frameworks, which are a different question</h2>
+          {/* This page teaches a FORMAT: what may be written down and what may
+              point at what. Which technique to write down is a question about a
+              body of knowledge, and it has its own pages rather than a section
+              here, because the reader of one is rarely the reader of the other
+              at the same moment. */}
+          <p>
+            STIX says what you may write down. It says nothing about{' '}
+            <em>which</em> technique you are looking at: that comes from a knowledge base,
+            and this canvas ships two of them. They meet on the same object, an{' '}
+            <code>attack-pattern</code>, so a case can cross from an intrusion into a fraud
+            without changing mode.
+          </p>
+          <div className="guide-actions">
+            <a className="guide-cta" href={mode === 'static' ? '/attack' : '#/attack'}>
+              ATT&CK
+            </a>
+            <a className="guide-cta" href={mode === 'static' ? '/f3' : '#/f3'}>
+              F3, the fraud matrix
+            </a>
+          </div>
+        </section>
+
+        <section className="guide-section">
           <h2>Then what?</h2>
           {/* Deliberately without naming a platform: a STIX bundle is an open
               format, and framing the export around a single tool would suggest
@@ -295,39 +320,6 @@ function TypeSelect({
   )
 }
 
-/** One verb, its sentence, and the types it accepts at the other end. */
-function VerbList({
-  groups,
-  subject,
-  side,
-}: {
-  groups: VerbGroup[]
-  subject: string
-  side: 'from' | 'to'
-}) {
-  return (
-    <dl className="guide-verbs">
-      {groups.map((g) => (
-        <div key={g.rel}>
-          <dt>
-            {side === 'to' ? (
-              <>
-                <strong>{label(subject)}</strong> <code>{g.rel}</code>{' '}
-                <span className="guide-others">{g.types.map(label).join(', ')}</span>
-              </>
-            ) : (
-              <>
-                <span className="guide-others">{g.types.map(label).join(', ')}</span>{' '}
-                <code>{g.rel}</code> <strong>{label(subject)}</strong>
-              </>
-            )}
-          </dt>
-          {g.help && <dd>{g.help}</dd>}
-        </div>
-      ))}
-    </dl>
-  )
-}
 
 /** The application's own answer, in the order it decides it. */
 function Answer({ source, target }: { source: string; target: string }) {
