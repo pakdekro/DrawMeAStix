@@ -231,9 +231,11 @@ describe('buildNarrative', () => {
         { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-16' },
         { source: 'm', type: 'communicates-with', target: 'a3', start_time: '2026-04-02' },
       ])
+      // and it is listed before the blocks: a line printed under a subject
+      // that has a sequence reads as the end of that sequence
       expect(timelines(mixed.chronology).map((t) => `${t.subject} (${t.events.length})`)).toEqual([
-        'The campaign Ferronnier (2)',
         'The malware EggShell (1)',
+        'The campaign Ferronnier (2)',
       ])
       expect(eventClause(mixed.chronology[0])).toBe('Compromises the account FR76...0143.')
     })

@@ -53,8 +53,10 @@ describe('buildMarkdown', () => {
     expect(md).toContain('### Chronology, by subject')
     expect(md).toContain('**The intrusion set Corax**')
     expect(md).toContain('- **2026-03-14** Uses the malware EggShell.')
+    // the lone one keeps its moment at the head of the line, like every other
+    // line of the section, and names its subject in the sentence
     expect(md).toContain(
-      '**The malware EggShell** - **2026-03-20** Communicates with the domain nest.example.',
+      '- **2026-03-20** The malware EggShell communicates with the domain nest.example.',
     )
     // nothing is left undated here, so that heading does not appear at all
     expect(md).not.toContain('### Undated')

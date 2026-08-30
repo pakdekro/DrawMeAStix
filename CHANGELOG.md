@@ -231,11 +231,24 @@ this file is the one meant for people reading the code.
   timeline per subject, every dated subject included. A subject with a single
   event has no sequence, so it reads as one line rather than as a heading over
   a list of one, but it is there: a reader looking up what the domain did and
-  not finding it would conclude it did nothing dated. The section as a whole
+  not finding it would conclude it did nothing dated. Those one-off subjects
+  are gathered ahead of the blocks, each line opening with its moment like
+  every other line of the section, because a lone line printed after a subject
+  that has a sequence is read as the end of that sequence, and a date sitting
+  in the middle of a sentence is read as a mistake. The section as a whole
   appears only when two subjects are dated, since a case whose actor did
   everything would print the same list twice under two headings. A 300 pixel
   panel read while working wants the case rather than the case and its index,
   so it stays out of there.
+
+  The report image and the PDF give those parts three ranks that differ by
+  more than a point of type: a section is small uppercase in the accent,
+  tracked out and ruled off; a part of it is bold in the text colour; a subject
+  inside that part is bold and quiet. Bold at one size for a heading and for a
+  name, which is what these two did, is one rank wearing two hats, and it left
+  a reader meeting "Chronology, by subject" and "The threat actor Guilde
+  Vermeil" as the same kind of thing. There is more air between the ranks too,
+  which is most of what makes them legible at all.
 
 - **A technique says which knowledge base its number belongs to, and both
   are named.** ATT&CK and F3 look identical on a canvas, same shape and same

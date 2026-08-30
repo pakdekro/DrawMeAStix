@@ -185,6 +185,12 @@ export async function composeReport(
     color: string
     lh: number
     gap: number
+    /** room ABOVE the block: what tells the eye a new part has started */
+    top?: number
+    /** a hairline under the block, the width of the text column */
+    rule?: boolean
+    /** letter spacing, for the small uppercase of a section title */
+    track?: string
     indent?: number
     rail?: boolean
     dot?: boolean
@@ -193,17 +199,37 @@ export async function composeReport(
   const RAIL_INDENT = 22
   const blocks: Block[] = []
   const para = (t: string) =>
-    blocks.push({ lines: wrap(t, `400 15px ${SANS}`), font: `400 15px ${SANS}`, color: '#dcd7ba', lh: 23, gap: 8 })
-  const head = (t: string) =>
-    blocks.push({ lines: [t.toUpperCase()], font: `700 13px ${SANS}`, color: '#7e9cd8', lh: 22, gap: 4 })
+    blocks.push({ lines: wrap(t, `400 15px ${SANS}`), font: `400 15px ${SANS}`, color: '#dcd7ba', lh: 23, gap: 10 })
 
-  // The object a note is about, and the "this is an opinion" line: quieter
-  // than a section heading, louder than the prose, so the eye can tell whose
-  // words it is reading without needing a legend.
+  /**
+   * Three ranks, and each one says what it is by a different means rather than
+   * by being a little bigger than the one below: a section is in the accent,
+   * spaced out and ruled off; a part of a section is bold in the text colour;
+   * a subject inside that part is bold and quiet. Bold at 15 pixels for both a
+   * heading and a name, which is what this report did, is one rank wearing two
+   * hats, and a reader meets "Chronology, by subject" and "The threat actor
+   * Guilde Vermeil" as the same thing.
+   */
+  const head = (t: string) =>
+    blocks.push({
+      lines: [t.toUpperCase()],
+      font: `700 15px ${SANS}`,
+      color: '#7e9cd8',
+      lh: 22,
+      gap: 16,
+      top: 30,
+      rule: true,
+      track: '0.09em',
+    })
   const sub = (t: string) =>
-    blocks.push({ lines: wrap(t, `700 15px ${SANS}`), font: `700 15px ${SANS}`, color: '#dcd7ba', lh: 23, gap: 2 })
+    blocks.push({ lines: wrap(t, `700 15px ${SANS}`), font: `700 15px ${SANS}`, color: '#dcd7ba', lh: 23, gap: 10, top: 18 })
+  // The object a note is about, the subject of a timeline: quieter than the
+  // part it sits in, louder than the prose, so the eye can tell whose words it
+  // is reading without needing a legend.
+  const who = (t: string) =>
+    blocks.push({ lines: wrap(t, `700 14px ${SANS}`), font: `700 14px ${SANS}`, color: '#9a9782', lh: 22, gap: 6, top: 14 })
   const aside = (t: string) =>
-    blocks.push({ lines: wrap(t, `italic 14px ${SANS}`), font: `italic 14px ${SANS}`, color: '#9a9782', lh: 21, gap: 2 })
+    blocks.push({ lines: wrap(t, `italic 14px ${SANS}`), font: `italic 14px ${SANS}`, color: '#9a9782', lh: 21, gap: 6 })
 
   /** A subject, then what it does: one line if that is all, a list if more. */
   const storyBlock = (block: NarrBlock, one: (t: string) => void, many: (t: string) => void) => {
@@ -222,8 +248,8 @@ export async function composeReport(
         lines: [row.when],
         font: `700 14px ${SANS}`,
         color: '#7e9cd8',
-        lh: 21,
-        gap: 2,
+        lh: 24,
+        gap: 4,
         indent: RAIL_INDENT,
         rail: true,
         dot: true,
@@ -234,7 +260,7 @@ export async function composeReport(
           font: `400 15px ${SANS}`,
           color: '#dcd7ba',
           lh: 23,
-          gap: 6,
+          gap: 8,
           indent: RAIL_INDENT,
           rail: true,
         })
@@ -251,16 +277,19 @@ export async function composeReport(
       const perSubject = timelines(narr.chronology)
       if (perSubject.length > 0) sub('Chronology, by subject')
       for (const { subject, events } of perSubject) {
+        // Its moment at the head of the line, like every other moment here,
+        // and the subject said in the sentence rather than announced over a
+        // list of one.
         if (events.length === 1) {
-          para(`${subject}  ${events[0].when}  ${eventClause(events[0])}`)
+          para(`${events[0].when}  ${eventSentence(events[0])}`)
           continue
         }
-        sub(subject)
+        who(subject)
         events.forEach((e) => para(`${e.when}  ${eventClause(e)}`))
       }
       if (narr.story.length > 0) sub('Undated')
     }
-    narr.story.forEach((b) => storyBlock(b, para, sub))
+    narr.story.forEach((b) => storyBlock(b, para, who))
     if (narr.detection.length) {
       head('Detection')
       narr.detection.forEach(para)
@@ -272,7 +301,7 @@ export async function composeReport(
   if (groups.length > 0) {
     head('Analyst notes')
     for (const { subject, notes: mine } of groups) {
-      sub(subject ? subject.name : 'About the case')
+      who(subject ? subject.name : 'About the case')
       for (const note of mine) {
         if (note.kind === 'opinion') aside(opinionLabel(note))
         note.content.split('\n').forEach(para)
@@ -282,7 +311,7 @@ export async function composeReport(
 
   const titleLines = wrap(title, `700 26px ${SANS}`)
   const titleH = titleLines.length * 34
-  const blocksH = blocks.reduce((h, b) => h + b.lines.length * b.lh + b.gap, 0)
+  const blocksH = blocks.reduce((h, b) => h + (b.top ?? 0) + b.lines.length * b.lh + b.gap, 0)
   const totalH = Math.ceil(PAD + titleH + 16 + gH + 26 + blocksH + PAD)
 
   const RES = 2
@@ -310,6 +339,7 @@ export async function composeReport(
   y += gH + 26
 
   for (const b of blocks) {
+    y += b.top ?? 0
     const height = b.lines.length * b.lh + b.gap
     if (b.rail) {
       ctx.strokeStyle = '#54546d'
@@ -327,9 +357,19 @@ export async function composeReport(
     }
     ctx.font = b.font
     ctx.fillStyle = b.color
+    ctx.letterSpacing = b.track ?? '0px'
     for (const line of b.lines) {
       ctx.fillText(line, PAD + (b.indent ?? 0), y)
       y += b.lh
+    }
+    ctx.letterSpacing = '0px'
+    if (b.rule) {
+      ctx.strokeStyle = '#54546d'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(PAD, y + 3.5)
+      ctx.lineTo(W - PAD, y + 3.5)
+      ctx.stroke()
     }
     y += b.gap
   }
@@ -431,9 +471,9 @@ export async function graphToPdf(
             pdf.line(RAIL_X, y - size, RAIL_X, y + size * 0.5)
           }
           pdf.text(ln, x, y)
-          y += size * 1.35
+          y += size * 1.4
         }
-        y += 3
+        y += 5
       }
     }
     /** A moment on the rail: its dot, then the events that happened then. */
@@ -449,21 +489,46 @@ export async function graphToPdf(
       y += 14
       block(events, 10, 55, RAIL_INDENT, true)
     }
+    /**
+     * The same three ranks as the report image, said in the means a printed
+     * page has: a section is small uppercase in the accent, tracked out and
+     * ruled off; a part of it is bold and dark; a subject inside that part is
+     * bold and grey.
+     */
     const heading = (t: string) => {
-      y += 8
-      pdf.setFont('helvetica', 'bold').setFontSize(13).setTextColor(60)
-      pdf.text(t, M, y)
-      y += 16
-    }
-    /** Names a part of a section, and a subject above its own lines. */
-    const subheading = (t: string) => {
+      y += 18
       if (y > pageH - M) {
         pdf.addPage()
         y = M
       }
-      pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(60)
+      pdf.setFont('helvetica', 'bold').setFontSize(11).setTextColor(70, 95, 160)
+      pdf.setCharSpace(0.8)
+      pdf.text(t.toUpperCase(), M, y)
+      pdf.setCharSpace(0)
+      pdf.setDrawColor(205)
+      pdf.setLineWidth(0.5)
+      pdf.line(M, y + 4, pageW - M, y + 4)
+      y += 20
+    }
+    const subheading = (t: string) => {
+      y += 8
+      if (y > pageH - M) {
+        pdf.addPage()
+        y = M
+      }
+      pdf.setFont('helvetica', 'bold').setFontSize(11).setTextColor(45)
       pdf.text(t, M, y)
-      y += 14
+      y += 16
+    }
+    const who = (t: string) => {
+      y += 6
+      if (y > pageH - M) {
+        pdf.addPage()
+        y = M
+      }
+      pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(115)
+      pdf.text(t, M, y)
+      y += 15
     }
     if (narr) {
       heading('Narrative')
@@ -482,20 +547,20 @@ export async function graphToPdf(
         if (perSubject.length > 0) subheading('Chronology, by subject')
         for (const { subject, events } of perSubject) {
           if (events.length === 1) {
-            block([`${subject}  ${events[0].when}  ${eventClause(events[0])}`], 10, 55)
+            block([`${events[0].when}  ${eventSentence(events[0])}`], 10, 55)
             continue
           }
-          subheading(subject)
+          who(subject)
           block(events.map((e) => `${e.when}  ${eventClause(e)}`), 10, 55)
         }
-        if (narr.story.length > 0) heading('Undated')
+        if (narr.story.length > 0) subheading('Undated')
       }
       for (const b of narr.story) {
         if (b.clauses.length === 1) {
           block([`${b.subject} ${b.clauses[0]}.`], 10, 55)
           continue
         }
-        subheading(b.subject)
+        who(b.subject)
         block(b.clauses.map((c) => `· ${c}`), 10, 55)
       }
       if (narr.detection.length) {
@@ -512,10 +577,7 @@ export async function graphToPdf(
     if (groups.length > 0) {
       heading('Analyst notes')
       for (const { subject, notes: mine } of groups) {
-        y += 6
-        pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(60)
-        pdf.text(subject ? subject.name : 'About the case', M, y)
-        y += 14
+        who(subject ? subject.name : 'About the case')
         for (const note of mine) {
           if (note.kind === 'opinion') block([opinionLabel(note)], 9, 130)
           block([note.content], 10, 55)
