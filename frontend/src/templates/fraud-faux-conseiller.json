@@ -1,0 +1,82 @@
+{
+  "name": "Fraud - Fake adviser (vishing)",
+  "family": "fraud",
+  "description": "The victim is called by someone posing as their bank and transfers the money themselves. Nothing is compromised.",
+  "labels": ["fraud", "vishing", "social-engineering", "f3"],
+  "slots": [
+    { "key": "actor", "type": "threat-actor", "label": "Fraud actor" },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Defrauded customer",
+      "prefill": { "identity_class": "individual" }
+    },
+    {
+      "key": "bank",
+      "type": "identity",
+      "label": "Impersonated institution",
+      "prefill": { "identity_class": "organization" }
+    },
+    {
+      "key": "infra",
+      "type": "infrastructure",
+      "label": "Calling and collection infrastructure"
+    },
+    {
+      "key": "site",
+      "type": "domain-name",
+      "label": "Site used during the call",
+      "placeholder": "securite-banque.example"
+    },
+    {
+      "key": "beneficiary",
+      "type": "user-account",
+      "label": "Account the money went to",
+      "placeholder": "FR7630004000031234567890143",
+      "prefill": { "account_name_is": "user_id" }
+    },
+    {
+      "key": "f1040",
+      "type": "attack-pattern",
+      "label": "The call looks legitimate",
+      "fixed": "Phone Number Spoofing: Official Phone Number Spoofing",
+      "prefill": { "x_mitre_id": "F1040.002", "mitre_framework": "mitre-f3" }
+    },
+    {
+      "key": "f1032",
+      "type": "attack-pattern",
+      "label": "The caller does too",
+      "fixed": "Impersonate Official",
+      "prefill": { "x_mitre_id": "F1032", "mitre_framework": "mitre-f3" }
+    },
+    {
+      "key": "t1621",
+      "type": "attack-pattern",
+      "label": "Getting past the second factor",
+      "fixed": "Multi-Factor Authentication Request Generation",
+      "prefill": { "x_mitre_id": "T1621" }
+    },
+    {
+      "key": "f1025",
+      "type": "attack-pattern",
+      "label": "The transfer the victim makes",
+      "fixed": "Electronic Funds Transfer: Peer-to-Peer Transfer",
+      "prefill": { "x_mitre_id": "F1025.001", "mitre_framework": "mitre-f3" }
+    }
+  ],
+  "relations": [
+    { "from": "actor", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "impersonates", "to": "bank" },
+    { "from": "actor", "rel": "uses", "to": "f1040" },
+    { "from": "actor", "rel": "uses", "to": "f1032" },
+    { "from": "actor", "rel": "uses", "to": "t1621" },
+    { "from": "actor", "rel": "uses", "to": "f1025" },
+    { "from": "f1032", "rel": "targets", "to": "victim" },
+    { "from": "t1621", "rel": "targets", "to": "victim" },
+    { "from": "f1025", "rel": "targets", "to": "victim" },
+    { "from": "f1040", "rel": "targets", "to": "bank" },
+    { "from": "actor", "rel": "owns", "to": "infra" },
+    { "from": "infra", "rel": "consists-of", "to": "site" },
+    { "from": "infra", "rel": "consists-of", "to": "beneficiary" }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "name": "Fraud - Mule network",
+  "family": "fraud",
+  "description": "The layer that gets the money out: several accounts, deposits, and cash at the end of it.",
+  "labels": ["fraud", "money-mule", "cash-out", "f3"],
+  "slots": [
+    { "key": "actor", "type": "threat-actor", "label": "Fraud actor" },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Institution defrauded",
+      "prefill": { "identity_class": "organization" }
+    },
+    {
+      "key": "chain",
+      "type": "infrastructure",
+      "label": "Cash-out chain (the accounts it controls)"
+    },
+    {
+      "key": "accounts",
+      "type": "user-account",
+      "label": "Mule accounts (one per line)",
+      "placeholder": "FR7630004000031234567890143",
+      "prefill": { "account_name_is": "user_id" }
+    },
+    {
+      "key": "f1031",
+      "type": "attack-pattern",
+      "label": "Passing for the holder",
+      "fixed": "Impersonate Account Holder",
+      "prefill": { "x_mitre_id": "F1031", "mitre_framework": "mitre-f3" }
+    },
+    {
+      "key": "f1047",
+      "type": "attack-pattern",
+      "label": "Moving it along",
+      "fixed": "Transfer of funds",
+      "prefill": { "x_mitre_id": "F1047", "mitre_framework": "mitre-f3" }
+    },
+    {
+      "key": "f1009",
+      "type": "attack-pattern",
+      "label": "Feeding the accounts",
+      "fixed": "Bank Deposit: ATM Deposit",
+      "prefill": { "x_mitre_id": "F1009.001", "mitre_framework": "mitre-f3" }
+    },
+    {
+      "key": "f1017",
+      "type": "attack-pattern",
+      "label": "Out of the system",
+      "fixed": "Conversion to Physical Monetary Instruments: Cash",
+      "prefill": { "x_mitre_id": "F1017.001", "mitre_framework": "mitre-f3" }
+    }
+  ],
+  "relations": [
+    { "from": "actor", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "uses", "to": "f1031" },
+    { "from": "actor", "rel": "uses", "to": "f1047" },
+    { "from": "actor", "rel": "uses", "to": "f1009" },
+    { "from": "actor", "rel": "uses", "to": "f1017" },
+    { "from": "f1031", "rel": "targets", "to": "victim" },
+    { "from": "f1047", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "owns", "to": "chain" },
+    { "from": "chain", "rel": "consists-of", "to": "accounts" }
+  ]
+}
