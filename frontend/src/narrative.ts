@@ -368,7 +368,12 @@ export function timelines(chronology: NarrEvent[]): { subject: string; events: N
   const bySubject = new Map<string, NarrEvent[]>()
   for (const event of chronology) push(bySubject, event.subject, event)
   if (bySubject.size < 2) return []
-  return [...bySubject].map(([subject, events]) => ({ subject, events }))
+  const all = [...bySubject].map(([subject, events]) => ({ subject, events }))
+  // A subject with a single event is written as one line, and a line printed
+  // straight after a subject that has a sequence is read as the end of that
+  // sequence. So the one-off subjects come first, in the order they happened,
+  // and the blocks follow: what happened once, then who has a story.
+  return [...all.filter((t) => t.events.length === 1), ...all.filter((t) => t.events.length > 1)]
 }
 
 /** What a drawn label may run to before it stops being a label. */

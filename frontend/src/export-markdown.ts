@@ -82,9 +82,12 @@ export function buildMarkdown(
         out.push('### Chronology, by subject', '')
         for (const { subject, events } of perSubject) {
           // one event is not a sequence: it reads as a line, the way a block
-          // with a single clause reads as a sentence
+          // with a single clause reads as a sentence. Its moment stays where
+          // every other moment in this section is, at the head of the line,
+          // and the subject is said in the sentence rather than announced over
+          // a list of one.
           if (events.length === 1) {
-            out.push(`**${subject}** - **${events[0].when}** ${eventClause(events[0])}`, '')
+            out.push(`- **${events[0].when}** ${eventSentence(events[0])}`, '')
             continue
           }
           out.push(`**${subject}**`, '')
