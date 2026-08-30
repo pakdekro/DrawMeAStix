@@ -40,19 +40,22 @@ describe('buildMarkdown', () => {
    * while working want the case, not the case and its index.
    */
   it('carries the chronology, and one timeline per subject when there are several', () => {
-    // two subjects, two events each: both have a sequence worth printing
+    // one subject with a sequence, one with a single event: both are listed,
+    // and the second one reads as a line rather than a list of one
     const dated = [
       { source: 'a', type: 'uses', target: 'b', start_time: '2026-03-14' },
       { source: 'a', type: 'related-to', target: 'c', start_time: '2026-03-15' },
       { source: 'b', type: 'communicates-with', target: 'c', start_time: '2026-03-20' },
-      { source: 'b', type: 'related-to', target: 'a', start_time: '2026-03-21' },
     ]
     const md = buildMarkdown('T', E, dated, true)
     expect(md).toContain('### Chronology')
     expect(md).toContain('- **2026-03-14** The intrusion set Corax uses the malware EggShell.')
     expect(md).toContain('### Chronology, by subject')
-    expect(md).toContain('**The malware EggShell**')
-    expect(md).toContain('- **2026-03-20** Communicates with the domain nest.example.')
+    expect(md).toContain('**The intrusion set Corax**')
+    expect(md).toContain('- **2026-03-14** Uses the malware EggShell.')
+    expect(md).toContain(
+      '**The malware EggShell** - **2026-03-20** Communicates with the domain nest.example.',
+    )
     // nothing is left undated here, so that heading does not appear at all
     expect(md).not.toContain('### Undated')
   })

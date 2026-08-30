@@ -202,6 +202,10 @@ export async function composeReport(
       sub('Chronology')
       narr.chronology.forEach((e) => para(`${e.day}  ${eventSentence(e)}`))
       for (const { subject, events } of timelines(narr.chronology)) {
+        if (events.length === 1) {
+          para(`${subject}  ${events[0].day}  ${eventClause(events[0])}`)
+          continue
+        }
         sub(subject)
         events.forEach((e) => para(`${e.day}  ${eventClause(e)}`))
       }
@@ -365,6 +369,10 @@ export async function graphToPdf(
         // Per subject only when several are dated, so a report never carries
         // the same timeline twice under two headings.
         for (const { subject, events } of timelines(narr.chronology)) {
+          if (events.length === 1) {
+            block([`${subject}  ${events[0].day}  ${eventClause(events[0])}`], 10, 55)
+            continue
+          }
           pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(60)
           if (y > pageH - M) {
             pdf.addPage()

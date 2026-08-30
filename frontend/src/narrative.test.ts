@@ -196,26 +196,20 @@ describe('buildNarrative', () => {
       // one actor doing everything: the per-subject view is the same list again
       expect(timelines(oneSubject.chronology)).toEqual([])
 
-      // a subject with ONE dated event has no sequence to show, so it does not
-      // get a timeline of its own, and here that leaves only one that does
-      const oneEach = buildNarrative(CASE, [
-        { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14' },
-        { source: 'm', type: 'communicates-with', target: 'a3', start_time: '2026-04-02' },
-      ])
-      expect(oneEach.chronology).toHaveLength(2)
-      expect(timelines(oneEach.chronology)).toEqual([])
-
-      const two = buildNarrative(CASE, [
+      // Every dated subject is listed, including one with a single event: a
+      // reader looking up what the malware did and not finding it would
+      // conclude it did nothing dated. The renderers print that one as a line
+      // rather than as a heading over a list of one.
+      const mixed = buildNarrative(CASE, [
         { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14' },
         { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-16' },
         { source: 'm', type: 'communicates-with', target: 'a3', start_time: '2026-04-02' },
-        { source: 'm', type: 'communicates-with', target: 'a1', start_time: '2026-04-03' },
       ])
-      expect(timelines(two.chronology).map((t) => `${t.subject} (${t.events.length})`)).toEqual([
+      expect(timelines(mixed.chronology).map((t) => `${t.subject} (${t.events.length})`)).toEqual([
         'The campaign Ferronnier (2)',
-        'The malware EggShell (2)',
+        'The malware EggShell (1)',
       ])
-      expect(eventClause(two.chronology[0])).toBe('Compromises the account FR76...0143.')
+      expect(eventClause(mixed.chronology[0])).toBe('Compromises the account FR76...0143.')
     })
 
     it('a graph without a single date has no chronology and reads as before', () => {
