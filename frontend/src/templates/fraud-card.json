@@ -1,0 +1,57 @@
+{
+  "name": "Fraud - Card data theft and reuse",
+  "family": "fraud",
+  "description": "Card data is captured, tested in small amounts, then spent or turned into counterfeit cards.",
+  "labels": ["fraud", "carding", "f3"],
+  "slots": [
+    { "key": "actor", "type": "threat-actor", "label": "Fraud actor" },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Merchant or issuer defrauded",
+      "prefill": { "identity_class": "organization" }
+    },
+    {
+      "key": "infra",
+      "type": "infrastructure",
+      "label": "Collection infrastructure (skimmer, panel)"
+    },
+    {
+      "key": "domain",
+      "type": "domain-name",
+      "label": "Collection domain",
+      "placeholder": "checkout-secure.example"
+    },
+    {
+      "key": "f1011",
+      "type": "attack-pattern",
+      "label": "Capture",
+      "fixed": "Card Dump Capture",
+      "prefill": { "x_mitre_id": "F1011", "mitre_framework": "mitre-f3" }
+    },
+    {
+      "key": "f1012",
+      "type": "attack-pattern",
+      "label": "Testing",
+      "fixed": "Card Testing",
+      "prefill": { "x_mitre_id": "F1012", "mitre_framework": "mitre-f3" }
+    },
+    {
+      "key": "f1019",
+      "type": "attack-pattern",
+      "label": "Reuse",
+      "fixed": "Create Counterfeit Card",
+      "prefill": { "x_mitre_id": "F1019", "mitre_framework": "mitre-f3" }
+    }
+  ],
+  "relations": [
+    { "from": "actor", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "uses", "to": "f1011" },
+    { "from": "actor", "rel": "uses", "to": "f1012" },
+    { "from": "actor", "rel": "uses", "to": "f1019" },
+    { "from": "f1011", "rel": "targets", "to": "victim" },
+    { "from": "f1012", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "owns", "to": "infra" },
+    { "from": "infra", "rel": "consists-of", "to": "domain" }
+  ]
+}

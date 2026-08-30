@@ -9,6 +9,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   BUILTIN_TEMPLATES,
+  linkKey,
+  newLinks,
+  planAgainstCanvas,
+  templatesOfFamily,
   buildPlan,
   planIsolation,
   validateTemplate,
@@ -249,6 +253,104 @@ describe("isolement sans hub (#82)", () => {
         isolated.map((e) => e.slotKey),
         `${tpl.name} : victime isolée sans acteur`,
       ).not.toContain("victim");
+    }
+  });
+});
+
+/**
+ * Two scenarios on one canvas (#28 meets #168).
+ *
+ * The question somebody asks the first time they apply a second template:
+ * does it complete the first one, or does it draw a second graph beside it?
+ * It drew a second graph, and that was worse than untidy: both cards collapse
+ * onto one STIX identity at export, so the second description was the one
+ * that silently lost.
+ */
+describe("a scenario applied on top of another", () => {
+  const FOVI = BUILTIN_TEMPLATES.find((t) => t.name === "Phishing - FOVI / BEC")!;
+  const ATO = BUILTIN_TEMPLATES.find((t) => t.name === "Fraud - Account takeover")!;
+  const canvasOf = (plan: ReturnType<typeof buildPlan>) =>
+    plan.entities.map((e, i) => ({
+      id: `id${i}`,
+      stix_type: e.stix_type,
+      name: e.name,
+      properties: e.properties,
+    }));
+
+  it("attaches to the objects already drawn instead of twinning them", () => {
+    const first = buildPlan(FOVI, { actor: "Ferronnier", victim: "Aciers Delaunay" });
+    const canvas = canvasOf(first);
+    const second = buildPlan(ATO, { actor: "Ferronnier", victim: "Aciers Delaunay" });
+    const merge = planAgainstCanvas(second, canvas);
+    const reusedNames = merge.reuse.map(
+      (r) => canvas.find((c) => c.id === r.id)!.name,
+    );
+    expect(reusedNames.sort()).toEqual(["Aciers Delaunay", "Ferronnier"]);
+    // and everything the fraud scenario brings of its own is still created
+    expect(merge.create.map((e) => e.slotKey)).toContain("f1025");
+  });
+
+  it("adds the second scenario's labels to what it reuses, and only those", () => {
+    const first = buildPlan(FOVI, { actor: "Ferronnier" });
+    const canvas = canvasOf(first);
+    const merge = planAgainstCanvas(buildPlan(ATO, { actor: "Ferronnier" }), canvas);
+    const actor = merge.reuse.find((r) => canvas.find((c) => c.id === r.id)!.name === "Ferronnier")!;
+    expect(actor.addLabels).toEqual(ATO.labels);
+    // applying the same scenario twice adds nothing at all
+    const again = planAgainstCanvas(buildPlan(FOVI, { actor: "Ferronnier" }), canvas);
+    expect(again.reuse.every((r) => r.addLabels.length === 0)).toBe(true);
+  });
+
+  it("does not draw a relationship that is already there", () => {
+    // both scenarios say the actor targets the victim: they agree, and an
+    // agreement is one statement
+    const ids = new Map([["a", "id-actor"], ["v", "id-victim"]]);
+    const relations = [
+      { fromKey: "a", rel: "targets", toKey: "v" },
+      { fromKey: "a", rel: "uses", toKey: "missing" },
+    ];
+    const drawn = [linkKey("id-actor", "targets", "id-victim")];
+    expect(newLinks(relations, (k) => ids.get(k), drawn)).toEqual([]);
+    // and it is drawn when it is not there yet
+    expect(newLinks(relations, (k) => ids.get(k), [])).toEqual([
+      { source_id: "id-actor", rel_type: "targets", target_id: "id-victim" },
+    ]);
+  });
+
+  it("does not draw the same relationship twice within one plan either", () => {
+    const relations = [
+      { fromKey: "a", rel: "uses", toKey: "b" },
+      { fromKey: "a", rel: "uses", toKey: "b" },
+    ];
+    const ids = new Map([["a", "x"], ["b", "y"]]);
+    expect(newLinks(relations, (k) => ids.get(k), [])).toHaveLength(1);
+  });
+});
+
+describe("the two families", () => {
+  it("split the built-ins, and every fraud scenario says so", () => {
+    const fraud = templatesOfFamily("fraud");
+    const intrusion = templatesOfFamily("intrusion");
+    expect(fraud.length + intrusion.length).toBe(BUILTIN_TEMPLATES.length);
+    expect(fraud.map((t) => t.name)).toContain("Fraud - Account takeover");
+    // absent means intrusion, so the fifteen written before the split are all there
+    expect(intrusion.every((t) => t.family === undefined)).toBe(true);
+  });
+
+  it("the fraud scenarios reach for the fraud frameworks", () => {
+    const numbers = templatesOfFamily("fraud")
+      .flatMap((t) => t.slots)
+      .map((s) => s.prefill?.x_mitre_id as string | undefined)
+      .filter(Boolean);
+    // F3 and AADAPT numbers, and each says which framework it belongs to
+    expect(numbers.some((n) => n!.startsWith("F1"))).toBe(true);
+    expect(numbers.some((n) => n!.startsWith("ADT"))).toBe(true);
+    for (const tpl of templatesOfFamily("fraud")) {
+      for (const slot of tpl.slots) {
+        const id = slot.prefill?.x_mitre_id as string | undefined;
+        if (id === undefined || /^TA?\d/.test(id)) continue;
+        expect(slot.prefill?.mitre_framework, `${tpl.name}: ${id}`).toBeDefined();
+      }
     }
   });
 });

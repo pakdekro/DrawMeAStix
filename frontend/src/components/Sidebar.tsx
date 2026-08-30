@@ -1,7 +1,7 @@
-import { memo } from 'react'
+import { Fragment, memo } from 'react'
 import type { AttackEntry } from '../attack'
 import { SCO_ORDER, SDO_ORDER, typeMeta } from '../stixMeta'
-import { BUILTIN_TEMPLATES } from '../templates'
+import { TEMPLATE_FAMILIES, templatesOfFamily } from '../templates'
 import type { ScenarioTemplate } from '../templates'
 import AttackPalette from './AttackPalette'
 import Icon from './Icon'
@@ -165,17 +165,25 @@ function Sidebar({
 
           {panel === 'scenarios' && (
             <>
-              <h3 className="micro">Scenarios</h3>
-              {BUILTIN_TEMPLATES.map((tpl) => (
-                <button
-                  key={tpl.name}
-                  className="palette-btn"
-                  title={tpl.description}
-                  onClick={() => onPickTemplate(tpl)}
-                >
-                  <Icon name="scenario" />
-                  {tpl.name}
-                </button>
+              {/* Two families, separated rather than tagged: somebody opening
+                  this panel is working an intrusion or a fraud, not both at
+                  the same minute, and a rule costs less to read than a badge
+                  on every line. */}
+              {TEMPLATE_FAMILIES.map((family, i) => (
+                <Fragment key={family.id}>
+                  <h3 className={`micro${i > 0 ? ' tpl-family' : ''}`}>{family.label}</h3>
+                  {templatesOfFamily(family.id).map((tpl) => (
+                    <button
+                      key={tpl.name}
+                      className="palette-btn"
+                      title={tpl.description}
+                      onClick={() => onPickTemplate(tpl)}
+                    >
+                      <Icon name="scenario" />
+                      {tpl.name}
+                    </button>
+                  ))}
+                </Fragment>
               ))}
               <label className="palette-btn tpl-load">
                 <Icon name="doc" />
