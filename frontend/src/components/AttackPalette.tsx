@@ -62,7 +62,7 @@ export default function AttackPalette({ onPick }: { onPick: (entry: AttackEntry)
     <div className="attack-palette">
       <h3>
         {framework.short}
-        {loaded && <span className="attack-version"> v{loaded.version}</span>}
+        {loaded?.version && <span className="attack-version"> v{loaded.version}</span>}
       </h3>
       <div className="chip-grid fw-switch">
         {FRAMEWORKS.map((f) => (

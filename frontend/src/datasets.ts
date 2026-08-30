@@ -10,13 +10,20 @@
 
 import { loadAttackDataset } from "./attack";
 import type { AttackEntry } from "./attack";
+import { loadAadaptDataset } from "./aadapt";
 import { loadAtlasDataset } from "./atlas";
 import { loadF3Dataset } from "./f3";
 import { DEFAULT_FRAMEWORK } from "./frameworks";
 
 export interface FrameworkCorpus {
-  /** the framework's own version string, shown beside its name */
-  version: string;
+  /**
+   * The framework's own version string, shown beside its name.
+   *
+   * Optional, because one of them publishes none: AADAPT is built on a fork of
+   * the ATLAS tooling and the version in its file is ATLAS's. Nothing is a
+   * better answer there than a number that means something else.
+   */
+  version?: string;
   entries: AttackEntry[];
 }
 
@@ -27,6 +34,7 @@ const LOADERS: Record<string, () => Promise<FrameworkCorpus>> = {
     loadF3Dataset().then((d) => ({ version: d.f3_version, entries: d.entries })),
   "mitre-atlas": () =>
     loadAtlasDataset().then((d) => ({ version: d.atlas_version, entries: d.entries })),
+  "mitre-aadapt": () => loadAadaptDataset().then((d) => ({ entries: d.entries })),
 };
 
 /** The corpus of a framework, ATT&CK's when the identifier is not one we know. */

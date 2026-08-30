@@ -49,6 +49,14 @@ export const FRAMEWORKS: Framework[] = [
     url: (id) => `https://ctid.mitre.org/fraud#/technique/${id}`,
   },
   {
+    id: "mitre-aadapt",
+    short: "AADAPT",
+    label: "AADAPT (digital assets)",
+    route: "aadapt",
+    placeholder: "ADT3003, wallet, bridge…",
+    url: (id) => `https://aadapt.mitre.org/techniques/${id}`,
+  },
+  {
     id: "mitre-atlas",
     short: "ATLAS",
     label: "ATLAS (AI systems)",

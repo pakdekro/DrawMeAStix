@@ -11,6 +11,7 @@
  */
 
 import { renderToString, renderToStaticMarkup } from 'react-dom/server'
+import AadaptGuide from './components/AadaptGuide'
 import AtlasGuide from './components/AtlasGuide'
 import AttackGuide from './components/AttackGuide'
 import DataPage from './components/DataPage'
@@ -49,4 +50,8 @@ export function renderF3(): string {
 
 export function renderAtlas(): string {
   return renderToStaticMarkup(<AtlasGuide mode="static" />)
+}
+
+export function renderAadapt(): string {
+  return renderToStaticMarkup(<AadaptGuide mode="static" />)
 }

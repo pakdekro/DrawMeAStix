@@ -1,14 +1,16 @@
 # Adding a knowledge base
 
-This canvas ships three catalogues of adversary behaviour, ATT&CK, F3 and
-ATLAS, and is built to take a fourth without a mode of its own. This document
+This canvas ships four catalogues of adversary behaviour, ATT&CK, F3, ATLAS and
+AADAPT, and is built to take a fifth without a mode of its own. This document
 is the recipe, written straight after F3 went in and then walked with ATLAS,
 which took an afternoon rather than a rediscovery.
 
-The two are worth reading as a pair, because they answer question 1 in
-opposite ways: **F3 reuses 43 ATT&CK numbers**, which is where all its
-difficulty lives, and **ATLAS borrows none**, which makes it mostly plumbing.
-Find out which one you are dealing with before anything else.
+They are worth reading as a set, because they answer question 1 differently:
+**F3 reuses 43 ATT&CK numbers**, which is where all its difficulty lives,
+**ATLAS borrows none**, which makes it mostly plumbing, and **AADAPT does both
+at once**, taking ten of its eleven tactics from ATT&CK by identifier while
+numbering every technique itself. Find out which one you are dealing with
+before anything else.
 
 A "framework" here means one specific thing: **a catalogue of techniques keyed
 by MITRE-style identifiers**. Everything below assumes that shape. A framework
@@ -60,7 +62,10 @@ techniques, and say in its page what was left out and why.
 
 **4. Is its data published per version, or in place?**
 This decides how the weekly refresh sees a new release. See the build script
-section: getting it wrong is silent for months. The two we have differ again:
+section: getting it wrong is silent for months. AADAPT adds a third answer,
+worse than both: it publishes NO version, and the `version` in its file is the
+one belonging to the ATLAS tooling it was forked from. Ship no version rather
+than a wrong one, and say so where somebody would look for it. The other two:
 F3 publishes one file per version and nothing that names the current one, so
 the build lists them and takes the highest, while ATLAS publishes a chain of
 pointer files that name the current release, and the build follows it. Neither
