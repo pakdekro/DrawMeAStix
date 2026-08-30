@@ -48,6 +48,27 @@ this file is the one meant for people reading the code.
   else, and because a mixed case is exactly where you want to see which half
   of it you are looking at.
 
+- **ATLAS, the third matrix, and the one that borrows nothing.** MITRE's
+  Adversarial Threat Landscape for AI Systems sits beside ATT&CK and F3 in the
+  same panel: 178 techniques and 16 tactics about attacks on models and on the
+  pipelines around them. Fourteen of those tactics mirror an ATT&CK tactic,
+  because most of an attack on an AI system is an ordinary attack, and two have
+  no ATT&CK counterpart at all: reaching the model, and preparing an attack on
+  it. Unlike F3, ATLAS reuses no identifier: everything is an `AML` number of
+  its own, and the 37 techniques adapted from an ATT&CK one merely record which,
+  which the framework page reads and no bundle ever claims. So an intrusion that
+  ends in a poisoned model is one graph, and the 36 techniques whose name exists
+  in both catalogues are two cards with two numbers, which is what they are.
+
+- **A framework is now an entry rather than a change.** Adding this one moved
+  neither palette, neither the export nor the import, and no text extraction:
+  they all read the framework registry, so the switch, the search, the Ctrl+K
+  group, the mark on a card, the reference written at export and the one read
+  at import came for free. What it did take is a build script, a line saying
+  which loader answers for `mitre-atlas`, and a page. `docs/adding-a-framework.md`
+  is the recipe, and it now has two worked examples that answer its first
+  question in opposite ways.
+
 - **The weekly refresh can now see an F3 release at all.** The build read one
   pinned file, `f3-v1.1.json`, because the native series is published one file
   per version with no unversioned copy: a v1.2 would have shipped, and the

@@ -10,6 +10,7 @@ import {
   toProperties,
   valuePlaceholder,
 } from '../entityFields'
+import { DEFAULT_FRAMEWORK } from '../frameworks'
 import { hashWarning, mitreIdWarning, valueWarning } from '../ioc'
 import { typeMeta } from '../stixMeta'
 import SuggestInput from './Suggest'
@@ -139,9 +140,11 @@ export default function EntityForm({
       ...(entry.aliases?.length ? { aliases: entry.aliases.join(', ') } : {}),
       ...(entry.type === 'attack-pattern' ? { x_mitre_id: entry.id } : {}),
       // the suggestion corpus is ATT&CK today, so this never fires; it is here
-      // so a suggestion that DOES come from F3 cannot arrive stripped of the
-      // one property that says what its number means
-      ...(entry.framework === 'mitre-f3' ? { mitre_framework: 'mitre-f3' } : {}),
+      // so a suggestion that does NOT come from ATT&CK cannot arrive stripped
+      // of the one property that says what its number means
+      ...(entry.framework !== undefined && entry.framework !== DEFAULT_FRAMEWORK.id
+        ? { mitre_framework: entry.framework }
+        : {}),
     }))
   }
 

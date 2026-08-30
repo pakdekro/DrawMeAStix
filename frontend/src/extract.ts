@@ -86,7 +86,6 @@ const TRIM_TRAILING = /[.,;:!?…()]+$/;
 
 const CVE_RE = /^CVE-\d{4}-\d{4,7}$/i;
 const TID_RE = /^T\d{4}(?:\.\d{3})?$/i;
-const FID_RE = /^F\d{4}(?:\.\d{3})?$/i;
 
 interface Sighting {
   candidate: ExtractedCandidate;
@@ -96,7 +95,7 @@ interface Sighting {
 function classifyToken(
   token: string,
   attackById: Map<string, AttackEntry>,
-  f3ById: Map<string, AttackEntry>,
+  otherById: Map<string, AttackEntry>,
 ): Omit<ExtractedCandidate, "context" | "offset"> | null {
   if (CVE_RE.test(token)) {
     return { stix_type: "vulnerability", name: token.toUpperCase(), properties: {} };
@@ -107,16 +106,16 @@ function classifyToken(
     const entry = attackById.get(token.toUpperCase());
     return entry ? entryToCreation(entry) : null;
   }
-  // F3 numbers, resolved the same way. Deliberately against the F3 dictionary
-  // ONLY, and deliberately by NUMBER only: F3 names fraud techniques in plain
-  // English ("Bank Deposit", "Account Takeover", "Phishing"), and matching
-  // those as words in prose would trade precision for recall in the one place
-  // where a guess is asserted rather than offered. A T-id never reaches here,
-  // so a technique F3 shares with ATT&CK still resolves through ATT&CK above.
-  if (FID_RE.test(token)) {
-    const entry = f3ById.get(token.toUpperCase());
-    return entry ? entryToCreation(entry) : null;
-  }
+  // The other frameworks, resolved by NUMBER only and never by name. F3 names
+  // fraud techniques in plain English ("Bank Deposit", "Account Takeover",
+  // "Phishing") and ATLAS shares 36 names with ATT&CK outright; matching those
+  // as words in prose would trade precision for recall in the one place where
+  // a guess is asserted rather than offered. No shape test is needed: the
+  // lookup IS the test, and `F1001` or `AML.T0051` resolves only if the
+  // framework really publishes it. A T-id never reaches here, so a technique
+  // F3 shares with ATT&CK still resolves through ATT&CK above.
+  const other = otherById.get(token.toUpperCase());
+  if (other) return entryToCreation(other);
   const detected = detectIoc(token);
   if (detected === null) return null;
   if (detected.stix_type === "domain-name") {
@@ -151,13 +150,14 @@ function findWholeWord(lower: string, term: string): number {
 /**
  * Sweeps a long text and returns deduplicated candidates, each with its
  * context excerpt. `attack`: entries of the embedded dataset (empty = no
- * dictionary matching and no T-id resolution). `f3`: the F3 corpus, read for
- * its numbers alone and never for its names, see `classifyToken`.
+ * dictionary matching and no T-id resolution). `others`: the corpora of the
+ * remaining frameworks, F3 and ATLAS today, read for their numbers alone and
+ * never for their names, see `classifyToken`.
  */
 export function extractFromText(
   text: string,
   attack: AttackEntry[] = [],
-  f3: AttackEntry[] = [],
+  others: AttackEntry[] = [],
 ): ExtractedCandidate[] {
   // Only the entries that carry an ATT&CK number can be reached by one. This
   // corpus is ATT&CK-only today, so the filter changes nothing; it is here so
@@ -166,8 +166,8 @@ export function extractFromText(
   const attackById = new Map(
     attack.filter((e) => e.id !== undefined).map((e) => [e.id!.toUpperCase(), e]),
   );
-  const f3ById = new Map(
-    f3.filter((e) => e.id !== undefined).map((e) => [e.id!.toUpperCase(), e]),
+  const otherById = new Map(
+    others.filter((e) => e.id !== undefined).map((e) => [e.id!.toUpperCase(), e]),
   );
   const sightings: Sighting[] = [];
   const seen = new Set<string>();
@@ -183,7 +183,7 @@ export function extractFromText(
     const trimmed = m[0].replace(TRIM_LEADING, "").replace(TRIM_TRAILING, "");
     if (trimmed.length < 4) continue;
     const token = refang(trimmed);
-    const classified = classifyToken(token, attackById, f3ById);
+    const classified = classifyToken(token, attackById, otherById);
     if (classified === null) continue;
     const leading = TRIM_LEADING.exec(m[0])?.[0].length ?? 0;
     const start = m.index + leading;

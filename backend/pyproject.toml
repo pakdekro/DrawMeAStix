@@ -5,6 +5,7 @@ description = "Cœur STIX de Draw Me A STIX - IDs déterministes, bundle I/O, or
 requires-python = ">=3.12"
 dependencies = [
     "stix2>=3.0",
+    "pyyaml>=6.0",  # ATLAS publishes its data as YAML, and only as YAML
 ]
 
 [dependency-groups]

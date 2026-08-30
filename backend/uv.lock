@@ -335,6 +335,7 @@ name = "drawmeastix-stix-core"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "pyyaml" },
     { name = "stix2" },
 ]
 
@@ -346,7 +347,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "stix2", specifier = ">=3.0" }]
+requires-dist = [
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "stix2", specifier = ">=3.0" },
+]
 
 [package.metadata.requires-dev]
 dev = [

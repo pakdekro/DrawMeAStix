@@ -26,6 +26,7 @@ export default defineConfig({
         about: 'about.html',
         attack: 'attack.html',
         f3: 'f3.html',
+        atlas: 'atlas.html',
       },
     },
   },

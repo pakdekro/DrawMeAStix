@@ -1,7 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
+import AtlasGuide, { ATLAS_TACTICS } from './components/AtlasGuide'
 import AttackGuide from './components/AttackGuide'
 import F3Guide, { F3_TACTICS } from './components/F3Guide'
+import atlasDataset from '../public/atlas-dataset.json'
 import attackDataset from '../public/attack-dataset.json'
 import f3Dataset from '../public/f3-dataset.json'
 
@@ -24,6 +26,10 @@ const pages = {
     static: renderToStaticMarkup(<F3Guide mode="static" />),
     app: renderToStaticMarkup(<F3Guide mode="app" />),
   },
+  atlas: {
+    static: renderToStaticMarkup(<AtlasGuide mode="static" />),
+    app: renderToStaticMarkup(<AtlasGuide mode="app" />),
+  },
 }
 
 const hrefs = (html: string) => [...html.matchAll(/href="([^"]*)"/g)].map((m) => m[1])
@@ -37,11 +43,12 @@ describe.each(Object.entries(pages))('the %s page', (route, html) => {
     expect(hrefs(html.app)).toContain('#/')
   })
 
-  it('leads to its sibling and to the STIX guide', () => {
-    const other = route === 'attack' ? 'f3' : 'attack'
-    expect(hrefs(html.static)).toContain(`/${other}`)
+  it('leads to the other frameworks and to the STIX guide', () => {
+    for (const other of ['attack', 'f3', 'atlas'].filter((r) => r !== route)) {
+      expect(hrefs(html.static)).toContain(`/${other}`)
+      expect(hrefs(html.app)).toContain(`#/${other}`)
+    }
     expect(hrefs(html.static)).toContain('/guide')
-    expect(hrefs(html.app)).toContain(`#/${other}`)
   })
 
   it('is a page and not a stub', () => {
@@ -76,5 +83,32 @@ describe('the ATT&CK page says which matrix is shipped', () => {
   it('names the one the dataset actually holds', () => {
     expect(attackDataset.source).toContain('Enterprise')
     expect(pages.attack.static).toContain('Enterprise')
+  })
+})
+
+describe('the ATLAS page says what the shipped dataset says', () => {
+  it('the same sixteen tactics, in the same order, mirroring the same ATT&CK ones', () => {
+    expect(ATLAS_TACTICS.map((t) => t.id)).toEqual(atlasDataset.tactics.map((t) => t.id))
+    expect(ATLAS_TACTICS.map((t) => t.name)).toEqual(atlasDataset.tactics.map((t) => t.name))
+    expect(ATLAS_TACTICS.map((t) => t.attack)).toEqual(
+      atlasDataset.tactics.map((t) => (t as { attack?: string }).attack),
+    )
+  })
+
+  it('the counts it states are the counts in the file', () => {
+    const adapting = atlasDataset.entries.filter((e) => 'attack' in e).length
+    expect(pages.atlas.static).toContain(`for ${adapting} of its ${atlasDataset.entries.length}`)
+    const attackNames = new Set(
+      attackDataset.entries.filter((e) => e.type === 'attack-pattern').map((e) => e.name),
+    )
+    const shared = atlasDataset.entries.filter((e) => attackNames.has(e.name)).length
+    expect(shared).toBe(36)
+    expect(pages.atlas.static).toContain('Thirty-six ATLAS techniques')
+  })
+
+  it('names the two tactics ATT&CK has no word for, and only those', () => {
+    const own = ATLAS_TACTICS.filter((t) => t.attack === undefined).map((t) => t.id)
+    expect(own).toEqual(['AML.TA0000', 'AML.TA0001'])
+    for (const id of own) expect(pages.atlas.static).toContain(id)
   })
 })

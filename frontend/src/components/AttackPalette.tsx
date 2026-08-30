@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { loadAttackDataset, searchAttack } from '../attack'
-import type { AttackDataset, AttackEntry } from '../attack'
-import { loadF3Dataset } from '../f3'
-import type { F3Dataset } from '../f3'
+import { searchAttack } from '../attack'
+import type { AttackEntry } from '../attack'
+import { loadFramework } from '../datasets'
+import type { FrameworkCorpus } from '../datasets'
+import { DEFAULT_FRAMEWORK, FRAMEWORKS } from '../frameworks'
 import { typeMeta } from '../stixMeta'
 import Icon from './Icon'
 
@@ -12,11 +13,16 @@ import Icon from './Icon'
  * dataset of the selected framework is only loaded once the search box holds
  * two characters.
  *
- * Two corpora behind one switch rather than one merged list. ATT&CK and F3
- * share 43 identifiers, so a single list would show the same technique twice
- * and make the lookup of a shared id depend on the order of the map. The
+ * One corpus per framework behind one switch, rather than one merged list.
+ * ATT&CK and F3 share 43 identifiers, so a single list would show the same
+ * technique twice and make the lookup of a shared id depend on the order of
+ * the map. ATLAS shares none, and would still have brought 178 techniques
+ * about AI systems into the results of an analyst working an intrusion. The
  * switch also keeps the promise the panel makes on screen: what it says is
  * what it searches.
+ *
+ * Everything here reads the framework registry, so a fourth one is an entry
+ * in `frameworks.ts` and a loader in `datasets.ts`, and nothing in this file.
  *
  * Both are searched the same way, deliberately. F3 is small enough to browse
  * by tactic and it was, for a while, on the grounds that a framework you do
@@ -26,21 +32,25 @@ import Icon from './Icon'
  * room to do it, not for 180 pixels of palette.
  */
 export default function AttackPalette({ onPick }: { onPick: (entry: AttackEntry) => void }) {
-  const [framework, setFramework] = useState<'attack' | 'f3'>('attack')
+  const [framework, setFramework] = useState(DEFAULT_FRAMEWORK)
   const [query, setQuery] = useState('')
-  const [dataset, setDataset] = useState<AttackDataset | null>(null)
-  const [f3, setF3] = useState<F3Dataset | null>(null)
-  const [failed, setFailed] = useState(false)
+  // One corpus per framework, kept once fetched: switching back and forth is
+  // free, and nothing is fetched for a framework nobody searched.
+  const [corpora, setCorpora] = useState<Record<string, FrameworkCorpus>>({})
+  const [failed, setFailed] = useState<Record<string, true>>({})
 
   const searching = query.trim().length >= 2
-  const loaded = framework === 'attack' ? dataset : f3
+  const loaded = corpora[framework.id]
 
   useEffect(() => {
-    if (!searching || loaded || failed) return
-    const load = framework === 'attack' ? loadAttackDataset : loadF3Dataset
-    load()
-      .then((d) => (framework === 'attack' ? setDataset(d as AttackDataset) : setF3(d as F3Dataset)))
-      .catch(() => setFailed(true))
+    if (!searching || loaded || failed[framework.id]) return
+    let cancelled = false
+    loadFramework(framework.id)
+      .then((corpus) => !cancelled && setCorpora((c) => ({ ...c, [framework.id]: corpus })))
+      .catch(() => !cancelled && setFailed((f) => ({ ...f, [framework.id]: true })))
+    return () => {
+      cancelled = true
+    }
   }, [framework, searching, loaded, failed])
 
   const results = useMemo(
@@ -48,67 +58,58 @@ export default function AttackPalette({ onPick }: { onPick: (entry: AttackEntry)
     [loaded, searching, query],
   )
 
-  const version = framework === 'attack' ? dataset?.attack_version : f3?.f3_version
-
   return (
     <div className="attack-palette">
       <h3>
-        {framework === 'attack' ? 'ATT&CK' : 'F3'}
-        {version && <span className="attack-version"> v{version}</span>}
+        {framework.short}
+        {loaded && <span className="attack-version"> v{loaded.version}</span>}
       </h3>
       <div className="chip-grid fw-switch">
-        {(
-          [
-            { id: 'attack', label: 'ATT&CK', title: 'MITRE ATT&CK Enterprise' },
-            { id: 'f3', label: 'F3', title: 'MITRE F3, Fight Financial Fraud' },
-          ] as const
-        ).map((f) => (
+        {FRAMEWORKS.map((f) => (
           <button
             key={f.id}
-            className={`chip${framework === f.id ? ' on' : ''}`}
-            aria-pressed={framework === f.id}
-            title={f.title}
+            className={`chip${framework.id === f.id ? ' on' : ''}`}
+            aria-pressed={framework.id === f.id}
+            title={`MITRE ${f.label}`}
             onClick={() => {
-              setFramework(f.id)
+              setFramework(f)
               setQuery('')
             }}
           >
-            {f.label}
+            {f.short}
           </button>
         ))}
       </div>
       <input
         className="attack-search"
-        placeholder={framework === 'attack' ? 'APT28, T1566, Mimikatz…' : 'F1001, mule, 3DS…'}
+        placeholder={framework.placeholder}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      {/* Both guides, under the search box and named. An icon beside the
-          title had to be found and then guessed at, and the panel has the room
-          to say what it opens. Both are offered whichever framework is
+      {/* The guides, under the search box and named. An icon beside the title
+          had to be found and then guessed at, and the panel has the room to
+          say what it opens. All of them are offered whichever framework is
           selected: the question "what is the other one" is exactly the one
           somebody in front of this switch is asking. A new tab, because the
           reader has a canvas open and answering it is not a reason to take it
           away from them. */}
       <p className="attack-docs">
-        <a href="#/attack" target="_blank" rel="noreferrer">
-          <Icon name="help" size={12} />
-          What ATT&CK is
-        </a>
-        <a href="#/f3" target="_blank" rel="noreferrer">
-          <Icon name="help" size={12} />
-          What F3 is
-        </a>
+        {FRAMEWORKS.map((f) => (
+          <a key={f.id} href={`#/${f.route}`} target="_blank" rel="noreferrer">
+            <Icon name="help" size={12} />
+            What {f.short} is
+          </a>
+        ))}
       </p>
-      {failed && <p className="hint">Dataset unavailable.</p>}
+      {failed[framework.id] && <p className="hint">Dataset unavailable.</p>}
       {searching && loaded && results.length === 0 && <p className="hint">No results.</p>}
       <div className="attack-results">
         {results.map((entry) => {
           // An F3 result that carries an ATT&CK number IS an ATT&CK technique:
           // the two frameworks meet on it rather than forking it, and the
           // palette says so before the analyst finds one card where they
-          // expected two.
-          const shared = framework === 'f3' && entry.framework !== 'mitre-f3'
+          // expected two. ATLAS never does this: it borrows no identifier.
+          const shared = entry.framework !== undefined && entry.framework !== framework.id
           return (
             <button
               key={entry.id ?? entry.name}
@@ -134,4 +135,5 @@ export default function AttackPalette({ onPick }: { onPick: (entry: AttackEntry)
       </div>
     </div>
   )
+
 }

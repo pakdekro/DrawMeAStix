@@ -251,6 +251,9 @@ export default function F3Guide({ mode = 'app' }: { mode?: GuideMode }) {
           <a className="guide-cta" href={guideHref(mode, 'attack')}>
             ATT&CK, and what it becomes here
           </a>
+          <a className="guide-cta" href={guideHref(mode, 'atlas')}>
+            ATLAS, the AI matrix
+          </a>
           <a className="guide-cta" href={guideHref(mode, 'guide')}>
             Objects, observables, relationships
           </a>

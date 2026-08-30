@@ -16,15 +16,16 @@ import { SMALL_SCREEN_QUERY, hasOptedIn, rememberOptIn } from './smallScreen'
 const StixGuide = lazy(() => import('./components/StixGuide'))
 const AttackGuide = lazy(() => import('./components/AttackGuide'))
 const F3Guide = lazy(() => import('./components/F3Guide'))
+const AtlasGuide = lazy(() => import('./components/AtlasGuide'))
 
 /** The prose pages, by the route that serves them. */
-const PROSE = { guide: StixGuide, attack: AttackGuide, f3: F3Guide }
+const PROSE = { guide: StixGuide, attack: AttackGuide, f3: F3Guide, atlas: AtlasGuide }
 type ProseRoute = keyof typeof PROSE
 
 /**
  * Tiny hash router: #/ (list), #/inv/<id>, or one of the prose pages
- * (#/guide, #/attack, #/f3). Each of those has a pre-rendered twin at its own
- * address, built from the same component.
+ * (#/guide, #/attack, #/f3, #/atlas). Each of those has a pre-rendered twin at
+ * its own address, built from the same component.
  */
 function parseHash(): { view: ProseRoute | 'home' } | { view: 'workspace'; id: string } {
   const match = window.location.hash.match(/^#\/inv\/(.+)$/)

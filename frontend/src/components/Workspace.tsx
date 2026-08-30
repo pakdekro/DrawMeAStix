@@ -15,7 +15,8 @@ import type { NarrEntity, NarrRelation } from '../narrative'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ApiError, api } from '../api'
 import { entryToCreation, loadAttackDataset } from '../attack'
-import { loadF3Dataset } from '../f3'
+import { loadFramework } from '../datasets'
+import { DEFAULT_FRAMEWORK, FRAMEWORKS } from '../frameworks'
 import type { AttackEntry } from '../attack'
 import { ACCEPT, pageAt, textFromFile } from '../extractors'
 import { SCO_ORDER, SDO_ORDER, countByType, typeMeta } from '../stixMeta'
@@ -1230,10 +1231,14 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         // the extraction core and the dataset load on demand; pdf.js and
         // mammoth are import() calls inside the extractors, so they are
         // lazy whatever happens
-        const [{ extractFromText }, dataset, f3] = await Promise.all([
+        // ATT&CK is read for its names AND its numbers; the other frameworks
+        // for their numbers alone, so they travel as one corpus.
+        const [{ extractFromText }, dataset, ...others] = await Promise.all([
           import('../extract'),
           loadAttackDataset().catch(() => null),
-          loadF3Dataset().catch(() => null),
+          ...FRAMEWORKS.filter((f) => f !== DEFAULT_FRAMEWORK).map((f) =>
+            loadFramework(f.id).catch(() => null),
+          ),
         ])
         // dedup against ALL that exists (canvas + tray), IndexedDB is the truth
         const existing = new Set(
@@ -1247,7 +1252,11 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         for (const file of files) {
           try {
             const doc = await textFromFile(file)
-            const found = extractFromText(doc.text, dataset?.entries ?? [], f3?.entries ?? [])
+            const found = extractFromText(
+              doc.text,
+              dataset?.entries ?? [],
+              others.flatMap((corpus) => corpus?.entries ?? []),
+            )
             if (found.length === 0) {
               // diagnostic: tells "no text layer" apart from "text read,
               // nothing recognisable" - without it the failure is mute
