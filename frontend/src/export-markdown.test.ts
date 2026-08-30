@@ -40,9 +40,12 @@ describe('buildMarkdown', () => {
    * while working want the case, not the case and its index.
    */
   it('carries the chronology, and one timeline per subject when there are several', () => {
+    // two subjects, two events each: both have a sequence worth printing
     const dated = [
       { source: 'a', type: 'uses', target: 'b', start_time: '2026-03-14' },
+      { source: 'a', type: 'related-to', target: 'c', start_time: '2026-03-15' },
       { source: 'b', type: 'communicates-with', target: 'c', start_time: '2026-03-20' },
+      { source: 'b', type: 'related-to', target: 'a', start_time: '2026-03-21' },
     ]
     const md = buildMarkdown('T', E, dated, true)
     expect(md).toContain('### Chronology')

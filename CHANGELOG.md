@@ -202,9 +202,12 @@ this file is the one meant for people reading the code.
   exactly as it did before.
 
   A report gets one thing the panel does not: the same chronology again, one
-  timeline per subject, and only when several subjects are dated. One actor
-  doing everything would print the same list twice under two headings, and 300
-  pixels read while working want the case rather than the case and its index.
+  timeline per subject. Under two conditions, both about saying something the
+  global timeline does not: a subject needs more than one dated event, since a
+  timeline of one line is a line, and two subjects have to survive that, since
+  a case whose actor did everything would otherwise print the same list twice
+  under two headings. A 300 pixel panel read while working wants the case
+  rather than the case and its index, so it stays out of there.
 
 - **A technique says which knowledge base its number belongs to, and both
   are named.** ATT&CK and F3 look identical on a canvas, same shape and same
