@@ -250,6 +250,25 @@ this file is the one meant for people reading the code.
   Vermeil" as the same kind of thing. There is more air between the ranks too,
   which is most of what makes them legible at all.
 
+- **The PDF is laid out as a document rather than as a page of output.** Three
+  things were wrong with it and all three were about the page. The graph had a
+  page and used two thirds of it, because a graph is never the shape of an A4
+  and the leftover was white: a dark picture stamped on a white sheet, which
+  reads as a mistake rather than as a margin. That page is now painted in the
+  canvas's own background before anything is drawn on it, so what the aspect
+  ratio leaves over is the same colour as the picture and the page reads as one
+  thing. The graph is still never cropped to make it fit, since a cropped graph
+  is a wrong graph.
+
+  The prose then ran the width of a landscape A4, around a hundred and thirty
+  characters to the line, which is a line the eye loses its place in on the way
+  back. The graph page keeps the orientation that suits the graph and every
+  page of prose after it is portrait, whichever way that one went.
+
+  And each section starts its own page. A title landing three lines above the
+  fold is most of what makes a document look thrown together, and the parts of
+  a report are read one at a time.
+
 - **A technique says which knowledge base its number belongs to, and both
   are named.** ATT&CK and F3 look identical on a canvas, same shape and same
   word, while a case that crosses from an intrusion to a fraud is made of

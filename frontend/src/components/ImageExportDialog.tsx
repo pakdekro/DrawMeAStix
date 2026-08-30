@@ -117,6 +117,7 @@ export default function ImageExportDialog({
             mine,
             entities,
             withTimeline,
+            bg(),
           ),
           `${slug}.pdf`,
         )
