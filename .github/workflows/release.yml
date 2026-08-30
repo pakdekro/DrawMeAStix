@@ -65,11 +65,23 @@ jobs:
             echo "https://github.com/pakdekro/DrawMeAStix/wiki/Self-hosting"
           } >> NOTES.md
 
+      # A release may already exist when the job runs: somebody can have drafted
+      # it, or published it by hand before the tag reached the runner. Creating
+      # is then refused and the job fails having built the tarball and attached
+      # it to nothing, which is the one thing this workflow is for. So the
+      # tarball goes up either way, and the notes and the title of an existing
+      # release are left alone: a human who wrote them meant them.
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            --title "$GITHUB_REF_NAME" \
-            --notes-file NOTES.md \
-            "drawmeastix-${GITHUB_REF_NAME}-dist.tar.gz"
+          tarball="drawmeastix-${GITHUB_REF_NAME}-dist.tar.gz"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "::notice::release $GITHUB_REF_NAME already exists, attaching the build to it"
+            gh release upload "$GITHUB_REF_NAME" "$tarball" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --notes-file NOTES.md \
+              "$tarball"
+          fi

@@ -26,7 +26,9 @@ Draw Me A STIX fills the gap: **structure, annotate, curate** an investigation o
 - **A canvas that draws itself, and answers questions.** One button lays the investigation out around what it is about: the most connected object in the middle, what it touches on a ring around it, so distance from the centre is hops from the subject of the case. Relationships take the colour of what they say rather than one hue per verb, and five questions light the objects that answer them without moving anything: what carries no indicator, what has no relationship at all, what will leave without a TLP of its own, what a tool handed you, and what the export will complain about.
 - **An annotation layer.** Pinned notes and screenshots pasted with Ctrl+V, tied to an object by a dashed line. Never exported in the bundle: they are your reasoning, not intel.
 - **Deterministic export.** Identifiers derive from each object's own properties, so re-importing the same object updates it instead of creating a second one. Two exports of the same state produce the same file, byte for byte, which is what makes the "unexported changes" indicator trustworthy.
-- **Other ways out.** The graph read back as prose, plus PNG, JPG, PDF and Markdown for the humans who will read your report.
+- **A case read back in the order it happened.** The graph turned into prose, live in a panel: a chronology when your relationships carry dates, to the minute when you set an hour, and what carries no date under its own heading. A report adds the same chronology per subject, and can draw it as a timeline: mermaid in the Markdown, a rail with a dot per moment in the image and in the PDF.
+- **Other ways out.** PNG, JPG, PDF and Markdown for the humans who will read your report. The PDF is laid out as a document: the graph takes a page of its own, the prose is portrait behind it, and each section starts on its own page.
+- **Scenarios to start from.** Twenty-one skeletons in three families, intrusion, fraud and AI, from a ransomware double extortion to a mule network or a poisoned model. Loading a second one onto the same canvas completes the first instead of drawing a second graph beside it: the actor you already have is the actor it uses.
 - **Keyboard first.** `Ctrl+K` for the command palette, `?` for the shortcut memo, `/` to search the canvas, `l` to ring what the selection touches, `t` to hide the labels on the cards, `Esc` to show everything again, `Ctrl+Z` to undo a deletion.
 - **A STIX guide** at `#/guide`, built from the relationship matrix itself, for whoever has never touched the format, and a page for each framework: `#/attack`, `#/f3`, `#/atlas` and `#/aadapt`, for how a matrix is read and what one of its numbers becomes here. All five are also served as plain HTML at their own addresses, readable without JavaScript.
 
@@ -125,8 +127,10 @@ uv run python scripts/generate_golden_vectors.py   # after changing ID recipes
 uv run python scripts/generate_golden_bundle.py    # after changing the builder
 
 # Datasets shipped with the app (committed, regenerated weekly by CI)
-uv run python scripts/build_attack_dataset.py      # ATT&CK Enterprise
+uv run python scripts/build_attack_dataset.py      # ATT&CK Enterprise, Mobile and ICS
 uv run python scripts/build_f3_dataset.py          # MITRE F3 (fraud), after ATT&CK
+uv run python scripts/build_atlas_dataset.py       # MITRE ATLAS (AI systems)
+uv run python scripts/build_aadapt_dataset.py      # MITRE AADAPT (digital assets)
 uv run python scripts/build_actors_dataset.py      # actor aliases, after ATT&CK
 uv run python scripts/build_countries_dataset.py   # ISO 3166-1 (needs iso-codes)
                                                    # ISO_CODES_JSON overrides the path
@@ -136,6 +140,8 @@ cd enricher
 uv sync
 uv run pytest
 ```
+
+Adding a fifth knowledge base is a documented sequence rather than a hunt through the code: [docs/adding-a-framework.md](docs/adding-a-framework.md) has it, starting with the one question that decides everything else, whether the newcomer reuses somebody else's identifiers.
 
 Sidecar settings are read from the environment. Every variable is documented, with its reasoning, in `enricher/app/config.py`; see `.env.example` for the two that Compose forwards.
 

@@ -1,5 +1,6 @@
 import { memo, useState } from 'react'
 import type { AttackEntry } from '../attack'
+import { FRAMEWORKS } from '../frameworks'
 import { SCO_ORDER, SDO_ORDER, typeMeta } from '../stixMeta'
 import { TEMPLATE_FAMILIES, templatesOfFamily } from '../templates'
 import type { TemplateFamily } from '../templates'
@@ -30,7 +31,13 @@ type PanelId = 'objects' | 'attack' | 'scenarios' | 'labels'
 
 const PANELS: { id: PanelId; icon: IconName; label: string }[] = [
   { id: 'objects', icon: 'grid', label: 'Objects and observables' },
-  { id: 'attack', icon: 'search', label: 'Frameworks (ATT&CK, F3)' },
+  // Named from the registry rather than by hand: written out, the label still
+  // said two frameworks on the day the fourth shipped.
+  {
+    id: 'attack',
+    icon: 'search',
+    label: `Frameworks (${FRAMEWORKS.map((f) => f.short).join(', ')})`,
+  },
   { id: 'scenarios', icon: 'scenario', label: 'Scenarios' },
   { id: 'labels', icon: 'tag', label: 'Labels in use' },
 ]
