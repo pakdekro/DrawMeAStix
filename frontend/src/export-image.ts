@@ -10,7 +10,7 @@
 
 import { getNodesBounds, getViewportForBounds } from '@xyflow/react'
 import type { Node } from '@xyflow/react'
-import { eventClause, eventSentence, timelines } from './narrative'
+import { eventClause, eventSentence, timelineRows, timelines } from './narrative'
 import type { Narrative, NarrBlock } from './narrative'
 import { groupNotes, opinionLabel, type ReportNote, type ReportSubject } from './report'
 
@@ -145,6 +145,8 @@ export async function composeReport(
   background: string,
   notes: ReportNote[] = [],
   subjects: ReportSubject[] = [],
+  /** draw the chronology on a rail rather than listing it */
+  drawTimeline = false,
 ): Promise<string> {
   const graph = await loadImage(graphUrl)
   await document.fonts.ready
@@ -156,13 +158,13 @@ export async function composeReport(
   const gH = (graph.height * innerW) / graph.width
 
   const meas = document.createElement('canvas').getContext('2d')!
-  const wrap = (text: string, font: string): string[] => {
+  const wrap = (text: string, font: string, width = innerW): string[] => {
     meas.font = font
     const lines: string[] = []
     let cur = ''
     for (const word of text.split(' ')) {
       const candidate = cur ? `${cur} ${word}` : word
-      if (cur && meas.measureText(candidate).width > innerW) {
+      if (cur && meas.measureText(candidate).width > width) {
         lines.push(cur)
         cur = word
       } else cur = candidate
@@ -171,7 +173,24 @@ export async function composeReport(
     return lines
   }
 
-  type Block = { lines: string[]; font: string; color: string; lh: number; gap: number }
+  /**
+   * A block of text, and what is drawn beside it. `rail` and `dot` are what
+   * turn the chronology into a timeline: a line down the left of the events,
+   * and a dot at each moment. The rail is drawn per block, so consecutive
+   * rail blocks make one continuous line.
+   */
+  type Block = {
+    lines: string[]
+    font: string
+    color: string
+    lh: number
+    gap: number
+    indent?: number
+    rail?: boolean
+    dot?: boolean
+  }
+  const RAIL_X = PAD + 5
+  const RAIL_INDENT = 22
   const blocks: Block[] = []
   const para = (t: string) =>
     blocks.push({ lines: wrap(t, `400 15px ${SANS}`), font: `400 15px ${SANS}`, color: '#dcd7ba', lh: 23, gap: 8 })
@@ -196,12 +215,42 @@ export async function composeReport(
     for (const clause of block.clauses) one(`· ${clause}`)
   }
 
+  /** The chronology on a rail: a dot per moment, its events under it. */
+  const timelineBlocks = (chronology: Narrative['chronology']) => {
+    for (const row of timelineRows(chronology)) {
+      blocks.push({
+        lines: [row.when],
+        font: `700 14px ${SANS}`,
+        color: '#7e9cd8',
+        lh: 21,
+        gap: 2,
+        indent: RAIL_INDENT,
+        rail: true,
+        dot: true,
+      })
+      for (const event of row.events) {
+        blocks.push({
+          lines: wrap(eventSentence(event), `400 15px ${SANS}`, innerW - RAIL_INDENT),
+          font: `400 15px ${SANS}`,
+          color: '#dcd7ba',
+          lh: 23,
+          gap: 6,
+          indent: RAIL_INDENT,
+          rail: true,
+        })
+      }
+    }
+  }
+
   if (narr) {
     head('Narrative')
     if (narr.chronology.length > 0) {
       sub('Chronology')
-      narr.chronology.forEach((e) => para(`${e.when}  ${eventSentence(e)}`))
-      for (const { subject, events } of timelines(narr.chronology)) {
+      if (drawTimeline) timelineBlocks(narr.chronology)
+      else narr.chronology.forEach((e) => para(`${e.when}  ${eventSentence(e)}`))
+      const perSubject = timelines(narr.chronology)
+      if (perSubject.length > 0) sub('Chronology, by subject')
+      for (const { subject, events } of perSubject) {
         if (events.length === 1) {
           para(`${subject}  ${events[0].when}  ${eventClause(events[0])}`)
           continue
@@ -261,10 +310,25 @@ export async function composeReport(
   y += gH + 26
 
   for (const b of blocks) {
+    const height = b.lines.length * b.lh + b.gap
+    if (b.rail) {
+      ctx.strokeStyle = '#54546d'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(RAIL_X, y - 2)
+      ctx.lineTo(RAIL_X, y + height)
+      ctx.stroke()
+    }
+    if (b.dot) {
+      ctx.fillStyle = '#7e9cd8'
+      ctx.beginPath()
+      ctx.arc(RAIL_X, y + 8, 4, 0, Math.PI * 2)
+      ctx.fill()
+    }
     ctx.font = b.font
     ctx.fillStyle = b.color
     for (const line of b.lines) {
-      ctx.fillText(line, PAD, y)
+      ctx.fillText(line, PAD + (b.indent ?? 0), y)
       y += b.lh
     }
     y += b.gap
@@ -318,6 +382,8 @@ export async function graphToPdf(
   narr: Narrative | null,
   notes: ReportNote[] = [],
   subjects: ReportSubject[] = [],
+  /** draw the chronology on a rail rather than listing it */
+  drawTimeline = false,
 ): Promise<Blob> {
   const { jsPDF } = await import('jspdf')
   const img = await loadImage(graphUrl)
@@ -342,19 +408,46 @@ export async function graphToPdf(
   if (narr || groups.length > 0) {
     pdf.addPage()
     let y = M
-    const block = (lines: string[], size: number, color: number) => {
+    const RAIL_X = M + 4
+    const RAIL_INDENT = 18
+    /**
+     * `indent` and `rail` are what turn the chronology into a timeline. The
+     * rail is drawn line by line rather than block by block, so that a page
+     * break cuts it where the text is cut instead of leaving a line running
+     * into the margin.
+     */
+    const block = (lines: string[], size: number, color: number, indent = 0, rail = false) => {
       pdf.setFont('helvetica', 'normal').setFontSize(size).setTextColor(color)
+      const x = M + indent
       for (const raw of lines) {
-        for (const ln of pdf.splitTextToSize(raw, pageW - M * 2) as string[]) {
+        for (const ln of pdf.splitTextToSize(raw, pageW - M * 2 - indent) as string[]) {
           if (y > pageH - M) {
             pdf.addPage()
             y = M
           }
-          pdf.text(ln, M, y)
+          if (rail) {
+            pdf.setDrawColor(180)
+            pdf.setLineWidth(0.7)
+            pdf.line(RAIL_X, y - size, RAIL_X, y + size * 0.5)
+          }
+          pdf.text(ln, x, y)
           y += size * 1.35
         }
         y += 3
       }
+    }
+    /** A moment on the rail: its dot, then the events that happened then. */
+    const moment = (when: string, events: string[]) => {
+      if (y > pageH - M) {
+        pdf.addPage()
+        y = M
+      }
+      pdf.setFillColor(90, 120, 190)
+      pdf.circle(RAIL_X, y - 3, 2.4, 'F')
+      pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(70)
+      pdf.text(when, M + RAIL_INDENT, y)
+      y += 14
+      block(events, 10, 55, RAIL_INDENT, true)
     }
     const heading = (t: string) => {
       y += 8
@@ -362,24 +455,37 @@ export async function graphToPdf(
       pdf.text(t, M, y)
       y += 16
     }
+    /** Names a part of a section, and a subject above its own lines. */
+    const subheading = (t: string) => {
+      if (y > pageH - M) {
+        pdf.addPage()
+        y = M
+      }
+      pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(60)
+      pdf.text(t, M, y)
+      y += 14
+    }
     if (narr) {
       heading('Narrative')
       if (narr.chronology.length > 0) {
-        block(narr.chronology.map((e) => `${e.when}  ${eventSentence(e)}`), 10, 55)
+        subheading('Chronology')
+        if (drawTimeline) {
+          for (const row of timelineRows(narr.chronology)) {
+            moment(row.when, row.events.map(eventSentence))
+          }
+        } else {
+          block(narr.chronology.map((e) => `${e.when}  ${eventSentence(e)}`), 10, 55)
+        }
         // Per subject only when several are dated, so a report never carries
         // the same timeline twice under two headings.
-        for (const { subject, events } of timelines(narr.chronology)) {
+        const perSubject = timelines(narr.chronology)
+        if (perSubject.length > 0) subheading('Chronology, by subject')
+        for (const { subject, events } of perSubject) {
           if (events.length === 1) {
             block([`${subject}  ${events[0].when}  ${eventClause(events[0])}`], 10, 55)
             continue
           }
-          pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(60)
-          if (y > pageH - M) {
-            pdf.addPage()
-            y = M
-          }
-          pdf.text(subject, M, y)
-          y += 14
+          subheading(subject)
           block(events.map((e) => `${e.when}  ${eventClause(e)}`), 10, 55)
         }
         if (narr.story.length > 0) heading('Undated')
@@ -389,13 +495,7 @@ export async function graphToPdf(
           block([`${b.subject} ${b.clauses[0]}.`], 10, 55)
           continue
         }
-        pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(60)
-        if (y > pageH - M) {
-          pdf.addPage()
-          y = M
-        }
-        pdf.text(b.subject, M, y)
-        y += 14
+        subheading(b.subject)
         block(b.clauses.map((c) => `· ${c}`), 10, 55)
       }
       if (narr.detection.length) {

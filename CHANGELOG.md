@@ -212,11 +212,20 @@ this file is the one meant for people reading the code.
   everybody writes it to mean and what keeps our own roundtrip from rewording
   the narrative.
 
-  And, at export, the chronology drawn: a mermaid timeline above the list, in
-  the Markdown, where a diagram can be generated rather than drawn. It is a
-  shortening and says so, dropping the scheme of a URL and cutting a label
-  past seventy characters, since a box of ninety characters is a paragraph in
-  a frame. The list under it is the same chronology in full.
+  And, at export, the chronology drawn, in every format and at the analyst's
+  choice: in the Markdown a mermaid timeline above the list, where a diagram
+  can be generated rather than drawn, and in the image report and the PDF the
+  same rows painted on a rail, a dot per moment with its events under it,
+  since neither of those has anybody downstream to render a diagram for it.
+  The PDF draws its rail line by line, so a page break cuts it where the text
+  is cut instead of leaving it running into the margin. The global chronology
+  only: a drawing per subject would be several pictures saying what the
+  by-subject lists already say in less room. It is a shortening and says so,
+  dropping the scheme of a URL and cutting a label past seventy characters,
+  since a box of ninety characters is a paragraph in a frame. The list under
+  it is the same chronology in full, and the image report and the PDF now name
+  their parts the way the Markdown does rather than running three sections
+  together.
 
   A report gets one thing the panel does not: the same chronology again, one
   timeline per subject, every dated subject included. A subject with a single

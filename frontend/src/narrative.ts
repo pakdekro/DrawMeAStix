@@ -375,6 +375,20 @@ export function timelines(chronology: NarrEvent[]): { subject: string; events: N
 const DIAGRAM_LABEL = 72
 
 /**
+ * The chronology grouped by moment, which is the shape every drawing of it
+ * needs: one row per moment, the events of that moment under it.
+ */
+export function timelineRows(chronology: NarrEvent[]): { when: string; events: NarrEvent[] }[] {
+  const rows: { when: string; events: NarrEvent[] }[] = []
+  for (const event of chronology) {
+    const last = rows[rows.length - 1]
+    if (last !== undefined && last.when === event.when) last.events.push(event)
+    else rows.push({ when: event.when, events: [event] })
+  }
+  return rows
+}
+
+/**
  * The chronology as a mermaid `timeline`, for a report that wants it drawn.
  *
  * The global timeline only: a diagram per subject would be several diagrams
@@ -403,15 +417,13 @@ export function timelineDiagram(chronology: NarrEvent[]): string {
     return flat.length > DIAGRAM_LABEL ? `${flat.slice(0, DIAGRAM_LABEL - 1).trimEnd()}…` : flat
   }
   const lines = ['timeline']
-  let last: string | null = null
-  for (const event of chronology) {
-    const text = label(eventSentence(event).replace(/\.$/, ''))
-    // one row per moment, the events of that moment hanging off it
-    // the continuation form of the diagram, indented under its moment the way
-    // mermaid's own examples write it
-    if (event.when === last) lines.push(`         : ${text}`)
-    else lines.push(`    ${event.when} : ${text}`)
-    last = event.when
+  for (const row of timelineRows(chronology)) {
+    row.events.forEach((event, i) => {
+      const text = label(eventSentence(event).replace(/\.$/, ''))
+      // the continuation form of the diagram, indented under its moment the
+      // way mermaid's own examples write it
+      lines.push(i === 0 ? `    ${row.when} : ${text}` : `         : ${text}`)
+    })
   }
   return lines.join('\n')
 }
