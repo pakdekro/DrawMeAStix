@@ -14,7 +14,7 @@ export interface FieldOption {
 interface FieldDef {
   key: string
   label: string
-  type: 'text' | 'textarea' | 'select' | 'checkbox' | 'date'
+  type: 'text' | 'textarea' | 'select' | 'checkbox' | 'date' | 'multiselect'
   options?: (string | FieldOption)[]
   required?: boolean
   placeholder?: string
@@ -39,6 +39,32 @@ export const REGION_OV = [
   'western-asia', 'europe', 'eastern-europe', 'northern-europe',
   'southern-europe', 'western-europe', 'oceania', 'antarctica',
   'australia-new-zealand', 'melanesia', 'micronesia', 'polynesia',
+] as const
+
+/**
+ * STIX 2.1 `infrastructure-type-ov`, copied from the vendored OASIS schema
+ * (`stix/schemas/sdos/infrastructure.json`), where a test holds the two in
+ * step.
+ *
+ * The vocabulary is open, and the schema does not police it: the property is
+ * declared as an array of plain strings, so an invented value passes export
+ * validation without a word. That makes this list the only place the line
+ * holds, which is a reason to offer it rather than a text field, not a reason
+ * to add to it. Nothing here describes a set of bank accounts, and coining
+ * something that does would put a word in the bundle that no consumer knows.
+ */
+export const INFRASTRUCTURE_TYPE_OV = [
+  'amplification',
+  'anonymization',
+  'botnet',
+  'command-and-control',
+  'exfiltration',
+  'hosting-malware',
+  'hosting-target-lists',
+  'phishing',
+  'reconnaissance',
+  'staging',
+  'unknown',
 ] as const
 
 const DESCRIPTION: FieldDef = {
@@ -175,7 +201,18 @@ export const TYPE_FIELDS: Record<string, FieldDef[]> = {
     { key: 'administrative_area', label: 'Administrative area', type: 'text' },
     DESCRIPTION,
   ],
-  infrastructure: [DESCRIPTION, ALIASES, ...SEEN_WINDOW],
+  infrastructure: [
+    {
+      key: 'infrastructure_types',
+      label: 'Infrastructure types',
+      type: 'multiselect',
+      options: [...INFRASTRUCTURE_TYPE_OV],
+      help: 'STIX open vocabulary: several may apply, and none is also an answer',
+    },
+    DESCRIPTION,
+    ALIASES,
+    ...SEEN_WINDOW,
+  ],
   file: [
     { key: 'file_name', label: 'File name', type: 'text', placeholder: 'payload.exe' },
     { key: 'hash_md5', label: 'MD5', type: 'text' },
@@ -370,6 +407,11 @@ export function toProperties(
     const n = parseInt(String(props.number), 10)
     if (!Number.isNaN(n)) props.number = n
     else delete props.number
+  }
+  // An empty list is not a value: the spec asks for at least one item, and a
+  // property that says nothing would still travel and still be read.
+  for (const [key, value] of Object.entries(props)) {
+    if (Array.isArray(value) && value.length === 0) delete props[key]
   }
   if (props.confidence !== undefined) {
     const conf = parseInt(String(props.confidence), 10)

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { fieldsFor, toFormValues, toProperties } from './entityFields'
+import { INFRASTRUCTURE_TYPE_OV, fieldsFor, toFormValues, toProperties } from './entityFields'
+import schema from './stix/schemas/sdos/infrastructure.json'
 import { SCO_TYPES, SDO_TYPES } from './stix/relationships'
 import { SCO_ORDER, SDO_ORDER } from './stixMeta'
 
@@ -50,5 +51,30 @@ describe('labels (#132)', () => {
 describe('toFormValues labels', () => {
   it('liste → champ texte', () => {
     expect(toFormValues({ labels: ['a', 'b'] }).labels).toBe('a, b')
+  })
+})
+
+describe('infrastructure_types', () => {
+  it('offre le vocabulaire de la spec, et exactement lui', () => {
+    // The vendored OASIS schema is the source; it declares the property as an
+    // array of plain strings, so nothing downstream would catch a value we
+    // made up here. This test is the only thing holding the two in step.
+    const enums = schema.definitions['infrastructure-type-ov'].enum
+    expect([...INFRASTRUCTURE_TYPE_OV]).toEqual(enums)
+    const field = fieldsFor('infrastructure').find((f) => f.key === 'infrastructure_types')!
+    expect(field.type).toBe('multiselect')
+    expect(field.options).toEqual(enums)
+  })
+
+  it('voyage comme une liste, et rien du tout quand rien n’est coché', () => {
+    expect(
+      toProperties('infrastructure', { infrastructure_types: ['phishing', 'staging'] })
+        .infrastructure_types,
+    ).toEqual(['phishing', 'staging'])
+    // minItems 1 in the schema: an empty list is not a value, it is a claim
+    // that the analyst never made
+    expect(toProperties('infrastructure', { infrastructure_types: [] })).not.toHaveProperty(
+      'infrastructure_types',
+    )
   })
 })

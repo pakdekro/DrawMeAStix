@@ -204,6 +204,39 @@ export default function EntityForm({
               ))}
             </select>
           )}
+          {/* A vocabulary list, offered as toggles: several values may apply,
+              and typing into an open vocabulary produces a word the receiving
+              platform cannot do anything with. */}
+          {f.type === 'multiselect' && (
+            <div className="field-chips">
+              {f.options!.map(fieldOption).map((o) => {
+                const picked = Array.isArray(values[f.key])
+                  ? (values[f.key] as string[]).includes(o.value)
+                  : false
+                return (
+                  <button
+                    key={o.value}
+                    type="button"
+                    className={`chip vocab-chip${picked ? ' on' : ''}`}
+                    aria-pressed={picked}
+                    onClick={() => {
+                      const current = Array.isArray(values[f.key])
+                        ? (values[f.key] as string[])
+                        : []
+                      set(
+                        f.key,
+                        picked
+                          ? current.filter((v) => v !== o.value)
+                          : [...current, o.value],
+                      )
+                    }}
+                  >
+                    {o.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
           {f.type === 'checkbox' && (
             <input
               type="checkbox"

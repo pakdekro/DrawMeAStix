@@ -1116,6 +1116,28 @@ label {
 }
 
 
+/* A vocabulary offered as toggles in a form (infrastructure_types): the
+   values come from the spec, so they are picked and never typed, and the row
+   wraps rather than scrolls because eleven of them still have to be readable
+   at a glance. Monospace like the other machine-facing values. */
+.field-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 2px;
+}
+
+.chip.vocab-chip {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 2px 7px;
+}
+
+.chip.vocab-chip.on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* "Load a scenario…" is a <label> wrapping a file input: same neutralizations
    as .menu-item, otherwise the global `label` rule uppercases it in the
    middle of a list of buttons. */
