@@ -330,11 +330,12 @@ export function eventClause(event: NarrEvent): string {
 /**
  * The chronology again, one timeline per subject, for a report read in one go.
  *
- * EMPTY WHEN ONE SUBJECT CARRIES EVERYTHING, and that is the whole design: a
- * case whose actor did all the dated things would come out as the same list
- * twice, in the same order, under two headings. The split earns its place when
- * several subjects are dated, which is exactly when the global timeline stops
- * answering "and what did THIS one do".
+ * Two conditions, and both are about saying something the global timeline does
+ * not. A subject with a single dated event has no sequence to show, so it is
+ * left out: a timeline of one line is a line. And the section only appears
+ * when TWO subjects survive that filter, because a case whose actor did all
+ * the dated things would otherwise print the same list twice, in the same
+ * order, under two headings.
  *
  * Kept out of the side panel on purpose: 300 pixels read while working want
  * the case, not the case and its index.
@@ -342,6 +343,8 @@ export function eventClause(event: NarrEvent): string {
 export function timelines(chronology: NarrEvent[]): { subject: string; events: NarrEvent[] }[] {
   const bySubject = new Map<string, NarrEvent[]>()
   for (const event of chronology) push(bySubject, event.subject, event)
-  if (bySubject.size < 2) return []
-  return [...bySubject].map(([subject, events]) => ({ subject, events }))
+  const sequences = [...bySubject]
+    .filter(([, events]) => events.length > 1)
+    .map(([subject, events]) => ({ subject, events }))
+  return sequences.length > 1 ? sequences : []
 }

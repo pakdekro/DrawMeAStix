@@ -196,13 +196,24 @@ describe('buildNarrative', () => {
       // one actor doing everything: the per-subject view is the same list again
       expect(timelines(oneSubject.chronology)).toEqual([])
 
-      const two = buildNarrative(CASE, [
+      // a subject with ONE dated event has no sequence to show, so it does not
+      // get a timeline of its own, and here that leaves only one that does
+      const oneEach = buildNarrative(CASE, [
         { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14' },
         { source: 'm', type: 'communicates-with', target: 'a3', start_time: '2026-04-02' },
       ])
-      expect(timelines(two.chronology).map((t) => t.subject)).toEqual([
-        'The campaign Ferronnier',
-        'The malware EggShell',
+      expect(oneEach.chronology).toHaveLength(2)
+      expect(timelines(oneEach.chronology)).toEqual([])
+
+      const two = buildNarrative(CASE, [
+        { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14' },
+        { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-16' },
+        { source: 'm', type: 'communicates-with', target: 'a3', start_time: '2026-04-02' },
+        { source: 'm', type: 'communicates-with', target: 'a1', start_time: '2026-04-03' },
+      ])
+      expect(timelines(two.chronology).map((t) => `${t.subject} (${t.events.length})`)).toEqual([
+        'The campaign Ferronnier (2)',
+        'The malware EggShell (2)',
       ])
       expect(eventClause(two.chronology[0])).toBe('Compromises the account FR76...0143.')
     })
