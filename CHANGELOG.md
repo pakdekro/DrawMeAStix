@@ -59,6 +59,29 @@ this file is the one meant for people reading the code.
   still share a clause. A graph with no date reads exactly as it did before,
   and the rule holds inside a paragraph as well as between them.
 
+- **An email address is part of what the actor set up, and an account is
+  asked for in the words of an account.** Dragging a link from an actor to an
+  email address offered a detection indicator and nothing else, while a
+  certificate or a MAC address got the infrastructure route: an address you
+  send phishing from is something you acquired, exactly like the domain
+  hosting the page it links to, so it joins them. The wording of that route
+  now follows the observable. `infrastructure` is the right STIX object for a
+  bank account and the wrong English word for it, and "infrastructure this
+  observable is part of" offered over an IBAN reads as a category error, so
+  the question becomes "its accounts". The bundle is identical either way:
+  only the question changes, and it is the question that decides whether the
+  analyst takes the one route STIX gives them.
+
+- **The infrastructure types are offered, from the spec's own list.** They
+  were reachable only through the C2 bridge, which sets
+  `command-and-control` and nothing else, so every infrastructure created by
+  hand went out untyped. The eleven values of `infrastructure-type-ov` are
+  now toggles on the form, taken from the vendored OASIS schema with a test
+  holding the two in step. Picked rather than typed, because the vocabulary
+  is open in the sense that a consumer may not know a value, not in the sense
+  that inventing one is useful: the schema declares plain strings and would
+  have let anything through.
+
 ## 1.6.1 - 29 August 2026
 
 - **A report carries your reasoning, and the picture no longer carries your

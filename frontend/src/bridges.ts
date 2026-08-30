@@ -66,33 +66,57 @@ const INFRASTRUCTURE_RECIPE: BridgeRecipe = {
  * runs, an account on it, the MAC of a box. The canonical detour is
  * `consists-of`, where a network endpoint gets `communicates-with`.
  *
+ * `email-addr` belongs here and was missing: an address an actor sends from
+ * is something it set up, exactly like the domain that hosts the page it
+ * links to, and not a network endpoint the way an IP or a URL is. Nothing is
+ * reached AT an address, mail is delivered to a mailbox behind it, so
+ * `communicates-with` would say more than the analyst did.
+ *
  * `mutex` and `directory` are deliberately absent: they are malware artefacts
  * on a victim host, not infrastructure, and STIX 2.1 offers no relationship
  * from a malware to either of them. They keep the indicator bridge, which is
  * the honest route - inventing a link is what this whole file exists to avoid.
  */
 const INFRASTRUCTURE_PARTS = new Set([
+  "email-addr",
   "mac-addr",
   "software",
   "user-account",
   "x509-certificate",
 ]);
 
-const INFRASTRUCTURE_PART_RECIPE: BridgeRecipe = {
-  key: "infrastructure-part",
-  label: "Infrastructure this observable is part of",
-  hint: "uses → infrastructure → consists-of",
-  bridgeType: "infrastructure",
-  defaultName: (_sdo, sco) => `Infrastructure - ${sco.name}`,
-  // No `infrastructure_types`: the C2 recipe knows what it is building, this
-  // one does not, and guessing would put an assertion in the bundle that the
-  // analyst never made.
-  bridgeProperties: () => ({}),
-  legs: [
-    { rel: "uses", from: "sdo", to: "bridge" },
-    { rel: "consists-of", from: "bridge", to: "sco" },
-  ],
-};
+/**
+ * The same recipe, worded for what the analyst is looking at.
+ *
+ * `infrastructure` is the right STIX object for an account and the wrong
+ * English word for it: STIX has no SDO that carries a bank or service
+ * account, and this is the object that makes one nameable, and detectable on
+ * a platform that only acts on objects. Offering "infrastructure this
+ * observable is part of" over an IBAN reads as a category error and the
+ * analyst walks away from the one route that works. The bundle is identical
+ * either way: only the question changes.
+ */
+function infrastructurePartRecipe(scoType: string): BridgeRecipe {
+  const account = scoType === "user-account";
+  return {
+    key: "infrastructure-part",
+    label: account
+      ? "Its accounts (bank, service, mule…)"
+      : "Infrastructure this observable is part of",
+    hint: "uses → infrastructure → consists-of",
+    bridgeType: "infrastructure",
+    defaultName: (_sdo, sco) => `${account ? "Accounts" : "Infrastructure"} - ${sco.name}`,
+    // No `infrastructure_types`: the C2 recipe knows what it is building, this
+    // one does not, and guessing would put an assertion in the bundle that the
+    // analyst never made. No official value describes a set of accounts, and
+    // the open vocabulary is not an invitation to coin one.
+    bridgeProperties: () => ({}),
+    legs: [
+      { rel: "uses", from: "sdo", to: "bridge" },
+      { rel: "consists-of", from: "bridge", to: "sco" },
+    ],
+  };
+}
 
 const MALWARE_RECIPE: BridgeRecipe = {
   key: "malware",
@@ -153,7 +177,7 @@ export function findBridges(a: BridgeEndpoint, b: BridgeEndpoint): BridgeMatch |
     recipes.push(INFRASTRUCTURE_RECIPE);
   }
   if (OPERATORS.has(sdo.stix_type) && INFRASTRUCTURE_PARTS.has(sco.stix_type)) {
-    recipes.push(INFRASTRUCTURE_PART_RECIPE);
+    recipes.push(infrastructurePartRecipe(sco.stix_type));
   }
   if (OPERATORS.has(sdo.stix_type) && sco.stix_type === "file") {
     recipes.push(MALWARE_RECIPE);

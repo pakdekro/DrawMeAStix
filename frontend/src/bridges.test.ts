@@ -153,6 +153,34 @@ describe("légalité des recettes", () => {
       expect(match.recipes.map((r) => r.key)).not.toContain("infrastructure");
     });
 
+    it("an email address is a part of what was set up, not a network endpoint", () => {
+      // It was reaching the indicator bridge and nothing else, with none of
+      // the reasons mutex and directory have for staying out.
+      const match = findBridges(APT, e("email-addr", "facture@fonderie-marchal.example"))!;
+      expect(match.recipes.map((r) => r.key)).toEqual(["infrastructure-part", "indicator"]);
+      const part = match.recipes[0];
+      expect(part.legs.map((l) => l.rel)).toEqual(["uses", "consists-of"]);
+    });
+
+    it("asks for an account in the words of an account", () => {
+      // Same object, same bundle: an IBAN offered "infrastructure this
+      // observable is part of" reads as a category error, and the analyst
+      // walks away from the one route STIX gives them.
+      const account = findBridges(APT, e("user-account", "FR7630004000031234567890143"))!;
+      const part = account.recipes.find((r) => r.key === "infrastructure-part")!;
+      expect(part.label).toBe("Its accounts (bank, service, mule…)");
+      expect(part.defaultName(account.sdo, account.sco)).toBe(
+        "Accounts - FR7630004000031234567890143",
+      );
+      expect(part.bridgeType).toBe("infrastructure");
+      expect(part.bridgeProperties(account.sco)).toEqual({});
+
+      const cert = findBridges(APT, e("x509-certificate", "36:f7:d4:2e:1a"))!;
+      const other = cert.recipes.find((r) => r.key === "infrastructure-part")!;
+      expect(other.label).toBe("Infrastructure this observable is part of");
+      expect(other.defaultName(cert.sdo, cert.sco)).toBe("Infrastructure - 36:f7:d4:2e:1a");
+    });
+
     it("un mutex ou un répertoire n'obtient que le pont indicateur", () => {
       // Malware artefacts on a victim host, not infrastructure - and STIX 2.1
       // offers no relationship from a malware to either. Inventing one is what
