@@ -70,9 +70,10 @@ export default function ImageExportDialog({
    */
   const [withNotes, setWithNotes] = useState(false)
   /**
-   * The chronology drawn as well as listed, in Markdown only: that is where a
-   * diagram can be GENERATED rather than drawn by hand, since mermaid is
-   * rendered by whoever reads the file. The list stays under it either way.
+   * The chronology drawn rather than listed. Markdown gets a mermaid timeline,
+   * which is generated rather than drawn since whoever opens the file renders
+   * it; the image and the PDF get a rail with a dot per moment, drawn here
+   * because nothing downstream will do it for them.
    */
   const [withTimeline, setWithTimeline] = useState(false)
   const mine = withNotes ? notes : []
@@ -109,7 +110,14 @@ export default function ImageExportDialog({
         // JPEG for the embedded image: a far lighter PDF than PNG would give
         const graph = await captureGraph(nodes, 'jpeg', bg())
         downloadBlob(
-          await graphToPdf(graph, title, withNarrative ? narr : null, mine, entities),
+          await graphToPdf(
+            graph,
+            title,
+            withNarrative ? narr : null,
+            mine,
+            entities,
+            withTimeline,
+          ),
           `${slug}.pdf`,
         )
       } else {
@@ -126,6 +134,7 @@ export default function ImageExportDialog({
               bg(),
               mine,
               entities,
+              withTimeline,
             ),
             `${slug}-rapport.${ext}`,
           )
@@ -171,19 +180,17 @@ export default function ImageExportDialog({
         />
         Include the narrative
       </label>
-      {format === 'md' && (
-        <label className="checkbox-row">
-          <input
-            type="checkbox"
-            className="checkbox"
-            checked={withTimeline}
-            onChange={(e) => setWithTimeline(e.target.checked)}
-            disabled={!withNarrative || !dated}
-          />
-          Draw the chronology as a timeline
-          {!dated && <em className="hint"> (nothing is dated yet)</em>}
-        </label>
-      )}
+      <label className="checkbox-row">
+        <input
+          type="checkbox"
+          className="checkbox"
+          checked={withTimeline}
+          onChange={(e) => setWithTimeline(e.target.checked)}
+          disabled={!withNarrative || !dated}
+        />
+        Draw the chronology as a timeline
+        {!dated && <em className="hint"> (nothing is dated yet)</em>}
+      </label>
       {/* The STIX export has its own checkbox for the same material. These are
           two audiences, not one setting: a bundle going to a platform and a
           report going to a person do not want the same candour. */}

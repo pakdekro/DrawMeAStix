@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { buildNarrative, eventClause, eventSentence, timelines } from './narrative'
+import {
+  buildNarrative,
+  eventClause,
+  eventSentence,
+  timelineDiagram,
+  timelineRows,
+  timelines,
+} from './narrative'
 import type { NarrEntity, NarrRelation } from './narrative'
 
 const E: NarrEntity[] = [
@@ -250,5 +257,57 @@ describe('buildNarrative', () => {
       isolated: [],
       empty: true,
     })
+  })
+})
+
+/**
+ * The grouping the three drawn timelines share. The markdown draws it as a
+ * mermaid diagram, the image and the PDF paint it on a rail, and all three
+ * ask this for the same thing: what happened at each moment, once.
+ */
+describe('the chronology drawn', () => {
+  const E: NarrEntity[] = [
+    { id: 'a', stix_type: 'threat-actor', name: 'Guilde Vermeil' },
+    { id: 't', stix_type: 'attack-pattern', name: 'Electronic Funds Transfer: Wire Transfer' },
+    { id: 'u', stix_type: 'url', name: 'https://portail.example/sso/login' },
+    { id: 'i', stix_type: 'infrastructure', name: 'Kit AiTM' },
+  ]
+  const R: NarrRelation[] = [
+    { source: 'i', type: 'consists-of', target: 'u', start_time: '2026-08-10T00:00:00Z' },
+    { source: 'a', type: 'uses', target: 't', start_time: '2026-08-21T09:12:00Z' },
+    { source: 'a', type: 'targets', target: 'i', start_time: '2026-08-21T09:12:00Z' },
+  ]
+
+  it('gives one row per moment, in order, with the events of that moment', () => {
+    const { chronology } = buildNarrative(E, R)
+    const rows = timelineRows(chronology)
+    expect(rows.map((r) => `${r.when} (${r.events.length})`)).toEqual([
+      '2026-08-10 (1)',
+      '2026-08-21 09:12 (2)',
+    ])
+    expect(rows[1].events.map(eventSentence)).toEqual([
+      'The threat actor Guilde Vermeil uses the technique Electronic Funds Transfer: Wire Transfer.',
+      'The threat actor Guilde Vermeil targets the infrastructure Kit AiTM.',
+    ])
+  })
+
+  it('writes the moment once, and keeps colons out of the diagram', () => {
+    const diagram = timelineDiagram(buildNarrative(E, R).chronology)
+    const lines = diagram.split('\n')
+    expect(lines[0]).toBe('timeline')
+    // the moment names its first event, the next ones continue under it
+    expect(lines[2]).toBe(
+      '    2026-08-21 09:12 : The threat actor Guilde Vermeil uses the technique Electronic Funds Tra…',
+    )
+    expect(lines[3]).toMatch(/^ {9}: The threat actor Guilde Vermeil targets/)
+    // one colon per event as the separator, plus the one in the hour: the
+    // technique name and the URL scheme each lost theirs, and a colon left in
+    // a label would have split that event into two boxes
+    expect(diagram.split(':').length - 1).toBe(3 + 1)
+  })
+
+  it('draws nothing when nothing is dated', () => {
+    expect(timelineRows([])).toEqual([])
+    expect(timelineDiagram([])).toBe('')
   })
 })
