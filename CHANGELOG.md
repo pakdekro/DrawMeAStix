@@ -201,6 +201,23 @@ this file is the one meant for people reading the code.
   has no chronology, hence no headings and nothing to explain: it reads
   exactly as it did before.
 
+  The hour, when it is known. STIX has no day: `start_time` is an RFC 3339
+  timestamp with seconds and a `Z` required, so a day-only window goes out as
+  midnight UTC, and an imported hour used to be truncated to its day on screen
+  and overwritten the moment somebody edited the date. A relationship now
+  carries an optional time beside its date, in a second field rather than one
+  `datetime`, so that leaving it empty stays a way of saying "that day" rather
+  than a way of asserting midnight. The chronology orders, groups and reads to
+  the minute, and midnight exactly is read back as a day, which is what
+  everybody writes it to mean and what keeps our own roundtrip from rewording
+  the narrative.
+
+  And, at export, the chronology drawn: a mermaid timeline above the list, in
+  the Markdown, where a diagram can be generated rather than drawn. It is a
+  shortening and says so, dropping the scheme of a URL and cutting a label
+  past seventy characters, since a box of ninety characters is a paragraph in
+  a frame. The list under it is the same chronology in full.
+
   A report gets one thing the panel does not: the same chronology again, one
   timeline per subject, every dated subject included. A subject with a single
   event has no sequence, so it reads as one line rather than as a heading over

@@ -15,7 +15,8 @@
  * simpler tables than before.
  *
  * Chronology: a relation's start_time is the analyst saying when a thing
- * happened, which outranks any order we could guess from the types.
+ * happened, which outranks any order we could guess from the types. To the
+ * minute when they knew it, to the day when they did not.
  *
  * Dated statements are lifted OUT of their subject's block and into a
  * chronology of their own, each line naming who did what. Ordering them in
@@ -61,10 +62,10 @@ export interface NarrBlock {
   clauses: string[]
 }
 
-/** One dated statement: a day, a subject, and what it did that day. */
+/** One dated statement: a moment, a subject, and what it did then. */
 export interface NarrEvent {
-  /** YYYY-MM-DD, the day the analyst wrote down */
-  day: string
+  /** `YYYY-MM-DD`, or `YYYY-MM-DD HH:mm` when the hour was known */
+  when: string
   /** "The threat actor Guilde Vermeil", already capitalised */
   subject: string
   /** "uses the technique Spearphishing Link" */
@@ -217,14 +218,31 @@ const orderIdx = (t: string) => {
 }
 
 /**
- * The day a relation happened, or undefined.
+ * When a relation happened, to the minute when the analyst knew it.
  *
- * The day and not the instant: an imported bundle carries a full timestamp
- * where the inspector only ever writes a date, and two relations of the same
- * day belong in the same clause whichever way they were entered.
+ * A day alone stays a day: it is what somebody wrote down, and rendering it as
+ * midnight would invent a precision they did not have. An hour, once there, is
+ * kept and separates: two transfers on the same day are one line only if
+ * nothing distinguishes them, and an hour distinguishes them.
+ *
+ * The trailing seconds and the `Z` of an imported timestamp are dropped for
+ * READING, which is what this is for. The stored value keeps them, and so does
+ * the bundle.
  */
-const dayOf = (r: NarrRelation): string | undefined =>
-  (r.start_time ?? '').slice(0, 10) || undefined
+const momentOf = (r: NarrRelation): string | undefined => {
+  const raw = (r.start_time ?? '').trim()
+  if (raw === '') return undefined
+  const m = /^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2})(?::(\d{2}))?)?/.exec(raw)
+  if (m === null) return undefined
+  // Midnight exactly is read as a day, and that is not a shortcut. STIX has no
+  // day: everybody, this application included, writes T00:00:00Z for "that
+  // day, hour unknown". Reading it back as an hour would turn every imported
+  // day into a claim nobody made, and would make our own roundtrip change the
+  // text of the narrative. The cost is that a genuine midnight reads as its
+  // day, which is the same limit the format has.
+  const midnight = m[2] === '00:00' && (m[3] ?? '00') === '00'
+  return m[2] === undefined || midnight ? m[1] : `${m[1]} ${m[2]}`
+}
 
 export function buildNarrative(
   entities: NarrEntity[],
@@ -254,13 +272,13 @@ export function buildNarrative(
   // put a single date on statements that do not share it
   const chronology: NarrEvent[] = []
   for (const src of sources) {
-    const groups = new Map<string, { type: string; day?: string; targets: NarrEntity[] }>()
+    const groups = new Map<string, { type: string; when?: string; targets: NarrEntity[] }>()
     for (const r of outBySource.get(src.id)!) {
-      const day = dayOf(r)
-      const key = `${r.type}|${day ?? ''}`
+      const when = momentOf(r)
+      const key = `${r.type}|${when ?? ''}`
       const group = groups.get(key)
       if (group) group.targets.push(byId.get(r.target)!)
-      else groups.set(key, { type: r.type, day, targets: [byId.get(r.target)!] })
+      else groups.set(key, { type: r.type, when, targets: [byId.get(r.target)!] })
     }
     const subject = cap(singular(src))
     const clauses: string[] = []
@@ -269,15 +287,17 @@ export function buildNarrative(
       // A dated statement leaves its block for the chronology, where it can
       // stand beside the statements of every OTHER subject: that is the half
       // an in-place ordering could not do.
-      if (g.day === undefined) clauses.push(clause)
-      else chronology.push({ day: g.day, subject, clause })
+      if (g.when === undefined) clauses.push(clause)
+      else chronology.push({ when: g.when, subject, clause })
     }
     // a subject whose every statement was dated has nothing left to say here
     if (clauses.length > 0) story.push({ subject, clauses })
   }
-  // stable: same day keeps the reading order of the attack chain, which is the
-  // order the subjects were sorted in above
-  chronology.sort((a, b) => a.day.localeCompare(b.day))
+  // Lexicographic on the moment, which sorts correctly BECAUSE the shape is
+  // fixed-width: a day alone comes before that day's hours, which is the right
+  // place for "that day, hour unknown". Stable, so the same moment keeps the
+  // reading order of the attack chain the subjects were sorted in above.
+  chronology.sort((a, b) => a.when.localeCompare(b.when))
 
   // indicators: their own "Detection" section, worded as detection. No
   // chronology here on purpose: a detection is not an event of the story, it
@@ -349,4 +369,49 @@ export function timelines(chronology: NarrEvent[]): { subject: string; events: N
   for (const event of chronology) push(bySubject, event.subject, event)
   if (bySubject.size < 2) return []
   return [...bySubject].map(([subject, events]) => ({ subject, events }))
+}
+
+/** What a drawn label may run to before it stops being a label. */
+const DIAGRAM_LABEL = 72
+
+/**
+ * The chronology as a mermaid `timeline`, for a report that wants it drawn.
+ *
+ * The global timeline only: a diagram per subject would be several diagrams
+ * saying what the by-subject lists already say in less room.
+ *
+ * A drawing is a shortening, and this one shortens twice. Colons are the
+ * syntax of the diagram, so they cannot survive in the text: a technique
+ * called "Electronic Funds Transfer: Wire Transfer" would split into two
+ * events, and `https://` into three. URLs lose their scheme, everything else
+ * loses the colon, and a label past 72 characters is cut, because a box of
+ * ninety characters is a paragraph in a frame. The list printed under the
+ * diagram is the same chronology said in full: that is the one to read, this
+ * is the one to look at.
+ *
+ * Empty when nothing is dated, since a timeline of nothing is a heading over
+ * a blank.
+ */
+export function timelineDiagram(chronology: NarrEvent[]): string {
+  if (chronology.length === 0) return ''
+  const label = (text: string) => {
+    const flat = text
+      .replace(/\b[a-z][a-z0-9+.-]*:\/\//gi, '')
+      .replace(/[:#<>]/g, ' -')
+      .replace(/\s+/g, ' ')
+      .trim()
+    return flat.length > DIAGRAM_LABEL ? `${flat.slice(0, DIAGRAM_LABEL - 1).trimEnd()}…` : flat
+  }
+  const lines = ['timeline']
+  let last: string | null = null
+  for (const event of chronology) {
+    const text = label(eventSentence(event).replace(/\.$/, ''))
+    // one row per moment, the events of that moment hanging off it
+    // the continuation form of the diagram, indented under its moment the way
+    // mermaid's own examples write it
+    if (event.when === last) lines.push(`         : ${text}`)
+    else lines.push(`    ${event.when} : ${text}`)
+    last = event.when
+  }
+  return lines.join('\n')
 }

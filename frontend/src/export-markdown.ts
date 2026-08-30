@@ -7,7 +7,7 @@
  * 100% deterministic, no LLM.
  */
 
-import { buildNarrative, eventClause, eventSentence, timelines } from './narrative'
+import { buildNarrative, eventClause, eventSentence, timelineDiagram, timelines } from './narrative'
 import type { NarrEntity, NarrRelation } from './narrative'
 import { groupNotes, opinionLabel, type ReportNote } from './report'
 import { typeMeta } from './stixMeta'
@@ -25,6 +25,8 @@ export function buildMarkdown(
   relations: NarrRelation[],
   includeNarrative: boolean,
   notes: ReportNote[] = [],
+  /** draw the chronology as a mermaid timeline as well as listing it */
+  includeTimeline = false,
 ): string {
   const idOf = new Map(entities.map((e, i) => [e.id, `n${i}`]))
   const rels = relations.filter((r) => idOf.has(r.source) && idOf.has(r.target))
@@ -64,8 +66,13 @@ export function buildMarkdown(
     }
     if (narr.chronology.length > 0) {
       out.push('### Chronology', '')
+      // The drawing first when it was asked for: it is the shape of the case,
+      // and the list under it is the same thing said precisely.
+      if (includeTimeline) {
+        out.push('```mermaid', timelineDiagram(narr.chronology), '```', '')
+      }
       for (const event of narr.chronology) {
-        out.push(`- **${event.day}** ${eventSentence(event)}`)
+        out.push(`- **${event.when}** ${eventSentence(event)}`)
       }
       out.push('')
       // Per subject only when several of them are dated: one actor doing
@@ -77,11 +84,11 @@ export function buildMarkdown(
           // one event is not a sequence: it reads as a line, the way a block
           // with a single clause reads as a sentence
           if (events.length === 1) {
-            out.push(`**${subject}** - **${events[0].day}** ${eventClause(events[0])}`, '')
+            out.push(`**${subject}** - **${events[0].when}** ${eventClause(events[0])}`, '')
             continue
           }
           out.push(`**${subject}**`, '')
-          for (const event of events) out.push(`- **${event.day}** ${eventClause(event)}`)
+          for (const event of events) out.push(`- **${event.when}** ${eventClause(event)}`)
           out.push('')
         }
       }

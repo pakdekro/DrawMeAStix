@@ -1060,9 +1060,10 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
       source,
       target,
       description: String(data?.description ?? ''),
-      // <input type="date"> only reads the day part of an imported timestamp
-      startTime: (data?.start_time ?? '').slice(0, 10),
-      stopTime: (data?.stop_time ?? '').slice(0, 10),
+      // whole, hour included: the inspector splits it into a day and a time,
+      // and truncating here is what used to make an imported hour invisible
+      startTime: data?.start_time ?? '',
+      stopTime: data?.stop_time ?? '',
     }
   }, [selectedEdgeId, edges, entityById])
   // selected annotation link (#136): "Unlink" panel in the inspector
