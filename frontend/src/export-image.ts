@@ -200,14 +200,14 @@ export async function composeReport(
     head('Narrative')
     if (narr.chronology.length > 0) {
       sub('Chronology')
-      narr.chronology.forEach((e) => para(`${e.day}  ${eventSentence(e)}`))
+      narr.chronology.forEach((e) => para(`${e.when}  ${eventSentence(e)}`))
       for (const { subject, events } of timelines(narr.chronology)) {
         if (events.length === 1) {
-          para(`${subject}  ${events[0].day}  ${eventClause(events[0])}`)
+          para(`${subject}  ${events[0].when}  ${eventClause(events[0])}`)
           continue
         }
         sub(subject)
-        events.forEach((e) => para(`${e.day}  ${eventClause(e)}`))
+        events.forEach((e) => para(`${e.when}  ${eventClause(e)}`))
       }
       if (narr.story.length > 0) sub('Undated')
     }
@@ -365,12 +365,12 @@ export async function graphToPdf(
     if (narr) {
       heading('Narrative')
       if (narr.chronology.length > 0) {
-        block(narr.chronology.map((e) => `${e.day}  ${eventSentence(e)}`), 10, 55)
+        block(narr.chronology.map((e) => `${e.when}  ${eventSentence(e)}`), 10, 55)
         // Per subject only when several are dated, so a report never carries
         // the same timeline twice under two headings.
         for (const { subject, events } of timelines(narr.chronology)) {
           if (events.length === 1) {
-            block([`${subject}  ${events[0].day}  ${eventClause(events[0])}`], 10, 55)
+            block([`${subject}  ${events[0].when}  ${eventClause(events[0])}`], 10, 55)
             continue
           }
           pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(60)
@@ -380,7 +380,7 @@ export async function graphToPdf(
           }
           pdf.text(subject, M, y)
           y += 14
-          block(events.map((e) => `${e.day}  ${eventClause(e)}`), 10, 55)
+          block(events.map((e) => `${e.when}  ${eventClause(e)}`), 10, 55)
         }
         if (narr.story.length > 0) heading('Undated')
       }

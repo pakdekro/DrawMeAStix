@@ -124,3 +124,79 @@ describe('buildMarkdown: the analyst notes', () => {
     expect(md).toContain('> first\n> second')
   })
 })
+
+describe('the chronology drawn', () => {
+  const dated = [
+    { source: 'a', type: 'uses', target: 'b', start_time: '2026-03-14' },
+    { source: 'b', type: 'communicates-with', target: 'c', start_time: '2026-03-14' },
+    { source: 'a', type: 'related-to', target: 'c', start_time: '2026-03-20T09:12:00Z' },
+  ]
+
+  it('is a mermaid timeline, and only when asked for', () => {
+    expect(buildMarkdown('T', E, dated, true)).not.toContain('timeline')
+    const md = buildMarkdown('T', E, dated, true, [], true)
+    expect(md).toContain('```mermaid\ntimeline')
+    // one row per moment, the events of that moment hanging off it
+    expect(md).toContain('    2026-03-14 : The intrusion set Corax uses the malware EggShell')
+    expect(md).toContain('         : The malware EggShell communicates with the domain nest.example')
+    expect(md).toContain('    2026-03-20 09:12 :')
+  })
+
+  it('keeps the list under the drawing: a diagram is not a source', () => {
+    const md = buildMarkdown('T', E, dated, true, [], true)
+    expect(md.indexOf('```mermaid\ntimeline')).toBeLessThan(md.indexOf('- **2026-03-14**'))
+  })
+
+  it('drops the scheme of a URL rather than mangling it', () => {
+    const md = buildMarkdown(
+      'T',
+      [...E, { id: 'u', stix_type: 'url', name: 'https://evil.example/a' }],
+      [{ source: 'b', type: 'communicates-with', target: 'u', start_time: '2026-03-14' }],
+      true,
+      [],
+      true,
+    )
+    const diagram = md.slice(md.indexOf('timeline'), md.indexOf('```', md.indexOf('timeline')))
+    expect(diagram).toContain('evil.example/a')
+    expect(diagram).not.toContain('https')
+  })
+
+  it('cuts a label that stopped being one', () => {
+    const long = 'A'.repeat(120)
+    const md = buildMarkdown(
+      'T',
+      [...E, { id: 'n', stix_type: 'malware', name: long }],
+      [{ source: 'a', type: 'uses', target: 'n', start_time: '2026-03-14' }],
+      true,
+      [],
+      true,
+    )
+    const drawn = md
+      .slice(md.indexOf('timeline'), md.indexOf('```', md.indexOf('timeline')))
+      .split('\n')
+      .find((l) => l.includes('2026-03-14'))!
+    expect(drawn.length).toBeLessThan(110)
+    expect(drawn).toContain('…')
+    // and the list under it still carries the whole thing
+    expect(md).toContain(long)
+  })
+
+  it('takes the colons out of what it draws, since they are its syntax', () => {
+    const named = [{ id: 'x', stix_type: 'attack-pattern', name: 'Transfer: Wire Transfer' }]
+    const md = buildMarkdown(
+      'T',
+      [...E, ...named],
+      [{ source: 'a', type: 'uses', target: 'x', start_time: '2026-03-14' }],
+      true,
+      [],
+      true,
+    )
+    const diagram = md.slice(md.indexOf('timeline'), md.indexOf('```', md.indexOf('timeline')))
+    expect(diagram).toContain('Transfer - Wire Transfer')
+    expect(diagram.split('\n').filter((l) => l.includes(':')).length).toBe(1)
+  })
+
+  it('draws nothing for a graph nobody dated', () => {
+    expect(buildMarkdown('T', E, R, true, [], true)).not.toContain('timeline')
+  })
+})

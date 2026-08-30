@@ -47,7 +47,7 @@ function Narrative({
               <ol className="narr-chrono">
                 {n.chronology.map((e, i) => (
                   <li key={`c${i}`}>
-                    <span className="narr-day">{e.day}</span>
+                    <span className="narr-when">{e.when}</span>
                     <span>{eventSentence(e)}</span>
                   </li>
                 ))}

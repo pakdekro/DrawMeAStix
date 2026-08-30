@@ -132,7 +132,7 @@ describe('buildNarrative', () => {
         { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-20' },
         { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-14' },
       ])
-      expect(chronology.map((e) => `${e.day} ${eventSentence(e)}`)).toEqual([
+      expect(chronology.map((e) => `${e.when} ${eventSentence(e)}`)).toEqual([
         '2026-03-14 The campaign Ferronnier compromises the account FR76...0987.',
         '2026-03-20 The campaign Ferronnier compromises the account FR76...0143.',
       ])
@@ -153,13 +153,32 @@ describe('buildNarrative', () => {
       ])
     })
 
-    it('an imported timestamp is read as its day', () => {
+    it('an hour, once known, separates and orders what a day would merge', () => {
+      // two transfers on one day are one line only if nothing distinguishes
+      // them, and an hour distinguishes them
       const { chronology } = buildNarrative(CASE, [
-        { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14T09:12:00.000Z' },
-        { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-14' },
+        { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14T23:50:00Z' },
+        { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-14T09:12:00Z' },
+        { source: 'c', type: 'compromises', target: 'a3', start_time: '2026-03-14' },
       ])
+      expect(chronology.map((e) => `${e.when} ${e.clause}`)).toEqual([
+        // the day alone comes first: "that day, hour unknown" sits before the
+        // hours of that day rather than in the middle of them
+        '2026-03-14 compromises the account FR76...0555',
+        '2026-03-14 09:12 compromises the account FR76...0987',
+        '2026-03-14 23:50 compromises the account FR76...0143',
+      ])
+    })
+
+    it('an imported timestamp keeps its hour and drops what nobody reads', () => {
+      const { chronology } = buildNarrative(CASE, [
+        { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14T09:12:34.500Z' },
+        { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-14T09:12:00Z' },
+      ])
+      // same minute, one line: the seconds are not read, and the store keeps
+      // them for the bundle
       expect(chronology).toHaveLength(1)
-      expect(chronology[0].day).toBe('2026-03-14')
+      expect(chronology[0].when).toBe('2026-03-14 09:12')
     })
 
     /**

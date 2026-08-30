@@ -1116,8 +1116,9 @@ label {
 }
 
 
-/* The chronology in the narrative panel: the day in a column of its own, so
-   the eye reads down the dates and across only when one matters. */
+/* The chronology in the narrative panel: the moment in a column of its own,
+   so the eye reads down the dates and across only when one matters. Wide
+   enough for a day and an hour, since a case mixes the two. */
 .narr-chrono {
   list-style: none;
   margin: 0 0 10px;
@@ -1134,8 +1135,9 @@ label {
   line-height: 1.45;
 }
 
-.narr-day {
+.narr-when {
   flex: none;
+  white-space: nowrap;
   font-family: var(--mono);
   font-size: 11px;
   color: var(--text-dim);
@@ -2363,6 +2365,28 @@ input.checkbox {
   display: flex;
   gap: 8px;
   margin-bottom: 10px;
+}
+
+/* A moment is a day and, when it is known, an hour. Two fields side by side
+   rather than one datetime, so that leaving the hour empty stays a way of
+   saying "that day" instead of a way of saying midnight. */
+.rel-moment {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rel-moment label:first-child {
+  flex: 3;
+}
+
+.rel-moment label:last-child {
+  flex: 2;
+}
+
+.rel-moment input:disabled {
+  opacity: 0.45;
 }
 
 .rel-window label {

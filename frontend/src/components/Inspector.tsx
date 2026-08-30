@@ -24,7 +24,29 @@ export interface SelectedRelation {
 }
 
 /**
- * Activity window of a relationship (#170).
+ * A stored moment split for editing: the day, and the hour when there is one.
+ *
+ * Accepts what the store holds either way: `2026-08-11` typed here, and the
+ * full `2026-08-11T09:12:34.500Z` of an imported bundle. The seconds are not
+ * offered, so editing a moment that had some rounds them to the minute; that
+ * only happens when somebody edits the field, which is the one case where it
+ * is their intent.
+ */
+function splitMoment(value: string): { day: string; time: string } {
+  const m = /^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}))?/.exec(value)
+  return { day: m?.[1] ?? '', time: m?.[2] ?? '' }
+}
+
+/**
+ * Activity window of a relationship (#170), to the minute when it is known.
+ *
+ * STIX has no day: `start_time` is an RFC 3339 timestamp, seconds and `Z`
+ * required, so a day-only window is exported as midnight UTC. That is the
+ * usual compromise and it is why the hour is a SECOND, optional field rather
+ * than part of the first: a `datetime-local` would make everybody assert
+ * midnight, including the analyst who only knows the day. Empty, nothing is
+ * claimed about the hour; filled, it is written down and the chronology reads
+ * to the minute.
  *
  * Local state is unavoidable: an `<input type="date">` driven straight from
  * the store is unusable, because a partial entry reads as `''` and the
@@ -43,30 +65,58 @@ function RelationWindow({
   stopTime: string
   onCommit: (patch: { start_time?: string | null; stop_time?: string | null }) => void
 }) {
-  const [draft, setDraft] = useState({ start: startTime, stop: stopTime })
+  const [draft, setDraft] = useState({
+    start: splitMoment(startTime),
+    stop: splitMoment(stopTime),
+  })
   // resynced when ANOTHER relationship gets selected, not on every render:
   // otherwise we bring back the very overwrite we are trying to avoid
   useEffect(() => {
-    setDraft({ start: startTime, stop: stopTime })
+    setDraft({ start: splitMoment(startTime), stop: splitMoment(stopTime) })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [relationId])
 
+  /**
+   * What the two inputs mean together. The hour is written as UTC, like the
+   * day already was: a day alone goes out as midnight UTC, so reading the two
+   * fields in two time zones would be the surprise, not the rule.
+   */
+  const moment = (day: string, time: string): string | null => {
+    if (day === '') return null
+    return time === '' ? day : `${day}T${time}:00Z`
+  }
+
   const field = (key: 'start' | 'stop', stixKey: 'start_time' | 'stop_time', label: string) => (
-    <label>
-      {label}
-      <input
-        type="date"
-        value={draft[key]}
-        onChange={(e) => {
-          const value = e.target.value
-          setDraft((d) => ({ ...d, [key]: value }))
-          if (value !== '') onCommit({ [stixKey]: value })
-        }}
-        onBlur={(e) => {
-          if (e.target.value === '') onCommit({ [stixKey]: null })
-        }}
-      />
-    </label>
+    <div className="rel-moment">
+      <label>
+        {label}
+        <input
+          type="date"
+          value={draft[key].day}
+          onChange={(e) => {
+            const day = e.target.value
+            setDraft((d) => ({ ...d, [key]: { ...d[key], day } }))
+            if (day !== '') onCommit({ [stixKey]: moment(day, draft[key].time) })
+          }}
+          onBlur={(e) => {
+            if (e.target.value === '') onCommit({ [stixKey]: null })
+          }}
+        />
+      </label>
+      <label>
+        Time (UTC)
+        <input
+          type="time"
+          value={draft[key].time}
+          disabled={draft[key].day === ''}
+          onChange={(e) => {
+            const time = e.target.value
+            setDraft((d) => ({ ...d, [key]: { ...d[key], time } }))
+            onCommit({ [stixKey]: moment(draft[key].day, time) })
+          }}
+        />
+      </label>
+    </div>
   )
 
   return (

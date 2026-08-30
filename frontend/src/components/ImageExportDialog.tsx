@@ -69,9 +69,19 @@ export default function ImageExportDialog({
    * which of the two is reading their doubts.
    */
   const [withNotes, setWithNotes] = useState(false)
+  /**
+   * The chronology drawn as well as listed, in Markdown only: that is where a
+   * diagram can be GENERATED rather than drawn by hand, since mermaid is
+   * rendered by whoever reads the file. The list stays under it either way.
+   */
+  const [withTimeline, setWithTimeline] = useState(false)
   const mine = withNotes ? notes : []
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // A timeline needs something dated; the box says so rather than producing an
+  // empty diagram.
+  const dated = relations.some((r) => (r.start_time ?? '') !== '')
 
   const bg = () =>
     getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#1f1f28'
@@ -82,7 +92,14 @@ export default function ImageExportDialog({
     try {
       const slug = fileSlug(title)
       if (format === 'md') {
-        const md = buildMarkdown(title, entities, relations, withNarrative, mine)
+        const md = buildMarkdown(
+          title,
+          entities,
+          relations,
+          withNarrative,
+          mine,
+          withTimeline,
+        )
         downloadBlob(new Blob([md], { type: 'text/markdown;charset=utf-8' }), `${slug}.md`)
         onClose()
         return
@@ -154,6 +171,19 @@ export default function ImageExportDialog({
         />
         Include the narrative
       </label>
+      {format === 'md' && (
+        <label className="checkbox-row">
+          <input
+            type="checkbox"
+            className="checkbox"
+            checked={withTimeline}
+            onChange={(e) => setWithTimeline(e.target.checked)}
+            disabled={!withNarrative || !dated}
+          />
+          Draw the chronology as a timeline
+          {!dated && <em className="hint"> (nothing is dated yet)</em>}
+        </label>
+      )}
       {/* The STIX export has its own checkbox for the same material. These are
           two audiences, not one setting: a bundle going to a platform and a
           report going to a person do not want the same candour. */}
