@@ -93,17 +93,46 @@ export default function AttackGuide({ mode = 'app' }: { mode?: GuideMode }) {
       </section>
 
       <section className="guide-section">
-        <h2>Which matrix you are searching</h2>
+        <h2>Three matrices, one knowledge base</h2>
         <p>
-          ATT&CK is published as several matrices: Enterprise, Mobile and ICS. The palette
-          here ships <strong>Enterprise</strong>, which is the one an intrusion on a
-          corporate network is described with, and its version is shown at the top of the
-          framework panel.
+          ATT&CK is published as three matrices, and this canvas ships all three:
+        </p>
+        <dl className="guide-verbs">
+          <div>
+            <dt>Enterprise</dt>
+            <dd>
+              the corporate network and what runs on it, from Windows and Linux to SaaS,
+              identity providers and containers. Most of the corpus, and the default.
+            </dd>
+          </div>
+          <div>
+            <dt>Mobile</dt>
+            <dd>
+              Android and iOS: device compromise, malicious apps, SIM swapping. The fraud
+              matrix leans on it, which is how a case can need it without being about
+              phones.
+            </dd>
+          </div>
+          <div>
+            <dt>ICS</dt>
+            <dd>
+              industrial control systems, numbered from <code>T0800</code>: what an
+              attacker does to a process rather than to a computer.
+            </dd>
+          </div>
+        </dl>
+        <p>
+          They are searched as one corpus rather than behind a selector, because they are
+          one knowledge base: a single identifier space, a single{' '}
+          <code>mitre-attack</code> reference, and not one number in common. A result that
+          is not Enterprise carries its matrix beside its number, in the panel and in
+          Ctrl+K.
         </p>
         <p className="hint">
-          A Mobile or ICS number is not in the palette, which does not stop you: type it
-          into the MITRE ID field of a technique you create by hand and it travels in the
-          bundle like any other. The palette is a search, not a gate.
+          What is <em>not</em> a matrix: Cloud, Containers, Network Devices, ESXi and the
+          rest are <strong>platforms</strong> of Enterprise. The Cloud matrix on the ATT&CK
+          website is a filtered view of techniques this palette already holds, so there is
+          nothing extra to load and nothing missing.
         </p>
       </section>
 

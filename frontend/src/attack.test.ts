@@ -31,6 +31,62 @@ describe("dataset distillé", () => {
   });
 });
 
+/**
+ * Three matrices, one corpus. The merge is safe because ATT&CK numbers them in
+ * one space, and that is a property of MITRE's data rather than of our build:
+ * it has to be checked on the shipped file, not assumed once.
+ */
+describe("the three domains", () => {
+  it("share one identifier space, with nothing in common", () => {
+    const byDomain = new Map<string, Set<string>>();
+    for (const e of ENTRIES) {
+      if (e.type !== "attack-pattern") continue;
+      const domain = e.domain ?? "enterprise";
+      const ids = byDomain.get(domain) ?? new Set<string>();
+      ids.add(e.id!);
+      byDomain.set(domain, ids);
+    }
+    expect([...byDomain.keys()].sort()).toEqual(["enterprise", "ics", "mobile"]);
+    const seen = new Set<string>();
+    for (const ids of byDomain.values()) {
+      for (const id of ids) {
+        expect(seen.has(id), `${id} claimed by two matrices`).toBe(false);
+        seen.add(id);
+      }
+    }
+  });
+
+  it("mark themselves, and Enterprise is the one that does not have to", () => {
+    // Absent means Enterprise, the way absent means ATT&CK for a framework:
+    // the corpus was made of it before the other two arrived.
+    const phishing = ENTRIES.find((e) => e.id === "T1566")!;
+    expect(phishing.domain).toBeUndefined();
+    const ics = ENTRIES.find((e) => e.id === "T0806")!;
+    expect(ics.domain).toBe("ics");
+    expect(ics.tactics?.length).toBeGreaterThan(0);
+    const mobile = ENTRIES.find((e) => e.id === "T1451")!;
+    expect(mobile.domain).toBe("mobile");
+    // each domain names its own kill chain, and reading only ATT&CK's stripped
+    // these silently
+    expect(mobile.tactics?.length).toBeGreaterThan(0);
+  });
+
+  it("leave groups, malware and tools unmarked: an actor is not a matrix", () => {
+    for (const e of ENTRIES) {
+      if (e.type !== "attack-pattern") expect(e.domain).toBeUndefined();
+    }
+  });
+
+  it("bring the numbers F3 could not resolve before", () => {
+    // T1451, T1453 and T1660 are flagged `isAttack` by F3 and are Mobile
+    // techniques: without the Mobile matrix they kept F3's spelling, and the
+    // build named them at every run.
+    for (const id of ["T1451", "T1453", "T1660"]) {
+      expect(ENTRIES.find((e) => e.id === id)?.domain).toBe("mobile");
+    }
+  });
+});
+
 describe("recherche", () => {
   it("par nom, insensible à la casse", () => {
     expect(searchAttack(ENTRIES, "apt28")[0].id).toBe("G0007");

@@ -79,10 +79,23 @@ describe('the F3 page says what the shipped dataset says', () => {
   })
 })
 
-describe('the ATT&CK page says which matrix is shipped', () => {
-  it('names the one the dataset actually holds', () => {
-    expect(attackDataset.source).toContain('Enterprise')
-    expect(pages.attack.static).toContain('Enterprise')
+describe('the ATT&CK page says which matrices are shipped', () => {
+  it('names the three the dataset actually holds', () => {
+    for (const domain of ['Enterprise', 'Mobile', 'ICS']) {
+      expect(attackDataset.source).toContain(domain)
+      expect(pages.attack.static).toContain(domain)
+    }
+  })
+
+  it('does not promise a matrix that is only a platform', () => {
+    // The Cloud, Containers and Network matrices of the website are filtered
+    // views of Enterprise. Saying otherwise would send somebody looking for a
+    // dataset that does not exist, which is where this section started.
+    const domains = new Set(
+      attackDataset.entries.map((e) => (e as { domain?: string }).domain ?? 'enterprise'),
+    )
+    expect([...domains].sort()).toEqual(['enterprise', 'ics', 'mobile'])
+    expect(pages.attack.static).toContain('platforms')
   })
 })
 

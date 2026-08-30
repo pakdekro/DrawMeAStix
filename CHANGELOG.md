@@ -48,6 +48,21 @@ this file is the one meant for people reading the code.
   else, and because a mixed case is exactly where you want to see which half
   of it you are looking at.
 
+- **The rest of ATT&CK: Mobile and ICS.** The palette shipped Enterprise and
+  nothing else, so a SIM swap or an attack on a PLC had to be typed in by hand.
+  All three matrices are now one corpus, which is safe because ATT&CK numbers
+  them in one space: 918 techniques instead of 697, and not one identifier in
+  common between the domains, checked at every build rather than assumed. They
+  come with 126 more malware families, mobile ones mostly, and 6 more groups.
+  A result that is not Enterprise says which matrix it is from, in the panel
+  and in Ctrl+K, because a technique numbered T0800 answers a question nobody
+  working an office intrusion asked. Two things fell out of it: three of the five
+  identifiers F3 flags as ATT&CK but could not resolve are Mobile techniques,
+  so they are now checked against ATT&CK rather than taken on F3's word (the
+  two spellings already agreed, which is exactly what nobody could tell
+  before), and five actors the MISP galaxy was answering for are now resolved
+  by ATT&CK itself, which is the arbitration working. The dataset moves to ATT&CK v19.2 in the same pass.
+
 - **ATLAS, the third matrix, and the one that borrows nothing.** MITRE's
   Adversarial Threat Landscape for AI Systems sits beside ATT&CK and F3 in the
   same panel: 178 techniques and 16 tactics about attacks on models and on the
