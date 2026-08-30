@@ -2879,11 +2879,21 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
             onNodeDragStop={onNodeDragStop}
             onNodesDelete={onNodesDelete}
             onEdgesDelete={onEdgesDelete}
+            // React Flow calls this on every internal update, not only when
+            // the selection moved. Handing it a fresh array each time made
+            // React re-render, which made React Flow call it again: hundreds of
+            // "Maximum update depth exceeded" a second, a canvas burning a core
+            // for nothing and a report export left crawling behind it. The ids
+            // are compared before the state is replaced, so an unchanged
+            // selection now changes nothing.
             onSelectionChange={({ nodes: sel, edges: selEdges }) => {
               const first = sel[0] as CanvasNode | undefined
               setSelectedId(first?.type === 'entity' ? first.id : null)
-              setSelectedIds(
-                (sel as CanvasNode[]).filter((n) => n.type === 'entity').map((n) => n.id),
+              const ids = (sel as CanvasNode[])
+                .filter((n) => n.type === 'entity')
+                .map((n) => n.id)
+              setSelectedIds((prev) =>
+                prev.length === ids.length && prev.every((id, i) => id === ids[i]) ? prev : ids,
               )
               setSelectedNoteId(
                 first?.type === 'annotNote' ? first.id.slice(NOTE_PREFIX.length) : null,
