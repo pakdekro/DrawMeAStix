@@ -15,12 +15,19 @@
  * simpler tables than before.
  *
  * Chronology: a relation's start_time is the analyst saying when a thing
- * happened, which outranks any order we could guess from the types. So an
- * undated statement keeps its place, and a dated one moves after the undated
- * ones and takes its rank from its day, between blocks and inside a block
- * alike. A graph with no date reads exactly as it did before. This matters
- * most for fraud, where the case IS the sequence: eight techniques in the
- * order they were drawn is a bag, in the order they happened it is a story.
+ * happened, which outranks any order we could guess from the types.
+ *
+ * Dated statements are lifted OUT of their subject's block and into a
+ * chronology of their own, each line naming who did what. Ordering them in
+ * place, which is what this did first, put the timeline of one subject inside
+ * one block: a case whose actor and whose malware are both dated then had two
+ * timelines to interleave by eye. It also let the undated bulk that a scenario
+ * generates - nine "the technique targets the victim" - open the story ahead
+ * of what actually happened.
+ *
+ * So two named parts rather than one order: what happened, in order, and then
+ * what carries no date. A graph with no date has no chronology, hence no
+ * headings and nothing to explain: it reads exactly as it did before.
  */
 
 export interface NarrEntity {
@@ -54,8 +61,20 @@ export interface NarrBlock {
   clauses: string[]
 }
 
+/** One dated statement: a day, a subject, and what it did that day. */
+export interface NarrEvent {
+  /** YYYY-MM-DD, the day the analyst wrote down */
+  day: string
+  /** "The threat actor Guilde Vermeil", already capitalised */
+  subject: string
+  /** "uses the technique Spearphishing Link" */
+  clause: string
+}
+
 export interface Narrative {
-  /** what each object does, one block per object */
+  /** the dated statements, earliest first: the case as a sequence */
+  chronology: NarrEvent[]
+  /** what each object does with no date on it, one block per object */
   story: NarrBlock[]
   /** sentences describing indicators (detection rules) */
   detection: string[]
@@ -207,11 +226,6 @@ const orderIdx = (t: string) => {
 const dayOf = (r: NarrRelation): string | undefined =>
   (r.start_time ?? '').slice(0, 10) || undefined
 
-/** undated first, then by day; ties keep the order they came in */
-const byDay = (a: { day?: string }, b: { day?: string }) =>
-  (a.day === undefined ? 0 : 1) - (b.day === undefined ? 0 : 1) ||
-  (a.day ?? '').localeCompare(b.day ?? '')
-
 export function buildNarrative(
   entities: NarrEntity[],
   relations: NarrRelation[],
@@ -238,7 +252,7 @@ export function buildNarrative(
 
   // one clause per verb AND per day: merging two days under one verb would
   // put a single date on statements that do not share it
-  const blocks: { block: NarrBlock; day?: string }[] = []
+  const chronology: NarrEvent[] = []
   for (const src of sources) {
     const groups = new Map<string, { type: string; day?: string; targets: NarrEntity[] }>()
     for (const r of outBySource.get(src.id)!) {
@@ -248,23 +262,22 @@ export function buildNarrative(
       if (group) group.targets.push(byId.get(r.target)!)
       else groups.set(key, { type: r.type, day, targets: [byId.get(r.target)!] })
     }
-    const ordered = [...groups.values()].sort(byDay)
-    blocks.push({
-      block: {
-        subject: cap(singular(src)),
-        clauses: ordered.map(
-          (g) =>
-            `${verbOf(g.type)} ${targetPhrases(g.targets)}${g.day === undefined ? '' : ` on ${g.day}`}`,
-        ),
-      },
-      // sorted, so the first dated group is the earliest one
-      day: ordered.find((g) => g.day !== undefined)?.day,
-    })
+    const subject = cap(singular(src))
+    const clauses: string[] = []
+    for (const g of groups.values()) {
+      const clause = `${verbOf(g.type)} ${targetPhrases(g.targets)}`
+      // A dated statement leaves its block for the chronology, where it can
+      // stand beside the statements of every OTHER subject: that is the half
+      // an in-place ordering could not do.
+      if (g.day === undefined) clauses.push(clause)
+      else chronology.push({ day: g.day, subject, clause })
+    }
+    // a subject whose every statement was dated has nothing left to say here
+    if (clauses.length > 0) story.push({ subject, clauses })
   }
-  // the undated blocks keep the reading order of the attack chain, the dated
-  // ones follow as the sequence they describe
-  story.push(...blocks.filter((b) => b.day === undefined).map((b) => b.block))
-  story.push(...blocks.filter((b) => b.day !== undefined).sort(byDay).map((b) => b.block))
+  // stable: same day keeps the reading order of the attack chain, which is the
+  // order the subjects were sorted in above
+  chronology.sort((a, b) => a.day.localeCompare(b.day))
 
   // indicators: their own "Detection" section, worded as detection. No
   // chronology here on purpose: a detection is not an event of the story, it
@@ -292,9 +305,43 @@ export function buildNarrative(
   const isolated = entities.filter((e) => !connected.has(e.id)).map(singular)
 
   return {
+    chronology,
     story,
     detection,
     isolated,
     empty: entities.length === 0,
   }
+}
+
+/** The sentence an event reads as, date excluded: each renderer places that. */
+export function eventSentence(event: NarrEvent): string {
+  return `${event.subject} ${event.clause}.`
+}
+
+/**
+ * The same event under a subject that has already been named, so the sentence
+ * starts at the verb. Capitalised here rather than by each renderer: prose is
+ * this module's business, and four of them would have drifted.
+ */
+export function eventClause(event: NarrEvent): string {
+  return `${cap(event.clause)}.`
+}
+
+/**
+ * The chronology again, one timeline per subject, for a report read in one go.
+ *
+ * EMPTY WHEN ONE SUBJECT CARRIES EVERYTHING, and that is the whole design: a
+ * case whose actor did all the dated things would come out as the same list
+ * twice, in the same order, under two headings. The split earns its place when
+ * several subjects are dated, which is exactly when the global timeline stops
+ * answering "and what did THIS one do".
+ *
+ * Kept out of the side panel on purpose: 300 pixels read while working want
+ * the case, not the case and its index.
+ */
+export function timelines(chronology: NarrEvent[]): { subject: string; events: NarrEvent[] }[] {
+  const bySubject = new Map<string, NarrEvent[]>()
+  for (const event of chronology) push(bySubject, event.subject, event)
+  if (bySubject.size < 2) return []
+  return [...bySubject].map(([subject, events]) => ({ subject, events }))
 }

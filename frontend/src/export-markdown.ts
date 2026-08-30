@@ -7,7 +7,8 @@
  * 100% deterministic, no LLM.
  */
 
-import { buildNarrative, type NarrEntity, type NarrRelation } from './narrative'
+import { buildNarrative, eventClause, eventSentence, timelines } from './narrative'
+import type { NarrEntity, NarrRelation } from './narrative'
 import { groupNotes, opinionLabel, type ReportNote } from './report'
 import { typeMeta } from './stixMeta'
 
@@ -58,7 +59,28 @@ export function buildMarkdown(
   if (includeNarrative) {
     const narr = buildNarrative(entities, relations)
     out.push('## Narrative', '')
-    if (narr.story.length === 0) out.push('_No relationship yet._', '')
+    if (narr.chronology.length === 0 && narr.story.length === 0) {
+      out.push('_No relationship yet._', '')
+    }
+    if (narr.chronology.length > 0) {
+      out.push('### Chronology', '')
+      for (const event of narr.chronology) {
+        out.push(`- **${event.day}** ${eventSentence(event)}`)
+      }
+      out.push('')
+      // Per subject only when several of them are dated: one actor doing
+      // everything would print the same list twice. See `timelines`.
+      const perSubject = timelines(narr.chronology)
+      if (perSubject.length > 0) {
+        out.push('### Chronology, by subject', '')
+        for (const { subject, events } of perSubject) {
+          out.push(`**${subject}**`, '')
+          for (const event of events) out.push(`- **${event.day}** ${eventClause(event)}`)
+          out.push('')
+        }
+      }
+    }
+    if (narr.chronology.length > 0 && narr.story.length > 0) out.push('### Undated', '')
     for (const block of narr.story) {
       if (block.clauses.length === 1) {
         out.push(`${block.subject} ${block.clauses[0]}.`, '')

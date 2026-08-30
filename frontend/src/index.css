@@ -1116,6 +1116,32 @@ label {
 }
 
 
+/* The chronology in the narrative panel: the day in a column of its own, so
+   the eye reads down the dates and across only when one matters. */
+.narr-chrono {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.narr-chrono li {
+  display: flex;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.narr-day {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  padding-top: 1px;
+}
+
 /* The family switch above the scenarios. One per line, unlike the framework
    switch: "Intrusion" and "AI systems" do not fit in a third of a 180 pixel
    panel, and three truncated words are worse than three lines. The count sits
