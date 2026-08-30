@@ -5,6 +5,7 @@
  * will block anyway, surfaced here beforehand).
  */
 
+import { DEFAULT_ACCOUNT_NAME_PROPERTY } from "./entityFields";
 import { SCO_TYPES } from "./stix/relationships";
 import { entityKey } from "./entityKey";
 import type { InvestigationState } from "./stix/types";
@@ -115,6 +116,20 @@ export function lintInvestigation(state: InvestigationState): LintFinding[] {
         findings.push({
           level: "info",
           message: `${label}: no based-on towards the source observable`,
+          entityId: entity.id,
+        });
+      }
+    }
+
+    if (entity.stix_type === "user-account") {
+      // The name can be the display name, and a display name identifies
+      // nobody: the builder refuses, so say it here first.
+      const nameIs = props.account_name_is ?? DEFAULT_ACCOUNT_NAME_PROPERTY;
+      const filled = (k: string) => props[k] !== undefined && props[k] !== null && props[k] !== "";
+      if (nameIs === "display_name" && !filled("account_login") && !filled("user_id")) {
+        findings.push({
+          level: "warn",
+          message: `${label}: a display name identifies no account - the export will be blocked`,
           entityId: entity.id,
         });
       }

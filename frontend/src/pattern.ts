@@ -5,6 +5,7 @@
  * form.
  */
 
+import { ACCOUNT_NAME_PROPERTIES, DEFAULT_ACCOUNT_NAME_PROPERTY } from "./entityFields";
 import { x509Identity } from "./stix/bundle";
 
 const escapeValue = (value: string): string =>
@@ -68,8 +69,16 @@ export function patternFromObservable(
       return v ? `[software:name = '${escapeValue(v)}']` : null;
     }
     case "user-account": {
+      // Read through the same choice as the builder: an account whose name is
+      // an IBAN exports as a `user_id`, and a pattern on `account_login` would
+      // detect an account that the bundle does not describe.
+      const nameIs = ACCOUNT_NAME_PROPERTIES.some((o) => o.value === props.account_name_is)
+        ? (props.account_name_is as string)
+        : DEFAULT_ACCOUNT_NAME_PROPERTY;
       const userId = (props.user_id as string | undefined)?.trim();
-      if (v) return `[user-account:account_login = '${escapeValue(v)}']`;
+      if (v && nameIs !== "display_name") {
+        return `[user-account:${nameIs} = '${escapeValue(v)}']`;
+      }
       return userId ? `[user-account:user_id = '${escapeValue(userId)}']` : null;
     }
     case "x509-certificate": {
