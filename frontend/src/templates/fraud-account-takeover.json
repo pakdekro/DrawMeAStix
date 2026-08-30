@@ -1,0 +1,67 @@
+{
+  "name": "Fraud - Account takeover",
+  "family": "fraud",
+  "description": "A customer account is taken over, the payment details are changed, and the money leaves by transfer.",
+  "labels": ["fraud", "account-takeover", "f3"],
+  "slots": [
+    { "key": "actor", "type": "threat-actor", "label": "Fraud actor" },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Institution or customer defrauded",
+      "prefill": { "identity_class": "organization" }
+    },
+    {
+      "key": "cashout",
+      "type": "infrastructure",
+      "label": "Cash-out chain (the accounts it controls)",
+      "placeholder": "Cash-out chain - operation X"
+    },
+    {
+      "key": "beneficiary",
+      "type": "user-account",
+      "label": "Beneficiary account (IBAN, account number)",
+      "placeholder": "FR7630004000031234567890143",
+      "prefill": { "account_name_is": "user_id" }
+    },
+    {
+      "key": "sender",
+      "type": "email-addr",
+      "label": "Address used to reach the victim",
+      "placeholder": "comptabilite@acme-corp.example"
+    },
+    {
+      "key": "f1006",
+      "type": "attack-pattern",
+      "label": "Takeover",
+      "fixed": "Account Takeover: Exposed Login Credential",
+      "prefill": { "x_mitre_id": "F1006.002", "mitre_framework": "mitre-f3" }
+    },
+    {
+      "key": "f1005",
+      "type": "attack-pattern",
+      "label": "Positioning",
+      "fixed": "Account Manipulation: Add Beneficiary",
+      "prefill": { "x_mitre_id": "F1005.003", "mitre_framework": "mitre-f3" }
+    },
+    {
+      "key": "f1025",
+      "type": "attack-pattern",
+      "label": "Cash-out",
+      "fixed": "Electronic Funds Transfer: Wire Transfer",
+      "prefill": { "x_mitre_id": "F1025.003", "mitre_framework": "mitre-f3" }
+    }
+  ],
+  "relations": [
+    { "from": "actor", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "uses", "to": "f1006" },
+    { "from": "actor", "rel": "uses", "to": "f1005" },
+    { "from": "actor", "rel": "uses", "to": "f1025" },
+    { "from": "f1006", "rel": "targets", "to": "victim" },
+    { "from": "f1005", "rel": "targets", "to": "victim" },
+    { "from": "f1025", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "owns", "to": "cashout" },
+    { "from": "cashout", "rel": "consists-of", "to": "beneficiary" },
+    { "from": "cashout", "rel": "consists-of", "to": "sender" }
+  ]
+}

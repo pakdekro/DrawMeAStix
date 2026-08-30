@@ -9,11 +9,15 @@
  * never a way around the rules.
  */
 
+import { entityKey } from "./entityKey";
 import { allowedRelationships, SCO_TYPES, SDO_TYPES } from "./stix/relationships";
 import botnetDdos from "./templates/botnet-ddos.json";
 import compteCompromis from "./templates/compte-compromis.json";
 import cryptojacking from "./templates/cryptojacking.json";
 import defacement from "./templates/defacement.json";
+import fraudAccountTakeover from "./templates/fraud-account-takeover.json";
+import fraudCard from "./templates/fraud-card.json";
+import fraudCrypto from "./templates/fraud-crypto-cashout.json";
 import espionnage from "./templates/espionnage-cible.json";
 import exploitExpose from "./templates/exploit-service-expose.json";
 import fauxInstalleur from "./templates/faux-installeur.json";
@@ -40,8 +44,19 @@ interface TemplateSlot {
   fixed?: string;
 }
 
+/**
+ * What kind of case the scenario describes.
+ *
+ * Two families rather than a tag: an intrusion and a fraud are read by
+ * different people at different moments, and a list that mixes them makes the
+ * reader filter with their eyes. Absent means intrusion, which is what every
+ * scenario was before there were any others.
+ */
+export type TemplateFamily = "intrusion" | "fraud";
+
 export interface ScenarioTemplate {
   name: string;
+  family?: TemplateFamily;
   description?: string;
   labels?: string[];
   slots: TemplateSlot[];
@@ -65,7 +80,21 @@ export const BUILTIN_TEMPLATES: ScenarioTemplate[] = [
   defacement,
   usurpationMarque,
   spamSeo,
+  fraudAccountTakeover,
+  fraudCard,
+  fraudCrypto,
 ] as ScenarioTemplate[];
+
+/** The families, in reading order, with the heading each one carries. */
+export const TEMPLATE_FAMILIES: { id: TemplateFamily; label: string }[] = [
+  { id: "intrusion", label: "Scenarios" },
+  { id: "fraud", label: "Fraud" },
+];
+
+/** The scenarios of one family, in the order they were declared. */
+export function templatesOfFamily(family: TemplateFamily): ScenarioTemplate[] {
+  return BUILTIN_TEMPLATES.filter((t) => (t.family ?? "intrusion") === family);
+}
 
 /**
  * Structural validation of a template (built-ins under test, home-made ones
@@ -241,3 +270,86 @@ export function planIsolation(tpl: ScenarioTemplate, plan: TemplatePlan): PlanIs
   return { isolated, connectors: [...connectors] };
 }
 
+
+/* -- applying a scenario on top of what is already drawn --------------------- */
+
+/** An entity already on the canvas, as much of it as the merge needs. */
+export interface CanvasEntity {
+  id: string;
+  stix_type: string;
+  name: string;
+  properties: Record<string, unknown>;
+}
+
+export interface PlanMerge {
+  /** planned entities with nothing to attach to: they have to be created */
+  create: PlannedEntity[];
+  /** planned entities that ARE something already drawn */
+  reuse: { key: string; id: string; addLabels: string[] }[];
+}
+
+/**
+ * What a scenario becomes when the canvas is not empty (#28 meets #168).
+ *
+ * Two scenarios that name the same actor are describing one actor. Creating a
+ * second card for it would not be a second object either: both collapse onto
+ * one STIX identity at export, so the twin's description is the one that
+ * quietly loses. The same rule as the document import and the enrichment,
+ * for the same reason - the convergence IS the information.
+ *
+ * Labels are the one thing that merges into an existing object, because they
+ * say which scenarios it belongs to and an actor in two cases belongs to both.
+ * Nothing else the analyst may have edited is touched.
+ */
+export function planAgainstCanvas(plan: TemplatePlan, canvas: CanvasEntity[]): PlanMerge {
+  const known = new Map(canvas.map((e) => [entityKey(e), e]));
+  const merge: PlanMerge = { create: [], reuse: [] };
+  for (const planned of plan.entities) {
+    const already = known.get(entityKey(planned));
+    if (already === undefined) {
+      merge.create.push(planned);
+      continue;
+    }
+    const scenario = (planned.properties.labels as string[] | undefined) ?? [];
+    const current = Array.isArray(already.properties.labels)
+      ? (already.properties.labels as string[])
+      : [];
+    merge.reuse.push({
+      key: planned.key,
+      id: already.id,
+      addLabels: scenario.filter((l) => !current.includes(l)),
+    });
+  }
+  return merge;
+}
+
+/** "source|verb|target", the shape a drawn relationship is compared on. */
+export function linkKey(sourceId: string, rel: string, targetId: string): string {
+  return `${sourceId}|${rel}|${targetId}`;
+}
+
+/**
+ * The relations of a plan that are not already drawn.
+ *
+ * Two scenarios that both say the actor targets the victim have agreed, not
+ * disagreed: the second one adds nothing, and drawing it twice would put two
+ * identical edges on the canvas and two identical SROs in the bundle.
+ */
+export function newLinks(
+  relations: TemplatePlan["relations"],
+  idOf: (key: string) => string | undefined,
+  drawn: Iterable<string>,
+): { source_id: string; rel_type: string; target_id: string }[] {
+  const seen = new Set(drawn);
+  const out: { source_id: string; rel_type: string; target_id: string }[] = [];
+  for (const rel of relations) {
+    const source_id = idOf(rel.fromKey);
+    const target_id = idOf(rel.toKey);
+    if (source_id === undefined || target_id === undefined) continue;
+    const key = linkKey(source_id, rel.rel, target_id);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ source_id, rel_type: rel.rel, target_id });
+  }
+  return out;
+}

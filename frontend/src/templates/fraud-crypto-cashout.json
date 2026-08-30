@@ -1,0 +1,65 @@
+{
+  "name": "Fraud - Crypto cash-out",
+  "family": "fraud",
+  "description": "Where a fraud continues once the money is on a chain: conversion, hopping, anonymising services.",
+  "labels": ["fraud", "crypto", "f3", "aadapt"],
+  "slots": [
+    { "key": "actor", "type": "threat-actor", "label": "Fraud actor" },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Institution or customer defrauded",
+      "prefill": { "identity_class": "organization" }
+    },
+    {
+      "key": "platform",
+      "type": "identity",
+      "label": "Exchange or service used",
+      "prefill": { "identity_class": "organization" }
+    },
+    {
+      "key": "chain",
+      "type": "infrastructure",
+      "label": "Cash-out chain (the wallets it controls)"
+    },
+    {
+      "key": "wallet",
+      "type": "user-account",
+      "label": "Receiving wallet (address)",
+      "placeholder": "0x…",
+      "prefill": { "account_name_is": "user_id" }
+    },
+    {
+      "key": "f1018",
+      "type": "attack-pattern",
+      "label": "Conversion (F3)",
+      "fixed": "Convert to Cryptocurrency",
+      "prefill": { "x_mitre_id": "F1018", "mitre_framework": "mitre-f3" }
+    },
+    {
+      "key": "adt3005",
+      "type": "attack-pattern",
+      "label": "Hopping (AADAPT)",
+      "fixed": "Cross-Chain Swaps (Hopping)",
+      "prefill": { "x_mitre_id": "ADT3005", "mitre_framework": "mitre-aadapt" }
+    },
+    {
+      "key": "adt3030",
+      "type": "attack-pattern",
+      "label": "Anonymising (AADAPT)",
+      "fixed": "Use Anonymizing Services",
+      "prefill": { "x_mitre_id": "ADT3030", "mitre_framework": "mitre-aadapt" }
+    }
+  ],
+  "relations": [
+    { "from": "actor", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "uses", "to": "f1018" },
+    { "from": "actor", "rel": "uses", "to": "adt3005" },
+    { "from": "actor", "rel": "uses", "to": "adt3030" },
+    { "from": "f1018", "rel": "targets", "to": "victim" },
+    { "from": "adt3005", "rel": "targets", "to": "platform" },
+    { "from": "adt3030", "rel": "targets", "to": "platform" },
+    { "from": "actor", "rel": "owns", "to": "chain" },
+    { "from": "chain", "rel": "consists-of", "to": "wallet" }
+  ]
+}

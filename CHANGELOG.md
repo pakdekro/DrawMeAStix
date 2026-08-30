@@ -48,6 +48,22 @@ this file is the one meant for people reading the code.
   else, and because a mixed case is exactly where you want to see which half
   of it you are looking at.
 
+- **Three fraud scenarios, and a second scenario now completes the first.**
+  Account takeover, card data theft and reuse, crypto cash-out, written on F3
+  and AADAPT numbers, each saying which framework its numbers belong to. They
+  sit under a heading of their own in the panel, with FOVI joining them where
+  it always belonged: somebody opening that panel is working an intrusion or a
+  fraud, and a rule costs less to read than a badge on every line.
+
+  What the second one used to do was draw a second graph beside the first. Two
+  templates naming the same actor gave two cards, and that was worse than
+  untidy: both collapse onto one STIX identity at export, so the second card's
+  description was quietly the one that lost. A scenario now attaches to what is
+  already drawn, the way the document import and the enrichment already did,
+  and the labels of both scenarios end up on the object they share, because an
+  actor in two cases belongs to both. A relationship both scenarios assert is
+  drawn once: they agreed, and an agreement is one statement.
+
 - **An audit of the four corpora together, and two holes closed.** Four
   catalogues now share one identifier space in this application, and an
   identity derived from a number alone, so what matters is no longer what each

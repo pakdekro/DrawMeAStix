@@ -1116,6 +1116,14 @@ label {
 }
 
 
+/* The rule between two families of scenario in the sidebar: a heading alone
+   reads as a continuation of the list above it. */
+.micro.tpl-family {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
 /* Which ATT&CK matrix a result comes from, when it is not the usual one.
    Uppercased in CSS rather than in the data: the dataset carries what MITRE
    calls the domain, and how it is shouted is a matter for the panel. */

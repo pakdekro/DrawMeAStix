@@ -28,6 +28,7 @@ import { relColor, relLabelColor } from '../relMeta'
 import { radialArrange } from '../radial'
 import { LENSES, labelHits, labelIndex, lensHits, type LensChoice } from '../lens'
 import { validateTemplate } from '../templates'
+import { linkKey, newLinks, planAgainstCanvas } from '../templates'
 import type { ScenarioTemplate, TemplatePlan } from '../templates'
 import { findBridges } from '../bridges'
 import type { BridgeMatch, BridgeRecipe } from '../bridges'
@@ -1764,16 +1765,47 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         ? { x: spot.x + offset.x, y: spot.y + offset.y }
         : { x: center.x, y: center.y }
     })
+    // What the canvas already holds, by business key. A scenario applied on
+    // top of another one must ATTACH to the objects already drawn rather than
+    // draw twins of them: two cards for one identity export as a single STIX
+    // object, so the second card's description is quietly the one that loses.
+    // Same rule as the document import and the enrichment, and the same
+    // reason: the convergence is the useful half of the information.
+    const canvas = await api.listEntities(iid)
+    const drawn = (await api.listRelationships(iid)).map((r) =>
+      linkKey(r.source_id, r.rel_type, r.target_id),
+    )
+    const merge = planAgainstCanvas(plan, canvas)
+    const byId = new Map(canvas.map((e) => [e.id, e]))
+
     const keyToId = new Map<string, string>()
     const problems: string[] = []
-    for (const [i, planned] of plan.entities.entries()) {
+    for (const { key, id, addLabels } of merge.reuse) {
+      keyToId.set(key, id)
+      const already = byId.get(id)
+      if (!already || addLabels.length === 0) continue
+      try {
+        const current = Array.isArray(already.properties.labels)
+          ? (already.properties.labels as string[])
+          : []
+        const updated = await api.updateEntity(iid, id, {
+          properties: { ...already.properties, labels: [...current, ...addLabels] } as Entity['properties'],
+        })
+        setNodes((ns) => ns.map((n) => (n.id === updated.id ? toNode(updated) : n)))
+      } catch (e) {
+        problems.push(`${already.name} : ${(e as Error).message}`)
+      }
+    }
+    const positionOf = new Map(plan.entities.map((e, i) => [e.key, positions[i]]))
+    for (const planned of merge.create) {
+      const spot = positionOf.get(planned.key) ?? center
       try {
         const entity = await api.createEntity(iid, {
           stix_type: planned.stix_type,
           name: planned.name,
           properties: planned.properties as Entity['properties'],
-          position_x: positions[i].x,
-          position_y: positions[i].y,
+          position_x: spot.x,
+          position_y: spot.y,
         })
         keyToId.set(planned.key, entity.id)
         setNodes((ns) => [...ns, toNode(entity)])
@@ -1781,20 +1813,23 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         problems.push(`${planned.name} : ${(e as Error).message}`)
       }
     }
-    for (const rel of plan.relations) {
-      const sourceId = keyToId.get(rel.fromKey)
-      const targetId = keyToId.get(rel.toKey)
-      if (!sourceId || !targetId) continue
+    const links = newLinks(plan.relations, (key) => keyToId.get(key), drawn)
+    for (const link of links) {
       try {
-        const created = await api.createRelationship(iid, {
-          source_id: sourceId,
-          target_id: targetId,
-          rel_type: rel.rel,
-        })
+        const created = await api.createRelationship(iid, link)
         setEdges((es) => [...es, toEdge(created)])
       } catch (e) {
-        problems.push(`relationship ${rel.rel}: ${(e as Error).message}`)
+        problems.push(`relationship ${link.rel_type}: ${(e as Error).message}`)
       }
+    }
+    const skipped = plan.relations.length - links.length
+    if (merge.reuse.length > 0 || skipped > 0) {
+      const parts: string[] = []
+      if (merge.reuse.length > 0) {
+        parts.push(`${merge.reuse.length} object(s) already on the canvas, reused`)
+      }
+      if (skipped > 0) parts.push(`${skipped} relationship(s) already drawn`)
+      showInfo(parts.join(', '))
     }
     if (problems.length > 0) showError(problems.join(' ; '))
     // The ring was small enough to land inside the viewport; a radial is not,

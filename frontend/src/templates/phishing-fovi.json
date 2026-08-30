@@ -1,5 +1,6 @@
 {
   "name": "Phishing - FOVI / BEC",
+  "family": "fraud",
   "description": "Fraudulent transfer order: impersonation of an executive or a supplier.",
   "labels": [
     "phishing",

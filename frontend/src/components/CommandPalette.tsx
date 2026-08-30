@@ -285,7 +285,9 @@ export default function CommandPalette({
       'Scenarios',
       BUILTIN_TEMPLATES.map((tpl) => ({
         id: `tpl:${tpl.name}`,
-        group: '',
+        // the family becomes the group, so a fraud scenario is not found in
+        // the middle of the intrusions
+        group: (tpl.family ?? 'intrusion') === 'fraud' ? 'Fraud scenarios' : '',
         label: tpl.name,
         hint: 'scenario',
         haystack: tpl.name.toLowerCase().replace(/\s+/g, ''),
