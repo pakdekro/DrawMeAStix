@@ -1552,7 +1552,13 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     () =>
       edges
         .filter((e) => !e.id.startsWith('annot:'))
-        .map((e) => ({ source: e.source, type: String(e.label ?? ''), target: e.target })),
+        .map((e) => ({
+          source: e.source,
+          type: String(e.label ?? ''),
+          target: e.target,
+          // carried so the narrative can read the case as a sequence
+          start_time: (e.data as { start_time?: string | null } | undefined)?.start_time ?? null,
+        })),
     [edges],
   )
 

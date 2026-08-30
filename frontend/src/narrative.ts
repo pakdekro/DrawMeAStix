@@ -13,6 +13,14 @@
  * Switch to English (#172): the French contraction machinery ("a le" ->
  * "au") is gone, English has none. Neither does it have gender, hence
  * simpler tables than before.
+ *
+ * Chronology: a relation's start_time is the analyst saying when a thing
+ * happened, which outranks any order we could guess from the types. So an
+ * undated statement keeps its place, and a dated one moves after the undated
+ * ones and takes its rank from its day, between blocks and inside a block
+ * alike. A graph with no date reads exactly as it did before. This matters
+ * most for fraud, where the case IS the sequence: eight techniques in the
+ * order they were drawn is a bag, in the order they happened it is a story.
  */
 
 export interface NarrEntity {
@@ -24,6 +32,8 @@ export interface NarrRelation {
   source: string
   type: string
   target: string
+  /** the relation's "Active from" (#170), when the analyst filled it in */
+  start_time?: string | null
 }
 /**
  * One subject and everything it does, so its name is written once.
@@ -187,6 +197,21 @@ const orderIdx = (t: string) => {
   return i < 0 ? TYPE_ORDER.length : i
 }
 
+/**
+ * The day a relation happened, or undefined.
+ *
+ * The day and not the instant: an imported bundle carries a full timestamp
+ * where the inspector only ever writes a date, and two relations of the same
+ * day belong in the same clause whichever way they were entered.
+ */
+const dayOf = (r: NarrRelation): string | undefined =>
+  (r.start_time ?? '').slice(0, 10) || undefined
+
+/** undated first, then by day; ties keep the order they came in */
+const byDay = (a: { day?: string }, b: { day?: string }) =>
+  (a.day === undefined ? 0 : 1) - (b.day === undefined ? 0 : 1) ||
+  (a.day ?? '').localeCompare(b.day ?? '')
+
 export function buildNarrative(
   entities: NarrEntity[],
   relations: NarrRelation[],
@@ -211,16 +236,39 @@ export function buildNarrative(
     .filter((e) => e.stix_type !== 'indicator')
     .sort((a, b) => orderIdx(a.stix_type) - orderIdx(b.stix_type) || a.name.localeCompare(b.name))
 
+  // one clause per verb AND per day: merging two days under one verb would
+  // put a single date on statements that do not share it
+  const blocks: { block: NarrBlock; day?: string }[] = []
   for (const src of sources) {
-    const byVerb = new Map<string, NarrEntity[]>()
-    for (const r of outBySource.get(src.id)!) push(byVerb, r.type, byId.get(r.target)!)
-    story.push({
-      subject: cap(singular(src)),
-      clauses: [...byVerb].map(([type, targets]) => `${verbOf(type)} ${targetPhrases(targets)}`),
+    const groups = new Map<string, { type: string; day?: string; targets: NarrEntity[] }>()
+    for (const r of outBySource.get(src.id)!) {
+      const day = dayOf(r)
+      const key = `${r.type}|${day ?? ''}`
+      const group = groups.get(key)
+      if (group) group.targets.push(byId.get(r.target)!)
+      else groups.set(key, { type: r.type, day, targets: [byId.get(r.target)!] })
+    }
+    const ordered = [...groups.values()].sort(byDay)
+    blocks.push({
+      block: {
+        subject: cap(singular(src)),
+        clauses: ordered.map(
+          (g) =>
+            `${verbOf(g.type)} ${targetPhrases(g.targets)}${g.day === undefined ? '' : ` on ${g.day}`}`,
+        ),
+      },
+      // sorted, so the first dated group is the earliest one
+      day: ordered.find((g) => g.day !== undefined)?.day,
     })
   }
+  // the undated blocks keep the reading order of the attack chain, the dated
+  // ones follow as the sequence they describe
+  story.push(...blocks.filter((b) => b.day === undefined).map((b) => b.block))
+  story.push(...blocks.filter((b) => b.day !== undefined).sort(byDay).map((b) => b.block))
 
-  // indicators: their own "Detection" section, worded as detection
+  // indicators: their own "Detection" section, worded as detection. No
+  // chronology here on purpose: a detection is not an event of the story, it
+  // is what the analyst leaves behind to catch the next one.
   const indicators = entities
     .filter((e) => e.stix_type === 'indicator')
     .sort((a, b) => a.name.localeCompare(b.name))
