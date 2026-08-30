@@ -1,8 +1,8 @@
 /**
  * Pre-render of the text pages, run after `vite build` (#223, #225).
  *
- * Two pages of the project are prose rather than tool: the STIX guide and
- * "Your data". Serving them as full HTML makes them readable without
+ * Four pages of the project are prose rather than tool: the STIX guide, "Your
+ * data" and the two frameworks. Serving them as full HTML makes them readable without
  * JavaScript, indexable, and shareable by link to someone who does not know
  * the tool yet. The canvas stays a SPA - a graph does not get indexed.
  *
@@ -30,6 +30,8 @@ const ROOT = '<div id="root"></div>'
 const PAGES = [
   { built: 'guide.html', route: 'guide', render: 'renderGuide', min: 5000 },
   { built: 'about.html', route: 'about', render: 'renderAbout', min: 4000 },
+  { built: 'attack.html', route: 'attack', render: 'renderAttack', min: 4000 },
+  { built: 'f3.html', route: 'f3', render: 'renderF3', min: 4000 },
 ]
 
 const vite = await createServer({

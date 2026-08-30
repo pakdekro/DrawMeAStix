@@ -48,6 +48,22 @@ this file is the one meant for people reading the code.
   else, and because a mixed case is exactly where you want to see which half
   of it you are looking at.
 
+- **A page for each framework, because a matrix is read and not searched.**
+  The palette lets you find `F1005.003` and says nothing about what F3 is,
+  which is fine for ATT&CK, common knowledge in this trade, and no use at all
+  for a framework that is a year old. So `/attack` and `/f3`, prose pages of
+  their own rather than a section of the STIX guide: that page teaches a
+  format, these teach a body of knowledge, and the reader of one is rarely
+  the reader of the other at the same moment. They cover what the framework
+  is and is not, how to read a number, and what a technique becomes once it
+  is on the canvas, including the trap that F3 also publishes ATT&CK numbers.
+  What they say about relationships is derived from the matrix like the rest
+  of the guide, and what they say about the frameworks themselves is held
+  against the shipped datasets by a test: the eight F3 tactics on the page
+  are the eight in the file, or the build says so. Reachable from the
+  framework panel, from the guide, and from each other; served as plain HTML
+  at their own address like the guide and "Your data".
+
 - **The narrative reads the case in the order it happened.** A relation has
   carried an activity window since the first release and the narrative
   ignored it, so the story came out in the reading order of the attack chain:

@@ -28,7 +28,7 @@ Draw Me A STIX fills the gap: **structure, annotate, curate** an investigation o
 - **Deterministic export.** Identifiers derive from each object's own properties, so re-importing the same object updates it instead of creating a second one. Two exports of the same state produce the same file, byte for byte, which is what makes the "unexported changes" indicator trustworthy.
 - **Other ways out.** The graph read back as prose, plus PNG, JPG, PDF and Markdown for the humans who will read your report.
 - **Keyboard first.** `Ctrl+K` for the command palette, `?` for the shortcut memo, `/` to search the canvas, `l` to ring what the selection touches, `t` to hide the labels on the cards, `Esc` to show everything again, `Ctrl+Z` to undo a deletion.
-- **A STIX guide** at `#/guide`, built from the relationship matrix itself, for whoever has never touched the format.
+- **A STIX guide** at `#/guide`, built from the relationship matrix itself, for whoever has never touched the format, and a page for each framework: `#/attack` and `#/f3`, for how a matrix is read and what one of its numbers becomes here. All three are also served as plain HTML at `/guide`, `/attack` and `/f3`, readable without JavaScript.
 
 No account, no telemetry, no LLM anywhere near your intel.
 

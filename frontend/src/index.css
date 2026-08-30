@@ -1419,11 +1419,11 @@ label {
   font-weight: 700;
 }
 
-/* The framework mark on a technique card (F3 only, see EntityNode): quiet,
-   inline with the type, and not in the type's colour, because it qualifies
-   the object rather than naming it. */
-.entity-node .node-framework {
-  margin-left: 5px;
+/* The framework mark on a technique: quiet, inline with what it qualifies,
+   and never in the type's colour, because it says something ABOUT the object
+   rather than naming it. Defined unscoped so the framework guide can show the
+   reader the very chip they will meet on a card. */
+.node-framework {
   font-size: 9px;
   letter-spacing: 0;
   font-weight: 600;
@@ -1431,6 +1431,11 @@ label {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 0 3px;
+}
+
+.entity-node .node-framework,
+.guide-tactics .node-framework {
+  margin-left: 6px;
 }
 
 .entity-node .node-name {
@@ -3304,6 +3309,88 @@ input.checkbox {
   color: var(--text-dim);
   font-size: 12.5px;
   line-height: 1.45;
+}
+
+/* Plain bulleted prose in a guide section (the framework pages). The list
+   styles that came before it are each about one shape of content: a ladder, a
+   set of patterns, a set of recipes. This one is just a list. */
+.guide-list {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  color: var(--text-dim);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.guide-list li {
+  margin-bottom: 6px;
+}
+
+.guide-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* The tactic table of a framework: an id, a name, and where it comes from.
+   A table and not a list, because the reader compares columns down the page:
+   which of these are ATT&CK's, which are the framework's own. */
+.guide-tactics {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 4px 0 12px;
+  font-size: 12.5px;
+}
+
+.guide-tactics th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-dim);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 10px 6px 0;
+}
+
+.guide-tactics td {
+  padding: 5px 10px 5px 0;
+  border-top: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.guide-tactics td:first-child {
+  font-family: var(--mono);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* The way from the framework palette to the pages that explain the two
+   frameworks: under the search box, named rather than iconified, and dim
+   until wanted like every affordance in this sidebar that is not the work
+   itself. */
+.attack-docs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* A rule above them: they are a way OUT of the panel, and without the line
+     they read as two more results of the search box they sit under. */
+  border-top: 1px solid var(--border);
+  margin: 10px 0 2px;
+  padding-top: 9px;
+}
+
+.attack-docs a {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-dim);
+  /* No underline, like the way into the guide on the home page: the icon
+     already says it is a way out, and two underlined lines under a search box
+     read as an error message. */
+  text-decoration: none;
+}
+
+.attack-docs a:hover {
+  color: var(--accent);
 }
 
 .guide-others {

@@ -56,7 +56,9 @@ describe('les deux adresses servent le même guide', () => {
     // one and not the other brings it down.
     const normalise = (html: string) =>
       html
-        .replaceAll('href="/"', 'href="#/"')
+        // the static page addresses its siblings as /attack, the app as
+        // #/attack: same link, two shapes, and the rule is the same one
+        .replace(/href="\/([a-z0-9-]*)"/g, 'href="#/$1"')
         .replaceAll('Open the canvas', 'Back to investigations')
         .replaceAll(' disabled=""', '')
     const ici = normalise(staticHtml)
