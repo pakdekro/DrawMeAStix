@@ -48,12 +48,21 @@ this file is the one meant for people reading the code.
   else, and because a mixed case is exactly where you want to see which half
   of it you are looking at.
 
-- **Three fraud scenarios, and a second scenario now completes the first.**
-  Account takeover, card data theft and reuse, crypto cash-out, written on F3
-  and AADAPT numbers, each saying which framework its numbers belong to. They
-  sit under a heading of their own in the panel, with FOVI joining them where
-  it always belonged: somebody opening that panel is working an intrusion or a
-  fraud, and a rule costs less to read than a badge on every line.
+- **Seven fraud scenarios, and a second scenario now completes the first.**
+  The fake adviser call, account takeover, SIM swap, card data theft, the mule
+  network, crypto cash-out and the token scam, written on F3, ATT&CK and
+  AADAPT numbers with the framework named beside each. Between them they cover
+  the three ways money leaves: a transfer the victim makes themselves, one made
+  in their name, and one that never touches an account at all. They sit under a
+  heading of their own in the panel, with FOVI joining them where it always
+  belonged: somebody opening that panel is working an intrusion or a fraud, and
+  a rule costs less to read than a badge on every line.
+
+  A test now holds every number a scenario carries against the shipped
+  corpora, name included, since a typo there is a fabricated reference in
+  every bundle that scenario ever produces. It found one on its first run, and
+  not in the new ones: the FOVI scenario still pointed at `T1656`, which
+  ATT&CK revoked in favour of `T1684.001`.
 
   What the second one used to do was draw a second graph beside the first. Two
   templates naming the same actor gave two cards, and that was worse than

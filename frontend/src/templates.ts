@@ -17,7 +17,11 @@ import cryptojacking from "./templates/cryptojacking.json";
 import defacement from "./templates/defacement.json";
 import fraudAccountTakeover from "./templates/fraud-account-takeover.json";
 import fraudCard from "./templates/fraud-card.json";
+import fraudConseiller from "./templates/fraud-faux-conseiller.json";
 import fraudCrypto from "./templates/fraud-crypto-cashout.json";
+import fraudMules from "./templates/fraud-mules.json";
+import fraudSimSwap from "./templates/fraud-sim-swap.json";
+import fraudToken from "./templates/fraud-token-scam.json";
 import espionnage from "./templates/espionnage-cible.json";
 import exploitExpose from "./templates/exploit-service-expose.json";
 import fauxInstalleur from "./templates/faux-installeur.json";
@@ -80,9 +84,13 @@ export const BUILTIN_TEMPLATES: ScenarioTemplate[] = [
   defacement,
   usurpationMarque,
   spamSeo,
+  fraudConseiller,
   fraudAccountTakeover,
+  fraudSimSwap,
   fraudCard,
+  fraudMules,
   fraudCrypto,
+  fraudToken,
 ] as ScenarioTemplate[];
 
 /** The families, in reading order, with the heading each one carries. */

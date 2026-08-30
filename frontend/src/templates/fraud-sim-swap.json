@@ -1,0 +1,74 @@
+{
+  "name": "Fraud - SIM swap to takeover",
+  "family": "fraud",
+  "description": "The line is ported away from the customer, the one-time codes follow, and the account goes with them.",
+  "labels": ["fraud", "sim-swap", "account-takeover", "f3"],
+  "slots": [
+    { "key": "actor", "type": "threat-actor", "label": "Fraud actor" },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Defrauded customer",
+      "prefill": { "identity_class": "individual" }
+    },
+    {
+      "key": "operator",
+      "type": "identity",
+      "label": "Mobile operator involved",
+      "prefill": { "identity_class": "organization" }
+    },
+    {
+      "key": "chain",
+      "type": "infrastructure",
+      "label": "Cash-out chain (the accounts it controls)"
+    },
+    {
+      "key": "beneficiary",
+      "type": "user-account",
+      "label": "Beneficiary account",
+      "placeholder": "FR7630004000031234567890143",
+      "prefill": { "account_name_is": "user_id" }
+    },
+    {
+      "key": "t1451",
+      "type": "attack-pattern",
+      "label": "The line changes hands",
+      "fixed": "SIM Card Swap",
+      "prefill": { "x_mitre_id": "T1451" }
+    },
+    {
+      "key": "t1111",
+      "type": "attack-pattern",
+      "label": "The codes follow",
+      "fixed": "Multi-Factor Authentication Interception",
+      "prefill": { "x_mitre_id": "T1111" }
+    },
+    {
+      "key": "f1006",
+      "type": "attack-pattern",
+      "label": "The account goes with them",
+      "fixed": "Account Takeover: Password Reset",
+      "prefill": { "x_mitre_id": "F1006.003", "mitre_framework": "mitre-f3" }
+    },
+    {
+      "key": "f1025",
+      "type": "attack-pattern",
+      "label": "Cash-out",
+      "fixed": "Electronic Funds Transfer: Peer-to-Peer Transfer",
+      "prefill": { "x_mitre_id": "F1025.001", "mitre_framework": "mitre-f3" }
+    }
+  ],
+  "relations": [
+    { "from": "actor", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "uses", "to": "t1451" },
+    { "from": "actor", "rel": "uses", "to": "t1111" },
+    { "from": "actor", "rel": "uses", "to": "f1006" },
+    { "from": "actor", "rel": "uses", "to": "f1025" },
+    { "from": "t1451", "rel": "targets", "to": "operator" },
+    { "from": "t1111", "rel": "targets", "to": "victim" },
+    { "from": "f1006", "rel": "targets", "to": "victim" },
+    { "from": "f1025", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "owns", "to": "chain" },
+    { "from": "chain", "rel": "consists-of", "to": "beneficiary" }
+  ]
+}

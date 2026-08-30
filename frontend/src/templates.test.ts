@@ -7,6 +7,10 @@
 
 import { describe, expect, it } from "vitest";
 
+import aadaptDataset from "../public/aadapt-dataset.json";
+import atlasDataset from "../public/atlas-dataset.json";
+import attackDataset from "../public/attack-dataset.json";
+import f3Dataset from "../public/f3-dataset.json";
 import {
   BUILTIN_TEMPLATES,
   linkKey,
@@ -324,6 +328,36 @@ describe("a scenario applied on top of another", () => {
     ];
     const ids = new Map([["a", "x"], ["b", "y"]]);
     expect(newLinks(relations, (k) => ids.get(k), [])).toHaveLength(1);
+  });
+});
+
+describe("the numbers the scenarios carry", () => {
+  /**
+   * A `fixed` technique is a number and a name written by hand into a JSON
+   * file, and nothing downstream would catch a typo: the identifier derives
+   * from the number, so a wrong one is a fabricated reference in every bundle
+   * the scenario ever produces.
+   */
+  it("exist in a shipped corpus, under the name the scenario gives them", () => {
+    const corpus = new Map<string, string>();
+    for (const file of [attackDataset, f3Dataset, atlasDataset, aadaptDataset]) {
+      for (const e of file.entries as { type?: string; id?: string; name: string }[]) {
+        if (e.type === "attack-pattern" && e.id) corpus.set(e.id, e.name);
+      }
+    }
+    const wrong: string[] = [];
+    for (const tpl of BUILTIN_TEMPLATES) {
+      for (const slot of tpl.slots) {
+        const id = slot.prefill?.x_mitre_id as string | undefined;
+        if (id === undefined) continue;
+        const known = corpus.get(id);
+        if (known === undefined) wrong.push(`${tpl.name}: ${id} is in no corpus`);
+        else if (known !== slot.fixed) {
+          wrong.push(`${tpl.name}: ${id} is "${known}", the scenario says "${slot.fixed}"`);
+        }
+      }
+    }
+    expect(wrong).toEqual([]);
   });
 });
 

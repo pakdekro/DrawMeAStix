@@ -1,0 +1,61 @@
+{
+  "name": "Fraud - Token scam",
+  "family": "fraud",
+  "description": "A token is minted, talked up, and drained: the fraud happens on the chain rather than beside it.",
+  "labels": ["fraud", "crypto", "token", "aadapt"],
+  "slots": [
+    { "key": "actor", "type": "threat-actor", "label": "Fraud actor" },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Investors or platform defrauded",
+      "prefill": { "identity_class": "organization" }
+    },
+    { "key": "project", "type": "infrastructure", "label": "Project infrastructure" },
+    {
+      "key": "site",
+      "type": "domain-name",
+      "label": "Project site",
+      "placeholder": "moon-token.example"
+    },
+    {
+      "key": "wallet",
+      "type": "user-account",
+      "label": "Wallet that collects (address)",
+      "placeholder": "0x…",
+      "prefill": { "account_name_is": "user_id" }
+    },
+    {
+      "key": "adt3016",
+      "type": "attack-pattern",
+      "label": "Minting",
+      "fixed": "Generate Counterfeit Tokens",
+      "prefill": { "x_mitre_id": "ADT3016", "mitre_framework": "mitre-aadapt" }
+    },
+    {
+      "key": "adt3021",
+      "type": "attack-pattern",
+      "label": "Talking it up",
+      "fixed": "Market Manipulation",
+      "prefill": { "x_mitre_id": "ADT3021", "mitre_framework": "mitre-aadapt" }
+    },
+    {
+      "key": "adt3028",
+      "type": "attack-pattern",
+      "label": "Draining it",
+      "fixed": "Siphon Funds",
+      "prefill": { "x_mitre_id": "ADT3028", "mitre_framework": "mitre-aadapt" }
+    }
+  ],
+  "relations": [
+    { "from": "actor", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "uses", "to": "adt3016" },
+    { "from": "actor", "rel": "uses", "to": "adt3021" },
+    { "from": "actor", "rel": "uses", "to": "adt3028" },
+    { "from": "adt3021", "rel": "targets", "to": "victim" },
+    { "from": "adt3028", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "owns", "to": "project" },
+    { "from": "project", "rel": "consists-of", "to": "site" },
+    { "from": "project", "rel": "consists-of", "to": "wallet" }
+  ]
+}
