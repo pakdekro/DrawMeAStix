@@ -48,6 +48,15 @@ this file is the one meant for people reading the code.
   else, and because a mixed case is exactly where you want to see which half
   of it you are looking at.
 
+- **The weekly refresh can now see an F3 release at all.** The build read one
+  pinned file, `f3-v1.1.json`, because the native series is published one file
+  per version with no unversioned copy: a v1.2 would have shipped, and the
+  Monday job would have gone on rebuilding v1.1 and reporting "unchanged"
+  about a framework that had moved. It now lists what MITRE has published and
+  takes the highest version, and names the file it read in the report the pull
+  request carries. Still the published artefact and never the working copy the
+  site builds from, which is always current and is also somebody's draft.
+
 - **A page for each framework, because a matrix is read and not searched.**
   The palette lets you find `F1005.003` and says nothing about what F3 is,
   which is fine for ATT&CK, common knowledge in this trade, and no use at all
