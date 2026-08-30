@@ -1,8 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
+import AadaptGuide, { AADAPT_TACTICS } from './components/AadaptGuide'
 import AtlasGuide, { ATLAS_TACTICS } from './components/AtlasGuide'
 import AttackGuide from './components/AttackGuide'
 import F3Guide, { F3_TACTICS } from './components/F3Guide'
+import aadaptDataset from '../public/aadapt-dataset.json'
 import atlasDataset from '../public/atlas-dataset.json'
 import attackDataset from '../public/attack-dataset.json'
 import f3Dataset from '../public/f3-dataset.json'
@@ -30,6 +32,10 @@ const pages = {
     static: renderToStaticMarkup(<AtlasGuide mode="static" />),
     app: renderToStaticMarkup(<AtlasGuide mode="app" />),
   },
+  aadapt: {
+    static: renderToStaticMarkup(<AadaptGuide mode="static" />),
+    app: renderToStaticMarkup(<AadaptGuide mode="app" />),
+  },
 }
 
 const hrefs = (html: string) => [...html.matchAll(/href="([^"]*)"/g)].map((m) => m[1])
@@ -44,7 +50,7 @@ describe.each(Object.entries(pages))('the %s page', (route, html) => {
   })
 
   it('leads to the other frameworks and to the STIX guide', () => {
-    for (const other of ['attack', 'f3', 'atlas'].filter((r) => r !== route)) {
+    for (const other of ['attack', 'f3', 'atlas', 'aadapt'].filter((r) => r !== route)) {
       expect(hrefs(html.static)).toContain(`/${other}`)
       expect(hrefs(html.app)).toContain(`#/${other}`)
     }
@@ -123,5 +129,24 @@ describe('the ATLAS page says what the shipped dataset says', () => {
     const own = ATLAS_TACTICS.filter((t) => t.attack === undefined).map((t) => t.id)
     expect(own).toEqual(['AML.TA0000', 'AML.TA0001'])
     for (const id of own) expect(pages.atlas.static).toContain(id)
+  })
+})
+
+describe('the AADAPT page says what the shipped dataset says', () => {
+  it('the same eleven tactics, in the same order, from the same frameworks', () => {
+    expect(AADAPT_TACTICS.map((t) => t.id)).toEqual(aadaptDataset.tactics.map((t) => t.id))
+    expect(AADAPT_TACTICS.map((t) => t.name)).toEqual(aadaptDataset.tactics.map((t) => t.name))
+    expect(AADAPT_TACTICS.map((t) => t.own === true)).toEqual(
+      aadaptDataset.tactics.map((t) => t.framework === 'mitre-aadapt'),
+    )
+  })
+
+  it('the counts it states are the counts in the file', () => {
+    const adapting = aadaptDataset.entries.filter((e) => 'attack' in e).length
+    expect(adapting).toBe(4) // the page spells this one out, so it is pinned here
+    expect(pages.aadapt.static).toContain(`Four of the ${aadaptDataset.entries.length} are`)
+    expect(pages.aadapt.static).toContain(
+      `${aadaptDataset.entries.length} techniques over eleven tactics`,
+    )
   })
 })

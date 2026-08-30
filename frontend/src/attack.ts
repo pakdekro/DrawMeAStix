@@ -40,7 +40,7 @@ export interface AttackEntry {
    * thing that makes a fraud case and an intrusion case meet on the same
    * object.
    */
-  framework?: "mitre-attack" | "mitre-f3" | "mitre-atlas";
+  framework?: "mitre-attack" | "mitre-f3" | "mitre-atlas" | "mitre-aadapt";
   /**
    * The ATT&CK technique this one ADAPTS, when its own framework says so.
    *

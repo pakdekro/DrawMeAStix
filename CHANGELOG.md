@@ -48,6 +48,19 @@ this file is the one meant for people reading the code.
   else, and because a mixed case is exactly where you want to see which half
   of it you are looking at.
 
+- **AADAPT, where a fraud that cashes out in crypto keeps going.** MITRE's
+  Adversarial Actions in Digital Asset Payment Technologies: 68 techniques over
+  eleven tactics, about exchanges, wallets, bridges and the consensus
+  underneath. It earns its place next to F3 rather than beside it: the fraud
+  matrix ends at Monetization with "Convert to Cryptocurrency", and AADAPT's
+  own eleventh tactic is called Fraud. It is also a hybrid of the two
+  arrangements already here, ten of its eleven tactics being ATT&CK's by
+  identifier the way F3's are, while every technique is its own the way ATLAS's
+  are, four of them adapted from an ATT&CK technique and numbered after it
+  without ever claiming to be it. It publishes no version, so the panel shows
+  none: the number in its data file is the version of the ATLAS tooling it was
+  forked from, and a test holds that line.
+
 - **The rest of ATT&CK: Mobile and ICS.** The palette shipped Enterprise and
   nothing else, so a SIM swap or an attack on a PLC had to be typed in by hand.
   All three matrices are now one corpus, which is safe because ATT&CK numbers

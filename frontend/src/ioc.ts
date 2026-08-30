@@ -258,12 +258,14 @@ export function hashWarning(algo: "MD5" | "SHA-1" | "SHA-256", rawValue: string)
 export function mitreIdWarning(rawValue: string): string | null {
   const value = rawValue.trim();
   if (!value) return null;
-  // Three frameworks, three shapes of the same idea: ATT&CK's T1566 and
-  // TA0001, F3's F1001 and FA0002 (its own letter over ATT&CK's shape), and
-  // ATLAS's AML.T0051 and AML.TA0000 (its own prefix over the same shape).
-  return /^(AML\.)?[TF]A?\d{4}(\.\d{3})?$/i.test(value)
+  // Four frameworks, four spellings of the same idea: ATT&CK's T1566 and
+  // TA0001, F3's F1001 and FA0002 (its own letter over ATT&CK's shape),
+  // ATLAS's AML.T0051 and AML.TA0000 (its own prefix over the same shape), and
+  // AADAPT's ADT3003 and ADTA0001 (its own letters, no separator).
+  return /^(AML\.)?[TF]A?\d{4}(\.\d{3})?$/i.test(value) ||
+    /^ADTA?\d{4}(\.\d{3})?$/i.test(value)
     ? null
-    : "unexpected format (e.g. T1566, T1566.001, TA0001, F1001, AML.T0051)";
+    : "unexpected format (e.g. T1566, TA0001, F1001, AML.T0051, ADT3003)";
 }
 
 interface DetectionResult {

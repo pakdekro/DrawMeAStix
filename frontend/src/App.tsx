@@ -17,14 +17,21 @@ const StixGuide = lazy(() => import('./components/StixGuide'))
 const AttackGuide = lazy(() => import('./components/AttackGuide'))
 const F3Guide = lazy(() => import('./components/F3Guide'))
 const AtlasGuide = lazy(() => import('./components/AtlasGuide'))
+const AadaptGuide = lazy(() => import('./components/AadaptGuide'))
 
 /** The prose pages, by the route that serves them. */
-const PROSE = { guide: StixGuide, attack: AttackGuide, f3: F3Guide, atlas: AtlasGuide }
+const PROSE = {
+  guide: StixGuide,
+  attack: AttackGuide,
+  f3: F3Guide,
+  atlas: AtlasGuide,
+  aadapt: AadaptGuide,
+}
 type ProseRoute = keyof typeof PROSE
 
 /**
  * Tiny hash router: #/ (list), #/inv/<id>, or one of the prose pages
- * (#/guide, #/attack, #/f3, #/atlas). Each of those has a pre-rendered twin at
+ * (#/guide and one per framework). Each of those has a pre-rendered twin at
  * its own address, built from the same component.
  */
 function parseHash(): { view: ProseRoute | 'home' } | { view: 'workspace'; id: string } {

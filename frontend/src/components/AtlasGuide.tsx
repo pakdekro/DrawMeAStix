@@ -278,6 +278,9 @@ export default function AtlasGuide({ mode = 'app' }: { mode?: GuideMode }) {
           <a className="guide-cta" href={guideHref(mode, 'f3')}>
             F3, the fraud matrix
           </a>
+          <a className="guide-cta" href={guideHref(mode, 'aadapt')}>
+            AADAPT, the digital asset matrix
+          </a>
           <a className="guide-cta" href={guideHref(mode, 'guide')}>
             Objects, observables, relationships
           </a>

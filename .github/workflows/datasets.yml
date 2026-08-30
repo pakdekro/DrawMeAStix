@@ -1,13 +1,13 @@
 # Draw Me A STIX - keeping the shipped datasets from ageing in silence.
 #
-# Five corpora are committed under frontend/public/: the three frameworks
-# (ATT&CK, F3, ATLAS), the actor aliases distilled from the MISP galaxy, and
+# Six corpora are committed under frontend/public/: the four frameworks
+# (ATT&CK, F3, ATLAS, AADAPT), the actor aliases distilled from the MISP galaxy, and
 # the ISO 3166-1 countries. They are what the analyst is offered while typing,
 # so they decide whether two people name the same thing the same way. Left
 # alone they simply rot: the tool went from ATT&CK 17 to 19.1 without anything
 # saying so.
 #
-# The framework pages at /attack, /f3 and /atlas describe these files in
+# The framework pages at /attack, /f3, /atlas and /aadapt describe these files in
 # prose, and a test holds the two in step, so an enrichment upstream reaches
 # the documentation through the same weekly run.
 #
@@ -64,6 +64,7 @@ jobs:
             uv run python scripts/build_attack_dataset.py
             uv run python scripts/build_f3_dataset.py
             uv run python scripts/build_atlas_dataset.py
+            uv run python scripts/build_aadapt_dataset.py
             uv run python scripts/build_actors_dataset.py
             uv run python scripts/build_countries_dataset.py
             echo REPORT
