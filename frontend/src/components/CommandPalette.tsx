@@ -6,8 +6,19 @@ import { loadFramework } from '../datasets'
 import { DEFAULT_FRAMEWORK, FRAMEWORKS } from '../frameworks'
 import { allowedRelationships } from '../stix/relationships'
 import { SCO_ORDER, SDO_ORDER, typeMeta } from '../stixMeta'
-import { BUILTIN_TEMPLATES } from '../templates'
-import type { ScenarioTemplate } from '../templates'
+import { BUILTIN_TEMPLATES, TEMPLATE_FAMILIES } from '../templates'
+import type { ScenarioTemplate, TemplateFamily } from '../templates'
+
+/**
+ * The Ctrl+K group a scenario belongs to. Intrusion keeps the plain
+ * "Scenarios" heading it always had: it is what a scenario meant before there
+ * were three families of them, and a group named after a default reads as one
+ * more thing to choose between.
+ */
+function familyGroup(family: TemplateFamily | undefined): string {
+  if (family === undefined || family === 'intrusion') return ''
+  return `${TEMPLATE_FAMILIES.find((f) => f.id === family)?.label ?? family} scenarios`
+}
 import Icon from './Icon'
 
 /**
@@ -285,9 +296,9 @@ export default function CommandPalette({
       'Scenarios',
       BUILTIN_TEMPLATES.map((tpl) => ({
         id: `tpl:${tpl.name}`,
-        // the family becomes the group, so a fraud scenario is not found in
-        // the middle of the intrusions
-        group: (tpl.family ?? 'intrusion') === 'fraud' ? 'Fraud scenarios' : '',
+        // the family becomes the group, so a fraud or an AI scenario is not
+        // found in the middle of the intrusions
+        group: familyGroup(tpl.family),
         label: tpl.name,
         hint: 'scenario',
         haystack: tpl.name.toLowerCase().replace(/\s+/g, ''),

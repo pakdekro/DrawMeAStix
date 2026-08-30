@@ -1,7 +1,8 @@
-import { Fragment, memo } from 'react'
+import { memo, useState } from 'react'
 import type { AttackEntry } from '../attack'
 import { SCO_ORDER, SDO_ORDER, typeMeta } from '../stixMeta'
 import { TEMPLATE_FAMILIES, templatesOfFamily } from '../templates'
+import type { TemplateFamily } from '../templates'
 import type { ScenarioTemplate } from '../templates'
 import AttackPalette from './AttackPalette'
 import Icon from './Icon'
@@ -66,6 +67,9 @@ function Sidebar({
   activeLabel: string | null
   onPickLabel: (value: string) => void
 }) {
+  // Which family of scenarios is on show. Local to the panel: it is a way of
+  // looking, not a piece of the investigation.
+  const [family, setFamily] = useState<TemplateFamily>('intrusion')
 
   return (
     <>
@@ -165,25 +169,37 @@ function Sidebar({
 
           {panel === 'scenarios' && (
             <>
-              {/* Two families, separated rather than tagged: somebody opening
-                  this panel is working an intrusion or a fraud, not both at
-                  the same minute, and a rule costs less to read than a badge
-                  on every line. */}
-              {TEMPLATE_FAMILIES.map((family, i) => (
-                <Fragment key={family.id}>
-                  <h3 className={`micro${i > 0 ? ' tpl-family' : ''}`}>{family.label}</h3>
-                  {templatesOfFamily(family.id).map((tpl) => (
-                    <button
-                      key={tpl.name}
-                      className="palette-btn"
-                      title={tpl.description}
-                      onClick={() => onPickTemplate(tpl)}
-                    >
-                      <Icon name="scenario" />
-                      {tpl.name}
-                    </button>
-                  ))}
-                </Fragment>
+              {/* One family at a time, behind the same switch the framework
+                  panel uses two icons above. Three headings and twenty-six
+                  buttons in one column meant scrolling past two families to
+                  reach the third, and somebody opening this panel is working
+                  an intrusion, a fraud or an AI incident, not the three at the
+                  same minute. The count is on the chip because it is the
+                  question you ask before clicking one. */}
+              <h3 className="micro">Scenarios</h3>
+              <div className="chip-grid tpl-families">
+                {TEMPLATE_FAMILIES.map((f) => (
+                  <button
+                    key={f.id}
+                    className={`chip${family === f.id ? ' on' : ''}`}
+                    aria-pressed={family === f.id}
+                    onClick={() => setFamily(f.id)}
+                  >
+                    {f.label}
+                    <span className="chip-count">{templatesOfFamily(f.id).length}</span>
+                  </button>
+                ))}
+              </div>
+              {templatesOfFamily(family).map((tpl) => (
+                <button
+                  key={tpl.name}
+                  className="palette-btn"
+                  title={tpl.description}
+                  onClick={() => onPickTemplate(tpl)}
+                >
+                  <Icon name="scenario" />
+                  {tpl.name}
+                </button>
               ))}
               <label className="palette-btn tpl-load">
                 <Icon name="doc" />

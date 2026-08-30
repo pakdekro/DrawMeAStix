@@ -48,6 +48,21 @@ this file is the one meant for people reading the code.
   else, and because a mixed case is exactly where you want to see which half
   of it you are looking at.
 
+- **Three AI scenarios, and the scenario panel reorganised around families.**
+  Prompt injection against an agent that then leaks through its own tools, a
+  poisoned model taken off a hub, and a model extracted through the API it is
+  served from. ATLAS numbers throughout, which is what those three cases are
+  made of. One fraud scenario reaches across on purpose: a deepfake-assisted
+  transfer is an ATLAS technique for the face and a voice, and F3 techniques
+  for the money.
+
+  Twenty-six scenarios under three headings meant scrolling past two families
+  to reach the third, so the panel switches between them instead, behind the
+  same chips the framework panel uses two icons above, each carrying its
+  count. One family at a time, because somebody opening that panel is working
+  an intrusion, a fraud or an AI incident, not the three at the same minute.
+  Ctrl+K keeps its own group per family.
+
 - **Seven fraud scenarios, and a second scenario now completes the first.**
   The fake adviser call, account takeover, SIM swap, card data theft, the mule
   network, crypto cash-out and the token scam, written on F3, ATT&CK and

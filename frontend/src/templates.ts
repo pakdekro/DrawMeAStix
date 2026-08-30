@@ -11,6 +11,9 @@
 
 import { entityKey } from "./entityKey";
 import { allowedRelationships, SCO_TYPES, SDO_TYPES } from "./stix/relationships";
+import aiModelTheft from "./templates/ai-model-theft.json";
+import aiPromptInjection from "./templates/ai-prompt-injection.json";
+import aiSupplyChain from "./templates/ai-supply-chain.json";
 import botnetDdos from "./templates/botnet-ddos.json";
 import compteCompromis from "./templates/compte-compromis.json";
 import cryptojacking from "./templates/cryptojacking.json";
@@ -19,6 +22,7 @@ import fraudAccountTakeover from "./templates/fraud-account-takeover.json";
 import fraudCard from "./templates/fraud-card.json";
 import fraudConseiller from "./templates/fraud-faux-conseiller.json";
 import fraudCrypto from "./templates/fraud-crypto-cashout.json";
+import fraudDeepfake from "./templates/fraud-deepfake.json";
 import fraudMules from "./templates/fraud-mules.json";
 import fraudSimSwap from "./templates/fraud-sim-swap.json";
 import fraudToken from "./templates/fraud-token-scam.json";
@@ -56,7 +60,7 @@ interface TemplateSlot {
  * reader filter with their eyes. Absent means intrusion, which is what every
  * scenario was before there were any others.
  */
-export type TemplateFamily = "intrusion" | "fraud";
+export type TemplateFamily = "intrusion" | "fraud" | "ai";
 
 export interface ScenarioTemplate {
   name: string;
@@ -91,12 +95,17 @@ export const BUILTIN_TEMPLATES: ScenarioTemplate[] = [
   fraudMules,
   fraudCrypto,
   fraudToken,
+  fraudDeepfake,
+  aiPromptInjection,
+  aiSupplyChain,
+  aiModelTheft,
 ] as ScenarioTemplate[];
 
-/** The families, in reading order, with the heading each one carries. */
+/** The families, in reading order, with the name each one goes by on screen. */
 export const TEMPLATE_FAMILIES: { id: TemplateFamily; label: string }[] = [
-  { id: "intrusion", label: "Scenarios" },
+  { id: "intrusion", label: "Intrusion" },
   { id: "fraud", label: "Fraud" },
+  { id: "ai", label: "AI systems" },
 ];
 
 /** The scenarios of one family, in the order they were declared. */

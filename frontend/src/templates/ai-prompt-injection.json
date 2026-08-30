@@ -1,0 +1,61 @@
+{
+  "name": "AI - Prompt injection against an agent",
+  "family": "ai",
+  "description": "An agent reads a page written for it, follows the instructions it finds there, and uses its own tools to leak.",
+  "labels": ["ai", "prompt-injection", "atlas"],
+  "slots": [
+    { "key": "actor", "type": "threat-actor", "label": "Actor" },
+    {
+      "key": "victim",
+      "type": "identity",
+      "label": "Organisation running the agent",
+      "prefill": { "identity_class": "organization" }
+    },
+    {
+      "key": "source",
+      "type": "url",
+      "label": "Page or document carrying the instructions",
+      "placeholder": "https://blog.example/post-42"
+    },
+    { "key": "infra", "type": "infrastructure", "label": "Actor infrastructure" },
+    {
+      "key": "drop",
+      "type": "domain-name",
+      "label": "Where the data goes",
+      "placeholder": "collect.example"
+    },
+    {
+      "key": "t0051",
+      "type": "attack-pattern",
+      "label": "The instructions arrive",
+      "fixed": "Indirect",
+      "prefill": { "x_mitre_id": "AML.T0051.001", "mitre_framework": "mitre-atlas" }
+    },
+    {
+      "key": "t0053",
+      "type": "attack-pattern",
+      "label": "The agent acts on them",
+      "fixed": "AI Agent Tool Invocation",
+      "prefill": { "x_mitre_id": "AML.T0053", "mitre_framework": "mitre-atlas" }
+    },
+    {
+      "key": "t0086",
+      "type": "attack-pattern",
+      "label": "And leaks through its own tools",
+      "fixed": "Exfiltration via AI Agent Tool Invocation",
+      "prefill": { "x_mitre_id": "AML.T0086", "mitre_framework": "mitre-atlas" }
+    }
+  ],
+  "relations": [
+    { "from": "actor", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "uses", "to": "t0051" },
+    { "from": "actor", "rel": "uses", "to": "t0053" },
+    { "from": "actor", "rel": "uses", "to": "t0086" },
+    { "from": "t0051", "rel": "targets", "to": "victim" },
+    { "from": "t0053", "rel": "targets", "to": "victim" },
+    { "from": "t0086", "rel": "targets", "to": "victim" },
+    { "from": "actor", "rel": "owns", "to": "infra" },
+    { "from": "infra", "rel": "consists-of", "to": "source" },
+    { "from": "infra", "rel": "consists-of", "to": "drop" }
+  ]
+}
