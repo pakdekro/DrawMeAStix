@@ -41,7 +41,20 @@ this file is the one meant for people reading the code.
   inspector. Absent still means ATT&CK, so nothing already on a canvas
   changed meaning, and the import reads the provenance back out of the
   reference. F3 references also carry a url, which ATT&CK does not need and
-  F1001 does.
+  F1001 does, and it is the one the F3 site actually serves, hash route and
+  all, rather than the flat path F3's own bundle publishes and nothing
+  answers.
+
+- **The narrative reads the case in the order it happened.** A relation has
+  carried an activity window since the first release and the narrative
+  ignored it, so the story came out in the reading order of the attack chain:
+  actors, then tooling, then infrastructure, then observables. That order is a decent
+  guess when nothing better is known, and it is exactly wrong for a fraud,
+  where the case IS the sequence and eight dated steps arrive as a bag. A
+  dated statement now says its day and takes its rank from it, an undated one
+  keeps its place ahead of the sequence, and two of the same day and verb
+  still share a clause. A graph with no date reads exactly as it did before,
+  and the rule holds inside a paragraph as well as between them.
 
 ## 1.6.1 - 29 August 2026
 

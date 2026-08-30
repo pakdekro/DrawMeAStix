@@ -614,9 +614,11 @@ function buildSdo(e: EntityRow, props: Props, commonBase: Props): StixObject {
           props.x_mitre_id as string,
           // A url for F3 only, and not for want of symmetry: an ATT&CK number
           // resolves itself for any consumer on the planet, F1001 resolves
-          // nowhere without one.
+          // nowhere without one. The hash is not a typo and not ours: the F3
+          // site is hash routed on /technique/:id, and the flat path the F3
+          // bundle itself publishes is served by nothing.
           framework === "mitre-f3"
-            ? `https://ctid.mitre.org/fraud/techniques/${props.x_mitre_id as string}`
+            ? `https://ctid.mitre.org/fraud#/technique/${props.x_mitre_id as string}`
             : undefined,
         );
       }

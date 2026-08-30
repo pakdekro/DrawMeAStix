@@ -109,6 +109,89 @@ describe('buildNarrative', () => {
     expect(sentences(story)).toContain('The threat actor A controls the infrastructure I1 and I2.')
   })
 
+  /**
+   * The defect this fixes, found by modelling a real fraud case: eight dated
+   * steps came out in type order, which for a fraud IS the wrong order. The
+   * case is the sequence.
+   */
+  describe('chronology', () => {
+    const CASE: NarrEntity[] = [
+      { id: 'c', stix_type: 'campaign', name: 'Ferronnier' },
+      { id: 'm', stix_type: 'malware', name: 'EggShell' },
+      { id: 'a1', stix_type: 'user-account', name: 'FR76...0143' },
+      { id: 'a2', stix_type: 'user-account', name: 'FR76...0987' },
+      { id: 'a3', stix_type: 'user-account', name: 'FR76...0555' },
+    ]
+
+    it('a dated clause says its day and comes after the undated ones', () => {
+      const { story } = buildNarrative(CASE, [
+        { source: 'c', type: 'uses', target: 'm' },
+        { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-20' },
+        { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-14' },
+      ])
+      expect(story[0].clauses).toEqual([
+        'uses the malware EggShell',
+        'compromises the account FR76...0987 on 2026-03-14',
+        'compromises the account FR76...0143 on 2026-03-20',
+      ])
+    })
+
+    it('two relations of the same day and verb share one clause', () => {
+      const { story } = buildNarrative(CASE, [
+        { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14' },
+        { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-14' },
+        { source: 'c', type: 'compromises', target: 'a3', start_time: '2026-03-15' },
+      ])
+      expect(story[0].clauses).toEqual([
+        'compromises the accounts FR76...0143 and FR76...0987 on 2026-03-14',
+        'compromises the account FR76...0555 on 2026-03-15',
+      ])
+    })
+
+    it('an imported timestamp is read as its day', () => {
+      const { story } = buildNarrative(CASE, [
+        { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14T09:12:00.000Z' },
+        { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-14' },
+      ])
+      expect(story[0].clauses).toEqual([
+        'compromises the accounts FR76...0143 and FR76...0987 on 2026-03-14',
+      ])
+    })
+
+    /** the type order is a guess, a date is the analyst speaking */
+    it('the blocks follow the dates, not the attack chain', () => {
+      const { story } = buildNarrative(CASE, [
+        // the malware moves first in type order, and last in time
+        { source: 'm', type: 'communicates-with', target: 'a3', start_time: '2026-04-02' },
+        { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14' },
+      ])
+      expect(story.map((b) => b.subject)).toEqual([
+        'The campaign Ferronnier',
+        'The malware EggShell',
+      ])
+    })
+
+    it('an undated block keeps its place ahead of the dated ones', () => {
+      const { story } = buildNarrative(CASE, [
+        { source: 'm', type: 'communicates-with', target: 'a3' },
+        { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14' },
+      ])
+      expect(story.map((b) => b.subject)).toEqual([
+        'The malware EggShell',
+        'The campaign Ferronnier',
+      ])
+    })
+
+    it('a graph without a single date reads exactly as before', () => {
+      const before = buildNarrative(E, R)
+      const after = buildNarrative(
+        E,
+        R.map((r) => ({ ...r, start_time: null })),
+      )
+      expect(after).toEqual(before)
+    })
+  })
+
   it('signale un graphe vide', () => {
     expect(buildNarrative([], [])).toEqual({
       story: [],

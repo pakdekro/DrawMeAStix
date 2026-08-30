@@ -167,7 +167,7 @@ describe("export : ce que la référence AFFIRME", () => {
       {
         source_name: "mitre-f3",
         external_id: "F1005.006",
-        url: "https://ctid.mitre.org/fraud/techniques/F1005.006",
+        url: "https://ctid.mitre.org/fraud#/technique/F1005.006",
       },
     ]);
     // internal property, consumed to build the reference above: it must not
@@ -226,7 +226,7 @@ describe("import : la provenance se relit", () => {
         {
           source_name: "mitre-f3",
           external_id: "F1001",
-          url: "https://ctid.mitre.org/fraud/techniques/F1001",
+          url: "https://ctid.mitre.org/fraud#/technique/F1001",
         },
       ]) as never,
     );
