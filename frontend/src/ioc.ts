@@ -1,4 +1,3 @@
-import { entityKey } from "./entityKey";
 /**
  * IOC handling - defang/refang (#30).
  *
@@ -7,6 +6,9 @@ import { entityKey } from "./entityKey";
  * canonical form: `refang` is applied automatically when any observable is
  * entered (store.ts) and when a third-party bundle is imported.
  */
+
+import { entityKey } from "./entityKey";
+import { FRAMEWORKS, frameworkPublishing } from "./frameworks";
 
 const REFANG_RULES: [RegExp, string][] = [
   [/\[\.\]|\(\.\)|\{\.\}/g, "."],
@@ -254,18 +256,34 @@ export function hashWarning(algo: "MD5" | "SHA-1" | "SHA-256", rawValue: string)
   return null;
 }
 
-/** Warning on a MITRE identifier (T1566, T1566.001, TA0001, F1001, AML.T0051…). */
-export function mitreIdWarning(rawValue: string): string | null {
+/**
+ * Warning on a MITRE identifier (T1566, TA0001, F1001, AML.T0051, ADT3003…).
+ *
+ * The shapes come from the framework registry rather than from a regexp
+ * written here, so a fifth framework brings its own and this function does not
+ * change. `framework` is the one the technique claims, when it claims one:
+ * given it, the check goes further than the shape and says when the two
+ * disagree in the one direction where they can. ATT&CK publishes no `AML.`
+ * number, so an ATLAS number filed under ATT&CK would go out as a fabricated
+ * ATT&CK reference, which is exactly the class of mistake this application
+ * spent the day removing.
+ */
+export function mitreIdWarning(rawValue: string, framework?: unknown): string | null {
   const value = rawValue.trim();
   if (!value) return null;
-  // Four frameworks, four spellings of the same idea: ATT&CK's T1566 and
-  // TA0001, F3's F1001 and FA0002 (its own letter over ATT&CK's shape),
-  // ATLAS's AML.T0051 and AML.TA0000 (its own prefix over the same shape), and
-  // AADAPT's ADT3003 and ADTA0001 (its own letters, no separator).
-  return /^(AML\.)?[TF]A?\d{4}(\.\d{3})?$/i.test(value) ||
-    /^ADTA?\d{4}(\.\d{3})?$/i.test(value)
-    ? null
-    : "unexpected format (e.g. T1566, TA0001, F1001, AML.T0051, ADT3003)";
+  const format = "unexpected format (e.g. T1566, TA0001, F1001, AML.T0051, ADT3003)";
+  const claimed = FRAMEWORKS.find((f) => f.id === framework);
+  // Called without a framework, the shape is all there is to check, and any of
+  // the four is a shape. The form passes one, absent meaning ATT&CK as always,
+  // because that is where the useful half of this check lives.
+  if (claimed === undefined) {
+    return FRAMEWORKS.some((f) => f.publishes.test(value)) ? null : format;
+  }
+  if (claimed.publishes.test(value)) return null;
+  const owner = frameworkPublishing(value);
+  return owner === undefined
+    ? format
+    : `${value} is ${owner.label}'s, and this technique says ${claimed.label}`;
 }
 
 interface DetectionResult {

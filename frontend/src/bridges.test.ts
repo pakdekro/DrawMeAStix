@@ -181,6 +181,23 @@ describe("légalité des recettes", () => {
       expect(other.defaultName(cert.sdo, cert.sco)).toBe("Infrastructure - 36:f7:d4:2e:1a");
     });
 
+    it("offers no indicator when there is no pattern to put in it", () => {
+      // An account named by its display name identifies nobody: the export
+      // refuses it and the lint says so. Offering a detection indicator on top
+      // would hand the analyst a second unexportable object in one click.
+      const match = findBridges(
+        APT,
+        e("user-account", "Jane Doe", { account_name_is: "display_name" }),
+      )!;
+      expect(match.recipes.map((r) => r.key)).toEqual(["infrastructure-part"]);
+      // and it comes back as soon as something identifies the account
+      const identified = findBridges(
+        APT,
+        e("user-account", "Jane Doe", { account_name_is: "display_name", user_id: "1001" }),
+      )!;
+      expect(identified.recipes.map((r) => r.key)).toContain("indicator");
+    });
+
     it("un mutex ou un répertoire n'obtient que le pont indicateur", () => {
       // Malware artefacts on a victim host, not infrastructure - and STIX 2.1
       // offers no relationship from a malware to either. Inventing one is what

@@ -17,12 +17,19 @@ import SuggestInput from './Suggest'
 import Icon from './Icon'
 import PatternBuilder from './PatternBuilder'
 
-// Input validation (#130): per-field warnings, never blocking.
-const FIELD_WARNINGS: Record<string, (value: string) => string | null> = {
+// Input validation (#130): per-field warnings, never blocking. The second
+// argument is the rest of the form, for the one check that needs a neighbour:
+// a MITRE number is only wrong in relation to the framework claimed beside it.
+const FIELD_WARNINGS: Record<
+  string,
+  (value: string, values: Record<string, unknown>) => string | null
+> = {
   hash_md5: (v) => hashWarning('MD5', v),
   hash_sha1: (v) => hashWarning('SHA-1', v),
   hash_sha256: (v) => hashWarning('SHA-256', v),
-  x_mitre_id: mitreIdWarning,
+  // absent means ATT&CK, here as everywhere: the check is worth nothing if a
+  // select nobody opened counts as no answer
+  x_mitre_id: (v, values) => mitreIdWarning(v, values.mitre_framework ?? DEFAULT_FRAMEWORK.id),
 }
 
 function FieldWarning({ message }: { message: string | null }) {
@@ -189,7 +196,7 @@ export default function EntityForm({
                 onChange={(e) => set(f.key, e.target.value)}
               />
               <FieldWarning
-                message={FIELD_WARNINGS[f.key]?.(String(values[f.key] ?? '')) ?? null}
+                message={FIELD_WARNINGS[f.key]?.(String(values[f.key] ?? ''), values) ?? null}
               />
             </>
           )}

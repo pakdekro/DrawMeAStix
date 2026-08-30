@@ -48,6 +48,28 @@ this file is the one meant for people reading the code.
   else, and because a mixed case is exactly where you want to see which half
   of it you are looking at.
 
+- **An audit of the four corpora together, and two holes closed.** Four
+  catalogues now share one identifier space in this application, and an
+  identity derived from a number alone, so what matters is no longer what each
+  of them does but what they do to each other. That audit is now a test file:
+  no number is claimed by two frameworks under two names, every number the
+  palettes can produce is accepted by the form, every technique exports the
+  reference its framework claims and nothing else, all of it validates against
+  the OASIS schemas, and an export followed by an import and another export
+  gives the same identifiers. It held on the day, and each of those would have
+  failed in silence.
+
+  Two things it found. The form now warns when a number cannot belong to the
+  framework beside it: ATT&CK publishes no `AML.` number, so an ATLAS number
+  filed under ATT&CK was about to become a fabricated ATT&CK reference, which
+  is the exact class of mistake this release spent its time removing. The
+  shapes moved into the framework registry to do it, so a fifth framework
+  brings its own and nothing else changes. And the canonical bridges no longer
+  offer a detection indicator when there is no pattern to put in it: an account
+  named by its display name identifies nobody, the export already refuses it,
+  and offering an indicator on top handed the analyst a second unexportable
+  object in one click.
+
 - **AADAPT, where a fraud that cashes out in crypto keeps going.** MITRE's
   Adversarial Actions in Digital Asset Payment Technologies: 68 techniques over
   eleven tactics, about exchanges, wallets, bridges and the consensus

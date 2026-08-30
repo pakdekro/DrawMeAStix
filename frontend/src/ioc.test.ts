@@ -198,3 +198,37 @@ describe("hashWarning / mitreIdWarning (#130)", () => {
     expect(mitreIdWarning("")).toBeNull();
   });
 });
+
+describe("a MITRE number against the framework beside it", () => {
+  it("accepts what a framework publishes", () => {
+    expect(mitreIdWarning("T1566")).toBeNull();
+    expect(mitreIdWarning("T1566.002", "mitre-attack")).toBeNull();
+    // F3 publishes ATT&CK numbers as well as its own, and that is the whole
+    // reason the shape decides nothing on its own
+    expect(mitreIdWarning("T1110.003", "mitre-f3")).toBeNull();
+    expect(mitreIdWarning("F1005.003", "mitre-f3")).toBeNull();
+    expect(mitreIdWarning("AML.T0051", "mitre-atlas")).toBeNull();
+    expect(mitreIdWarning("ADT3003", "mitre-aadapt")).toBeNull();
+  });
+
+  it("says so when the number belongs to another framework", () => {
+    // The direction that IS decidable: ATT&CK publishes no AML number, so this
+    // would have gone out as a fabricated ATT&CK reference.
+    expect(mitreIdWarning("AML.T0051", "mitre-attack")).toContain("ATLAS");
+    expect(mitreIdWarning("ADT3003", "mitre-attack")).toContain("AADAPT");
+    expect(mitreIdWarning("F1001", "mitre-atlas")).toContain("F3");
+  });
+
+  it("checks the shape alone when no framework is given", () => {
+    // Every caller but the form asks the shape question, and all four shapes
+    // are answers to it.
+    for (const id of ["T1566", "F1001", "AML.T0051", "ADT3003"]) {
+      expect(mitreIdWarning(id)).toBeNull();
+    }
+  });
+
+  it("keeps the format message for a number nobody publishes", () => {
+    expect(mitreIdWarning("XYZ")).toContain("unexpected format");
+    expect(mitreIdWarning("T15")).toContain("unexpected format");
+  });
+});
