@@ -34,6 +34,41 @@ describe('buildMarkdown', () => {
     expect(withNarr).toContain('The intrusion set Corax uses the malware EggShell.')
   })
 
+  /**
+   * A report is read in one go, so it carries the timeline of each subject as
+   * well as the one that interleaves them. The panel does not: 300 pixels read
+   * while working want the case, not the case and its index.
+   */
+  it('carries the chronology, and one timeline per subject when there are several', () => {
+    const dated = [
+      { source: 'a', type: 'uses', target: 'b', start_time: '2026-03-14' },
+      { source: 'b', type: 'communicates-with', target: 'c', start_time: '2026-03-20' },
+    ]
+    const md = buildMarkdown('T', E, dated, true)
+    expect(md).toContain('### Chronology')
+    expect(md).toContain('- **2026-03-14** The intrusion set Corax uses the malware EggShell.')
+    expect(md).toContain('### Chronology, by subject')
+    expect(md).toContain('**The malware EggShell**')
+    expect(md).toContain('- **2026-03-20** Communicates with the domain nest.example.')
+    // nothing is left undated here, so that heading does not appear at all
+    expect(md).not.toContain('### Undated')
+  })
+
+  it('prints no chronology heading for a graph nobody dated', () => {
+    const md = buildMarkdown('T', E, R, true)
+    expect(md).not.toContain('### Chronology')
+    expect(md).not.toContain('### Undated')
+    expect(md).toContain('The intrusion set Corax uses the malware EggShell.')
+  })
+
+  it('leaves out the per-subject timelines when one subject carries everything', () => {
+    const md = buildMarkdown('T', E, [
+      { source: 'a', type: 'uses', target: 'b', start_time: '2026-03-14' },
+    ], true)
+    expect(md).toContain('### Chronology')
+    expect(md).not.toContain('### Chronology, by subject')
+  })
+
   it('commence par le titre et cite la source', () => {
     const md = buildMarkdown('Mon Op', E, R, false)
     expect(md.startsWith('# Mon Op')).toBe(true)

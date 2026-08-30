@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildNarrative, type NarrEntity, type NarrRelation } from './narrative'
+import { buildNarrative, eventClause, eventSentence, timelines } from './narrative'
+import type { NarrEntity, NarrRelation } from './narrative'
 
 const E: NarrEntity[] = [
   { id: 'corax', stix_type: 'intrusion-set', name: 'Corax' },
@@ -112,7 +113,9 @@ describe('buildNarrative', () => {
   /**
    * The defect this fixes, found by modelling a real fraud case: eight dated
    * steps came out in type order, which for a fraud IS the wrong order. The
-   * case is the sequence.
+   * case is the sequence. Ordering them in place was the first answer and it
+   * was half of one: a dated statement now leaves its subject's block for a
+   * chronology where every subject's statements stand together.
    */
   describe('chronology', () => {
     const CASE: NarrEntity[] = [
@@ -123,77 +126,101 @@ describe('buildNarrative', () => {
       { id: 'a3', stix_type: 'user-account', name: 'FR76...0555' },
     ]
 
-    it('a dated clause says its day and comes after the undated ones', () => {
-      const { story } = buildNarrative(CASE, [
+    it('lifts a dated statement out of its block, and leaves the rest', () => {
+      const { chronology, story } = buildNarrative(CASE, [
         { source: 'c', type: 'uses', target: 'm' },
         { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-20' },
         { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-14' },
       ])
-      expect(story[0].clauses).toEqual([
-        'uses the malware EggShell',
-        'compromises the account FR76...0987 on 2026-03-14',
-        'compromises the account FR76...0143 on 2026-03-20',
+      expect(chronology.map((e) => `${e.day} ${eventSentence(e)}`)).toEqual([
+        '2026-03-14 The campaign Ferronnier compromises the account FR76...0987.',
+        '2026-03-20 The campaign Ferronnier compromises the account FR76...0143.',
+      ])
+      expect(story).toEqual([
+        { subject: 'The campaign Ferronnier', clauses: ['uses the malware EggShell'] },
       ])
     })
 
-    it('two relations of the same day and verb share one clause', () => {
-      const { story } = buildNarrative(CASE, [
+    it('two relations of the same day and verb share one event', () => {
+      const { chronology } = buildNarrative(CASE, [
         { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14' },
         { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-14' },
         { source: 'c', type: 'compromises', target: 'a3', start_time: '2026-03-15' },
       ])
-      expect(story[0].clauses).toEqual([
-        'compromises the accounts FR76...0143 and FR76...0987 on 2026-03-14',
-        'compromises the account FR76...0555 on 2026-03-15',
+      expect(chronology.map((e) => e.clause)).toEqual([
+        'compromises the accounts FR76...0143 and FR76...0987',
+        'compromises the account FR76...0555',
       ])
     })
 
     it('an imported timestamp is read as its day', () => {
-      const { story } = buildNarrative(CASE, [
+      const { chronology } = buildNarrative(CASE, [
         { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14T09:12:00.000Z' },
         { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-14' },
       ])
-      expect(story[0].clauses).toEqual([
-        'compromises the accounts FR76...0143 and FR76...0987 on 2026-03-14',
-      ])
+      expect(chronology).toHaveLength(1)
+      expect(chronology[0].day).toBe('2026-03-14')
     })
 
-    /** the type order is a guess, a date is the analyst speaking */
-    it('the blocks follow the dates, not the attack chain', () => {
-      const { story } = buildNarrative(CASE, [
-        // the malware moves first in type order, and last in time
+    /**
+     * The half an in-place ordering could not do: two subjects, one timeline.
+     */
+    it('interleaves the subjects, earliest first', () => {
+      const { chronology, story } = buildNarrative(CASE, [
+        // the malware comes first in type order and last in time
         { source: 'm', type: 'communicates-with', target: 'a3', start_time: '2026-04-02' },
         { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14' },
       ])
-      expect(story.map((b) => b.subject)).toEqual([
+      expect(chronology.map((e) => e.subject)).toEqual([
         'The campaign Ferronnier',
         'The malware EggShell',
       ])
+      // both subjects said everything they had to say with a date on it
+      expect(story).toEqual([])
     })
 
-    it('an undated block keeps its place ahead of the dated ones', () => {
-      const { story } = buildNarrative(CASE, [
+    it('leaves the undated statements in blocks, in the reading order', () => {
+      const { chronology, story } = buildNarrative(CASE, [
         { source: 'm', type: 'communicates-with', target: 'a3' },
         { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14' },
       ])
-      expect(story.map((b) => b.subject)).toEqual([
-        'The malware EggShell',
-        'The campaign Ferronnier',
-      ])
+      expect(chronology).toHaveLength(1)
+      expect(story.map((b) => b.subject)).toEqual(['The malware EggShell'])
     })
 
-    it('a graph without a single date reads exactly as before', () => {
+    it('gives a report one timeline per subject, and only when it says something new', () => {
+      const oneSubject = buildNarrative(CASE, [
+        { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14' },
+        { source: 'c', type: 'compromises', target: 'a2', start_time: '2026-03-20' },
+      ])
+      // one actor doing everything: the per-subject view is the same list again
+      expect(timelines(oneSubject.chronology)).toEqual([])
+
+      const two = buildNarrative(CASE, [
+        { source: 'c', type: 'compromises', target: 'a1', start_time: '2026-03-14' },
+        { source: 'm', type: 'communicates-with', target: 'a3', start_time: '2026-04-02' },
+      ])
+      expect(timelines(two.chronology).map((t) => t.subject)).toEqual([
+        'The campaign Ferronnier',
+        'The malware EggShell',
+      ])
+      expect(eventClause(two.chronology[0])).toBe('Compromises the account FR76...0143.')
+    })
+
+    it('a graph without a single date has no chronology and reads as before', () => {
       const before = buildNarrative(E, R)
       const after = buildNarrative(
         E,
         R.map((r) => ({ ...r, start_time: null })),
       )
       expect(after).toEqual(before)
+      expect(before.chronology).toEqual([])
     })
   })
 
   it('signale un graphe vide', () => {
     expect(buildNarrative([], [])).toEqual({
+      chronology: [],
       story: [],
       detection: [],
       isolated: [],

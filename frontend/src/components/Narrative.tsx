@@ -1,5 +1,6 @@
 import { memo, useMemo, useState } from 'react'
-import { buildNarrative, type NarrEntity, type NarrRelation } from '../narrative'
+import { buildNarrative, eventSentence } from '../narrative'
+import type { NarrEntity, NarrRelation } from '../narrative'
 import Icon from './Icon'
 
 /**
@@ -16,7 +17,11 @@ function Narrative({
 }) {
   const [open, setOpen] = useState(true)
   const n = useMemo(() => buildNarrative(entities, relations), [entities, relations])
-  const nothing = !n.empty && n.story.length === 0 && n.detection.length === 0
+  const nothing =
+    !n.empty && n.chronology.length === 0 && n.story.length === 0 && n.detection.length === 0
+  // Headings appear with the chronology and not before: a graph with no date
+  // has one list, and naming it "undated" would answer a question nobody asked.
+  const named = n.chronology.length > 0
 
   return (
     <div className={`narrative ${open ? 'open' : ''}`}>
@@ -36,6 +41,20 @@ function Narrative({
           {nothing && (
             <p className="hint">No relationship yet: link some entities.</p>
           )}
+          {named && (
+            <>
+              <h4>Chronology</h4>
+              <ol className="narr-chrono">
+                {n.chronology.map((e, i) => (
+                  <li key={`c${i}`}>
+                    <span className="narr-day">{e.day}</span>
+                    <span>{eventSentence(e)}</span>
+                  </li>
+                ))}
+              </ol>
+            </>
+          )}
+          {named && n.story.length > 0 && <h4>Undated</h4>}
           {/* The subject is written once. On a hub, one paragraph per verb
               meant ten of them opening with the same six words. */}
           {n.story.map((block, i) =>

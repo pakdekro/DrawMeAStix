@@ -10,6 +10,7 @@
 
 import { getNodesBounds, getViewportForBounds } from '@xyflow/react'
 import type { Node } from '@xyflow/react'
+import { eventClause, eventSentence, timelines } from './narrative'
 import type { Narrative, NarrBlock } from './narrative'
 import { groupNotes, opinionLabel, type ReportNote, type ReportSubject } from './report'
 
@@ -197,6 +198,15 @@ export async function composeReport(
 
   if (narr) {
     head('Narrative')
+    if (narr.chronology.length > 0) {
+      sub('Chronology')
+      narr.chronology.forEach((e) => para(`${e.day}  ${eventSentence(e)}`))
+      for (const { subject, events } of timelines(narr.chronology)) {
+        sub(subject)
+        events.forEach((e) => para(`${e.day}  ${eventClause(e)}`))
+      }
+      if (narr.story.length > 0) sub('Undated')
+    }
     narr.story.forEach((b) => storyBlock(b, para, sub))
     if (narr.detection.length) {
       head('Detection')
@@ -350,6 +360,22 @@ export async function graphToPdf(
     }
     if (narr) {
       heading('Narrative')
+      if (narr.chronology.length > 0) {
+        block(narr.chronology.map((e) => `${e.day}  ${eventSentence(e)}`), 10, 55)
+        // Per subject only when several are dated, so a report never carries
+        // the same timeline twice under two headings.
+        for (const { subject, events } of timelines(narr.chronology)) {
+          pdf.setFont('helvetica', 'bold').setFontSize(10).setTextColor(60)
+          if (y > pageH - M) {
+            pdf.addPage()
+            y = M
+          }
+          pdf.text(subject, M, y)
+          y += 14
+          block(events.map((e) => `${e.day}  ${eventClause(e)}`), 10, 55)
+        }
+        if (narr.story.length > 0) heading('Undated')
+      }
       for (const b of narr.story) {
         if (b.clauses.length === 1) {
           block([`${b.subject} ${b.clauses[0]}.`], 10, 55)

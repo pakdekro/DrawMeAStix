@@ -187,13 +187,24 @@ this file is the one meant for people reading the code.
 - **The narrative reads the case in the order it happened.** A relation has
   carried an activity window since the first release and the narrative
   ignored it, so the story came out in the reading order of the attack chain:
-  actors, then tooling, then infrastructure, then observables. That order is a decent
-  guess when nothing better is known, and it is exactly wrong for a fraud,
-  where the case IS the sequence and eight dated steps arrive as a bag. A
-  dated statement now says its day and takes its rank from it, an undated one
-  keeps its place ahead of the sequence, and two of the same day and verb
-  still share a clause. A graph with no date reads exactly as it did before,
-  and the rule holds inside a paragraph as well as between them.
+  actors, then tooling, then infrastructure, then observables. That order is a
+  decent guess when nothing better is known, and it is exactly wrong for a
+  fraud, where the case IS the sequence and eight dated steps arrive as a bag.
+
+  So a **Chronology**, named as such: every dated statement, from every
+  subject, on one timeline, each line saying who did what that day. Ordering
+  them in place was the first answer and it was half of one, because a case
+  whose actor and whose malware are both dated then had two timelines to
+  interleave by eye, and because the undated bulk a scenario generates opened
+  the story ahead of what actually happened. What carries no date follows,
+  under **Undated**, in the reading order it always had. A graph nobody dated
+  has no chronology, hence no headings and nothing to explain: it reads
+  exactly as it did before.
+
+  A report gets one thing the panel does not: the same chronology again, one
+  timeline per subject, and only when several subjects are dated. One actor
+  doing everything would print the same list twice under two headings, and 300
+  pixels read while working want the case rather than the case and its index.
 
 - **A technique says which knowledge base its number belongs to, and both
   are named.** ATT&CK and F3 look identical on a canvas, same shape and same
