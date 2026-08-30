@@ -74,6 +74,12 @@ export function buildMarkdown(
       if (perSubject.length > 0) {
         out.push('### Chronology, by subject', '')
         for (const { subject, events } of perSubject) {
+          // one event is not a sequence: it reads as a line, the way a block
+          // with a single clause reads as a sentence
+          if (events.length === 1) {
+            out.push(`**${subject}** - **${events[0].day}** ${eventClause(events[0])}`, '')
+            continue
+          }
           out.push(`**${subject}**`, '')
           for (const event of events) out.push(`- **${event.day}** ${eventClause(event)}`)
           out.push('')
