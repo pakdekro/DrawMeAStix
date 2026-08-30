@@ -11,6 +11,7 @@
  */
 
 import { renderToString, renderToStaticMarkup } from 'react-dom/server'
+import AtlasGuide from './components/AtlasGuide'
 import AttackGuide from './components/AttackGuide'
 import DataPage from './components/DataPage'
 import F3Guide from './components/F3Guide'
@@ -44,4 +45,8 @@ export function renderAttack(): string {
 
 export function renderF3(): string {
   return renderToStaticMarkup(<F3Guide mode="static" />)
+}
+
+export function renderAtlas(): string {
+  return renderToStaticMarkup(<AtlasGuide mode="static" />)
 }

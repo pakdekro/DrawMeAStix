@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Five URLs, and no more. Investigations live in each analyst's own browser:
+  Six URLs, and no more. Investigations live in each analyst's own browser:
   there is no other page to discover, and the #/inv/<id> routes are not
   addresses in the web sense.
 -->
@@ -10,4 +10,5 @@
   <url><loc>https://app.drawmeastix.io/about</loc></url>
   <url><loc>https://app.drawmeastix.io/attack</loc></url>
   <url><loc>https://app.drawmeastix.io/f3</loc></url>
+  <url><loc>https://app.drawmeastix.io/atlas</loc></url>
 </urlset>

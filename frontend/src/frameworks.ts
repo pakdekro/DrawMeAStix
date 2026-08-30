@@ -17,6 +17,10 @@ export interface Framework {
   short: string;
   /** the name in a form, where a word of context fits */
   label: string;
+  /** the page that explains it, at `/<route>` and `#/<route>` */
+  route: string;
+  /** what to type, in the palette that searches it */
+  placeholder: string;
   /**
    * Where a number of this framework is documented, when it needs saying: an
    * ATT&CK number resolves itself for any consumer on the planet, F1001
@@ -26,15 +30,34 @@ export interface Framework {
 }
 
 export const FRAMEWORKS: Framework[] = [
-  { id: "mitre-attack", short: "ATT&CK", label: "ATT&CK" },
+  {
+    id: "mitre-attack",
+    short: "ATT&CK",
+    label: "ATT&CK",
+    route: "attack",
+    placeholder: "APT28, T1566, Mimikatz…",
+  },
   {
     id: "mitre-f3",
     short: "F3",
     label: "F3 (fraud)",
+    route: "f3",
+    placeholder: "F1001, mule, 3DS…",
     // The hash is not a typo and not ours: the F3 site is hash routed on
     // /technique/:id, and the flat path the F3 bundle itself publishes is
     // served by nothing.
     url: (id) => `https://ctid.mitre.org/fraud#/technique/${id}`,
+  },
+  {
+    id: "mitre-atlas",
+    short: "ATLAS",
+    label: "ATLAS (AI systems)",
+    route: "atlas",
+    placeholder: "AML.T0051, prompt, poisoning…",
+    // The one MITRE's own ATLAS bundle publishes. Their host answers it with
+    // a 404 status and serves the application anyway, which a browser
+    // resolves and curl does not: the page is there.
+    url: (id) => `https://atlas.mitre.org/techniques/${id}`,
   },
 ];
 

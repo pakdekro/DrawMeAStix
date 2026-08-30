@@ -44,6 +44,12 @@ describe('the framework mark on a card', () => {
     )
   })
 
+  it('names ATLAS, which shares 36 names with ATT&CK and no number', () => {
+    expect(card({ x_mitre_id: 'AML.T0051', mitre_framework: 'mitre-atlas' })).toContain(
+      '>ATLAS<',
+    )
+  })
+
   /** F3 publishes T-numbers, so the property decides and the number never does */
   it('marks an F3 technique that carries an ATT&CK number', () => {
     expect(card({ x_mitre_id: 'T1110.003', mitre_framework: 'mitre-f3' })).toContain('>F3<')

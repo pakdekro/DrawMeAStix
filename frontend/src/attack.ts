@@ -5,6 +5,8 @@
  * with the MITRE properties pre-filled.
  */
 
+import { DEFAULT_FRAMEWORK } from "./frameworks";
+
 export interface AttackEntry {
   type: "attack-pattern" | "intrusion-set" | "malware" | "tool";
   /**
@@ -20,7 +22,8 @@ export interface AttackEntry {
   tactics?: string[];
   /**
    * MITRE framework the identifier belongs to. ABSENT means ATT&CK, so every
-   * dataset and every investigation written before F3 keeps its meaning.
+   * dataset and every investigation written before there was a second one
+   * keeps its meaning.
    *
    * Only the 80 fraud-specific techniques carry "mitre-f3". The 43 that F3
    * reuses by number are emitted as ATT&CK techniques by the dataset build:
@@ -28,7 +31,16 @@ export interface AttackEntry {
    * thing that makes a fraud case and an intrusion case meet on the same
    * object.
    */
-  framework?: "mitre-attack" | "mitre-f3";
+  framework?: "mitre-attack" | "mitre-f3" | "mitre-atlas";
+  /**
+   * The ATT&CK technique this one ADAPTS, when its own framework says so.
+   *
+   * ATLAS carries this for 37 of its 178 techniques, and it is not an
+   * identifier of its own: `AML.T0000` was inspired by `T1596`, it is not
+   * `T1596`. It is read on the framework page and never written into a
+   * bundle, exactly as MITRE's own ATLAS bundle does not write it.
+   */
+  attack?: string;
 }
 
 export interface AttackDataset {
@@ -100,11 +112,12 @@ export function entryToCreation(entry: AttackEntry): {
     // x_mitre_id drives the deterministic OpenCTI ID and the external reference
     properties.x_mitre_id = entry.id;
     // …and the framework decides what that reference CLAIMS. Without it the
-    // builder stamps every technique `mitre-attack`, so an F1001 would go out
-    // asserting an ATT&CK number that does not exist - the same fabricated
-    // reference the branch above refuses to write for an actor.
-    if (entry.framework === "mitre-f3") {
-      properties.mitre_framework = "mitre-f3";
+    // builder stamps every technique `mitre-attack`, so an F1001 or an
+    // AML.T0051 would go out asserting an ATT&CK number that does not exist -
+    // the same fabricated reference the branch above refuses to write for an
+    // actor. Absent means the default, so only the others are written.
+    if (entry.framework !== undefined && entry.framework !== DEFAULT_FRAMEWORK.id) {
+      properties.mitre_framework = entry.framework;
     }
   } else {
     properties.external_references = [

@@ -21,6 +21,7 @@
 import { useEffect, useState } from 'react'
 import { byVerb, canLink, incoming, label, outgoing, patternExamples } from '../guide'
 import type { BridgeOption, RelationLine } from '../guide'
+import { FRAMEWORKS } from '../frameworks'
 import { SCO_ORDER, SDO_ORDER, typeMeta } from '../stixMeta'
 import Icon from './Icon'
 import VerbList from './VerbList'
@@ -204,17 +205,20 @@ export default function StixGuide({ mode = 'app' }: { mode?: GuideMode }) {
           <p>
             STIX says what you may write down. It says nothing about{' '}
             <em>which</em> technique you are looking at: that comes from a knowledge base,
-            and this canvas ships two of them. They meet on the same object, an{' '}
-            <code>attack-pattern</code>, so a case can cross from an intrusion into a fraud
-            without changing mode.
+            and this canvas ships three of them. They all land on the same object, an{' '}
+            <code>attack-pattern</code>, so one case can cross from an intrusion into a
+            fraud, or into an attack on a model, without changing mode.
           </p>
           <div className="guide-actions">
-            <a className="guide-cta" href={mode === 'static' ? '/attack' : '#/attack'}>
-              ATT&CK
-            </a>
-            <a className="guide-cta" href={mode === 'static' ? '/f3' : '#/f3'}>
-              F3, the fraud matrix
-            </a>
+            {FRAMEWORKS.map((f) => (
+              <a
+                key={f.id}
+                className="guide-cta"
+                href={mode === 'static' ? `/${f.route}` : `#/${f.route}`}
+              >
+                {f.label}
+              </a>
+            ))}
           </div>
         </section>
 

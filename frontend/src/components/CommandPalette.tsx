@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { loadAttackDataset, searchAttack } from '../attack'
+import { searchAttack } from '../attack'
 import type { AttackEntry } from '../attack'
 import { findBridges } from '../bridges'
-import { loadF3Dataset } from '../f3'
-import { DEFAULT_FRAMEWORK, frameworkOf } from '../frameworks'
+import { loadFramework } from '../datasets'
+import { DEFAULT_FRAMEWORK, FRAMEWORKS } from '../frameworks'
 import { allowedRelationships } from '../stix/relationships'
 import { SCO_ORDER, SDO_ORDER, typeMeta } from '../stixMeta'
 import { BUILTIN_TEMPLATES } from '../templates'
@@ -120,8 +120,8 @@ export default function CommandPalette({
 }) {
   const [query, setQuery] = useState('')
   const [cursor, setCursor] = useState(0)
-  const [attack, setAttack] = useState<AttackEntry[]>([])
-  const [f3, setF3] = useState<AttackEntry[]>([])
+  // One corpus per framework, fetched on the first open, kept afterwards.
+  const [corpora, setCorpora] = useState<Record<string, AttackEntry[]>>({})
   /**
    * "Relate" mode: `null` outside the mode, `{}` waiting for the source,
    * `{ sources }` waiting for the target.
@@ -147,26 +147,30 @@ export default function CommandPalette({
 
   // Loading the dataset, split out for that very reason. Once only: the
   // length check is enough, the module already caches.
+  // Each framework's OWN techniques. What one borrows from another by number
+  // is already in that other one's group and builds the very same object:
+  // offered twice, the palette would be asking the analyst to choose between
+  // a thing and itself. A failure is silent, here: the palette works without
+  // a dataset and has nothing useful to say about its absence.
   useEffect(() => {
-    if (!open || attack.length > 0) return
-    loadAttackDataset()
-      .then((d) => setAttack(d.entries))
-      .catch(() => {
-        /* no dataset: the palette works without it, and says nothing */
-      })
-  }, [open, attack.length])
-
-  // F3's own techniques only. The 43 it reuses from ATT&CK by number are
-  // already above, and they build the very same object: offered twice, the
-  // palette would be asking the analyst to choose between a thing and itself.
-  useEffect(() => {
-    if (!open || f3.length > 0) return
-    loadF3Dataset()
-      .then((d) => setF3(d.entries.filter((e) => e.framework === 'mitre-f3')))
-      .catch(() => {
-        /* same as above: no dataset, no group, no noise */
-      })
-  }, [open, f3.length])
+    if (!open) return
+    for (const framework of FRAMEWORKS) {
+      if (corpora[framework.id]) continue
+      loadFramework(framework.id)
+        .then((corpus) =>
+          setCorpora((c) => ({
+            ...c,
+            [framework.id]: corpus.entries.filter(
+              (e) => (e.framework ?? DEFAULT_FRAMEWORK.id) === framework.id,
+            ),
+          })),
+        )
+        .catch(() => {})
+    }
+    // `corpora` deliberately out of the deps: it is what this effect writes,
+    // and reading it here only decides what is already loaded.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   const byId = useMemo(() => new Map(entities.map((e) => [e.id, e])), [entities])
 
@@ -262,12 +266,8 @@ export default function CommandPalette({
     // are not the same body of knowledge and the analyst is entitled to know
     // which one answered.
     if (query.trim().length >= 2) {
-      const corpora = [
-        { entries: attack, framework: DEFAULT_FRAMEWORK },
-        { entries: f3, framework: frameworkOf('mitre-f3') },
-      ]
-      for (const { entries, framework } of corpora) {
-        for (const entry of searchAttack(entries, query.trim(), PER_GROUP)) {
+      for (const framework of FRAMEWORKS) {
+        for (const entry of searchAttack(corpora[framework.id] ?? [], query.trim(), PER_GROUP)) {
           out.push({
             id: `${framework.id}:${entry.id}`,
             group: framework.label,
@@ -340,8 +340,7 @@ export default function CommandPalette({
     open,
     query,
     entities,
-    attack,
-    f3,
+    corpora,
     actions,
     relate,
     selectedEntityId,

@@ -1,14 +1,15 @@
 # Draw Me A STIX - keeping the shipped datasets from ageing in silence.
 #
-# Three corpora are committed under frontend/public/: ATT&CK, the actor
-# aliases distilled from the MISP galaxy, and the ISO 3166-1 countries. They
-# are what the analyst is offered while typing, so they decide whether two
-# people name the same thing the same way. Left alone they simply rot: the
-# tool went from ATT&CK 17 to 19.1 without anything saying so.
+# Five corpora are committed under frontend/public/: the three frameworks
+# (ATT&CK, F3, ATLAS), the actor aliases distilled from the MISP galaxy, and
+# the ISO 3166-1 countries. They are what the analyst is offered while typing,
+# so they decide whether two people name the same thing the same way. Left
+# alone they simply rot: the tool went from ATT&CK 17 to 19.1 without anything
+# saying so.
 #
-# Four corpora now: the framework pages at /attack and /f3 describe these
-# files in prose, and a test holds the two in step, so an enrichment upstream
-# reaches the documentation through the same weekly run.
+# The framework pages at /attack, /f3 and /atlas describe these files in
+# prose, and a test holds the two in step, so an enrichment upstream reaches
+# the documentation through the same weekly run.
 #
 # This job regenerates them weekly and OPENS A PULL REQUEST when the content
 # moved. Deliberately not a commit: a dataset bump changes what analysts see,
@@ -51,7 +52,9 @@ jobs:
       # Order matters, twice over: the actor arbitration reads the ATT&CK file
       # to know which names are already resolved, and the F3 build reads it to
       # take ATT&CK's spelling back for the techniques the two frameworks
-      # share. Both run after it.
+      # share. Both run after it. ATLAS borrows no identifier and needs
+      # nothing from it, and runs there anyway so that the report reads in the
+      # order of the panel.
       - name: Regenerate
         id: build
         working-directory: backend
@@ -60,6 +63,7 @@ jobs:
             echo 'report<<REPORT'
             uv run python scripts/build_attack_dataset.py
             uv run python scripts/build_f3_dataset.py
+            uv run python scripts/build_atlas_dataset.py
             uv run python scripts/build_actors_dataset.py
             uv run python scripts/build_countries_dataset.py
             echo REPORT

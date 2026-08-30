@@ -168,7 +168,10 @@ export default function AttackGuide({ mode = 'app' }: { mode?: GuideMode }) {
         </ul>
         <div className="guide-actions">
           <a className="guide-cta" href={guideHref(mode, 'f3')}>
-            The fraud matrix, F3
+            F3, the fraud matrix
+          </a>
+          <a className="guide-cta" href={guideHref(mode, 'atlas')}>
+            ATLAS, the AI matrix
           </a>
           <a className="guide-cta" href={guideHref(mode, 'guide')}>
             Objects, observables, relationships
