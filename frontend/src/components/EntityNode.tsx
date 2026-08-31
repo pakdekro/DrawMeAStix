@@ -44,7 +44,7 @@ export default function EntityNode({ id, data, selected }: NodeProps<EntityNodeT
     : []
   // Which knowledge base a technique's number belongs to, named rather than
   // implied: two frameworks is where "no mark means ATT&CK" still reads as a
-  // rule, three is where it reads as an oversight. Read off the property and
+  // rule, and any more than that is where it reads as an oversight. Read off the property and
   // never off the number, since F3 reuses 43 ATT&CK numbers and publishes
   // T-numbers of its own. No number, no claim to make.
   const framework =

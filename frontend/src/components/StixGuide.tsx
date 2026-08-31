@@ -26,6 +26,15 @@ import { SCO_ORDER, SDO_ORDER, typeMeta } from '../stixMeta'
 import Icon from './Icon'
 import VerbList from './VerbList'
 
+/**
+ * How many knowledge bases the canvas carries, spelled out. Counted from the
+ * registry rather than written into the sentence, which is how the page came
+ * to say three while offering four links right underneath it.
+ */
+const HOW_MANY =
+  ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven'][FRAMEWORKS.length] ??
+  String(FRAMEWORKS.length)
+
 export type GuideMode = 'app' | 'static'
 
 export default function StixGuide({ mode = 'app' }: { mode?: GuideMode }) {
@@ -205,7 +214,7 @@ export default function StixGuide({ mode = 'app' }: { mode?: GuideMode }) {
           <p>
             STIX says what you may write down. It says nothing about{' '}
             <em>which</em> technique you are looking at: that comes from a knowledge base,
-            and this canvas ships three of them. They all land on the same object, an{' '}
+            and this canvas ships {HOW_MANY} of them. They all land on the same object, an{' '}
             <code>attack-pattern</code>, so one case can cross from an intrusion into a
             fraud, or into an attack on a model, without changing mode.
           </p>
