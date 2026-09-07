@@ -31,6 +31,12 @@ export const ATLAS_TACTICS: { id: string; name: string; attack?: string; gloss: 
     gloss: 'assembling the means: datasets, proxy models, poisoned artefacts.',
   },
   {
+    id: 'AML.TA0001',
+    name: 'AI Attack Adaptation',
+    gloss:
+      'shaping the attack against the model, and reshaping it as it runs: crafting adversarial inputs, training a proxy, planting a backdoor, letting an agent find its own path. The other half of what ATT&CK cannot say.',
+  },
+  {
     id: 'AML.TA0004',
     name: 'Initial Access',
     attack: 'TA0001',
@@ -91,12 +97,6 @@ export const ATLAS_TACTICS: { id: string; name: string; attack?: string; gloss: 
     gloss: 'gathering what is worth taking: data, artefacts, the model itself.',
   },
   {
-    id: 'AML.TA0001',
-    name: 'AI Attack Staging',
-    gloss:
-      'preparing the attack ON the model: crafting adversarial examples, training a proxy, planting a backdoor. The other half of what ATT&CK cannot say.',
-  },
-  {
     id: 'AML.TA0014',
     name: 'Command and Control',
     attack: 'TA0011',
@@ -151,22 +151,23 @@ export default function AtlasGuide({ mode = 'app' }: { mode?: GuideMode }) {
         <dl className="guide-verbs">
           <div>
             <dt>
+              <code>AML.TA0001</code> AI Attack Adaptation
+            </dt>
+            <dd>
+              the work done ON the model, before the attack and while it runs: training a
+              proxy of it, crafting adversarial inputs, planting a backdoor during training,
+              and, since 2026.08, an agent adjusting its own attack path. There is no ATT&CK
+              tactic for preparing an attack against a statistical artefact.
+            </dd>
+          </div>
+          <div>
+            <dt>
               <code>AML.TA0000</code> AI Model Access
             </dt>
             <dd>
               the model as a thing you reach: through a product that calls it, through its
               API, through the weights on a disk. Access to the model is not access to a
               host, and defending one is not defending the other.
-            </dd>
-          </div>
-          <div>
-            <dt>
-              <code>AML.TA0001</code> AI Attack Staging
-            </dt>
-            <dd>
-              the work done ON the model before using it: training a proxy of it, crafting
-              adversarial inputs, planting a backdoor during training. There is no ATT&CK
-              tactic for preparing an attack against a statistical artefact.
             </dd>
           </div>
         </dl>
@@ -228,7 +229,7 @@ export default function AtlasGuide({ mode = 'app' }: { mode?: GuideMode }) {
         <p>
           <strong>ATLAS borrows no identifier</strong>, and that is its whole difference
           with the fraud matrix. Where F3 reuses 43 ATT&CK numbers verbatim, ATLAS gives
-          everything a number of its own and, for 37 of its 178 techniques, records which
+          everything a number of its own and, for 42 of its 197 techniques, records which
           ATT&CK technique it was adapted from. <code>AML.T0000</code> is adapted from{' '}
           <code>T1596</code>; it is not <code>T1596</code>. So the export writes an{' '}
           <code>mitre-atlas</code> reference and nothing else, exactly as MITRE's own ATLAS
@@ -239,7 +240,7 @@ export default function AtlasGuide({ mode = 'app' }: { mode?: GuideMode }) {
       <section className="guide-section">
         <h2>Two cards called Phishing</h2>
         <p>
-          Thirty-six ATLAS techniques carry a name that also exists in ATT&CK. Put both on
+          Forty-one ATLAS techniques carry a name that also exists in ATT&CK. Put both on
           one canvas and you get two cards with the same name, two different numbers and two
           different framework marks, which is correct: they are two entries in two
           catalogues, and the identifiers this tool derives keep them apart the whole way

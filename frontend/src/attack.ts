@@ -44,7 +44,7 @@ export interface AttackEntry {
   /**
    * The ATT&CK technique this one ADAPTS, when its own framework says so.
    *
-   * ATLAS carries this for 37 of its 178 techniques, and it is not an
+   * ATLAS carries this for 42 of its 197 techniques, and it is not an
    * identifier of its own: `AML.T0000` was inspired by `T1596`, it is not
    * `T1596`. It is read on the framework page and never written into a
    * bundle, exactly as MITRE's own ATLAS bundle does not write it.
