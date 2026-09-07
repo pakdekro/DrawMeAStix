@@ -21,7 +21,7 @@ at all). The framework page says so rather than the omission being discovered.
 
 Versioning follows MITRE's own pointers instead of a pinned file:
 `dist/ATLAS-latest.yaml` holds the path of the current series pointer, which
-holds the name of the current release. A release is `ATLAS-2026.07.yaml`, dated
+holds the name of the current release. A release is `ATLAS-2026.08.yaml`, dated
 rather than numbered.
 
 Usage: cd backend && uv run python scripts/build_atlas_dataset.py
@@ -56,7 +56,7 @@ def latest_release() -> tuple[str, dict]:
     """Follow MITRE's pointers to the current release, and return it.
 
     `dist/ATLAS-latest.yaml` contains `v6/ATLAS-latest.yaml`, which contains
-    `ATLAS-2026.07.yaml`. Following the chain rather than pinning a name is
+    `ATLAS-2026.08.yaml`. Following the chain rather than pinning a name is
     what makes the weekly refresh see a new release at all; ATLAS ships one
     every month or two, and `dist/ATLAS.yaml` is a deprecated v5 copy that
     still sits there for whoever pinned it.

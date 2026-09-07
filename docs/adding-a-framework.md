@@ -38,12 +38,12 @@ number is one object, and two names for it would put two cards on the canvas
 for one thing. If the answer is yes, the borrowed entries must be emitted as
 the framework they belong to, and their names taken back from it.
 
-ATLAS answers no, and shows what "no" looks like: 37 of its techniques record
+ATLAS answers no, and shows what "no" looks like: 42 of its techniques record
 the ATT&CK technique they were **adapted from**, in a field of their own, while
 keeping an `AML.*` number. That is a cross-reference and not an identity, so it
 travels in the dataset, is read on the framework page, and is never written
 into a bundle. MITRE's own ATLAS bundle does not write it either, which is the
-argument that settles it. Watch for the near-miss too: 36 ATLAS techniques
+argument that settles it. Watch for the near-miss too: 41 ATLAS techniques
 carry a name ATT&CK also uses, and that is not a collision, because two numbers
 are two objects.
 

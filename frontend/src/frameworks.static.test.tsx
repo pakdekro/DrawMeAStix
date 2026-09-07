@@ -121,13 +121,13 @@ describe('the ATLAS page says what the shipped dataset says', () => {
       attackDataset.entries.filter((e) => e.type === 'attack-pattern').map((e) => e.name),
     )
     const shared = atlasDataset.entries.filter((e) => attackNames.has(e.name)).length
-    expect(shared).toBe(36)
-    expect(pages.atlas.static).toContain('Thirty-six ATLAS techniques')
+    expect(shared).toBe(41)
+    expect(pages.atlas.static).toContain('Forty-one ATLAS techniques')
   })
 
   it('names the two tactics ATT&CK has no word for, and only those', () => {
     const own = ATLAS_TACTICS.filter((t) => t.attack === undefined).map((t) => t.id)
-    expect(own).toEqual(['AML.TA0000', 'AML.TA0001'])
+    expect(own).toEqual(['AML.TA0001', 'AML.TA0000'])
     for (const id of own) expect(pages.atlas.static).toContain(id)
   })
 })

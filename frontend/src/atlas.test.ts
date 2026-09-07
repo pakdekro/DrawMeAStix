@@ -4,7 +4,7 @@
  * The framework that borrows nothing: every identifier is an `AML.*` of its
  * own, so none of the arbitration F3 needs applies here. What has to hold
  * instead is that nothing of ATLAS ever claims to be ATT&CK, in either
- * direction: 37 of its techniques adapt an ATT&CK one and 36 carry a name
+ * direction: 42 of its techniques adapt an ATT&CK one and 41 carry a name
  * ATT&CK also uses, and neither may leak into an identifier or a reference.
  */
 
@@ -69,7 +69,7 @@ function technique(entry: AttackEntry): EntityRow {
 
 describe("the distilled dataset", () => {
   it("is populated and well formed", () => {
-    expect(ENTRIES).toHaveLength(178);
+    expect(ENTRIES).toHaveLength(197);
     expect(ATLAS.tactics).toHaveLength(16);
     for (const e of ENTRIES) {
       expect(e.type).toBe("attack-pattern");
@@ -104,12 +104,12 @@ describe("the distilled dataset", () => {
     // an ATLAS technique may ADAPT an ATT&CK one, which is a reference and not
     // an identity: the number it adapts is ATT&CK's and stays ATT&CK's
     const adapting = ENTRIES.filter((e) => e.attack !== undefined);
-    expect(adapting).toHaveLength(37);
+    expect(adapting).toHaveLength(42);
     for (const e of adapting) expect(e.attack).toMatch(/^T\d{4}(\.\d{3})?$/);
   });
 
   /**
-   * Thirty-six names exist in both catalogues. That is not a collision to
+   * Forty-one names exist in both catalogues. That is not a collision to
    * arbitrate, unlike F3's: two catalogue entries with two numbers are two
    * objects, and the identifiers keep them apart.
    */
@@ -118,7 +118,7 @@ describe("the distilled dataset", () => {
       ATTACK.filter((e) => e.type === "attack-pattern").map((e) => e.name),
     );
     const shared = ENTRIES.filter((e) => attackNames.has(e.name));
-    expect(shared.length).toBe(36);
+    expect(shared.length).toBe(41);
     const twin = ATTACK.find((e) => e.type === "attack-pattern" && e.name === shared[0].name)!;
     expect(attackPatternId({ x_mitre_id: shared[0].id! })).not.toBe(
       attackPatternId({ x_mitre_id: twin.id! }),

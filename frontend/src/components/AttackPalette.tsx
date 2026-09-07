@@ -16,7 +16,7 @@ import Icon from './Icon'
  * One corpus per framework behind one switch, rather than one merged list.
  * ATT&CK and F3 share 43 identifiers, so a single list would show the same
  * technique twice and make the lookup of a shared id depend on the order of
- * the map. ATLAS shares none, and would still have brought 178 techniques
+ * the map. ATLAS shares none, and would still have brought 197 techniques
  * about AI systems into the results of an analyst working an intrusion. The
  * switch also keeps the promise the panel makes on screen: what it says is
  * what it searches.
