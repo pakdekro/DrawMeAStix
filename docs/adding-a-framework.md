@@ -6,7 +6,7 @@ is the recipe, written straight after F3 went in and then walked with ATLAS,
 which took an afternoon rather than a rediscovery.
 
 They are worth reading as a set, because they answer question 1 differently:
-**F3 reuses 43 ATT&CK numbers**, which is where all its difficulty lives,
+**F3 reuses 46 ATT&CK numbers**, which is where all its difficulty lives,
 **ATLAS borrows none**, which makes it mostly plumbing, and **AADAPT does both
 at once**, taking ten of its eleven tactics from ATT&CK by identifier while
 numbering every technique itself. Find out which one you are dealing with
@@ -32,7 +32,7 @@ its website prose.
 **1. Does it reuse identifiers from a framework we already ship?**
 Look for its convention on techniques that already exist elsewhere. F3's is
 explicit: a technique already described by ATT&CK keeps its ATT&CK number, so
-43 of its 123 techniques are ATT&CK numbers. This is the single most
+46 of its 138 techniques are ATT&CK numbers. This is the single most
 consequential answer, because our identifiers derive from the number alone: one
 number is one object, and two names for it would put two cards on the canvas
 for one thing. If the answer is yes, the borrowed entries must be emitted as

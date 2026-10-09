@@ -16,7 +16,7 @@ import GuideShell, { guideHref } from './GuideShell'
 import type { GuideMode } from './GuideShell'
 
 /**
- * The eight tactics of F3 v1.1, in matrix order, which is the order of the
+ * The eight tactics of F3 v1.2, in matrix order, which is the order of the
  * fraud lifecycle rather than alphabetical.
  *
  * Six are ATT&CK's own, identifiers included: that overlap is the point of
@@ -176,7 +176,7 @@ export default function F3Guide({ mode = 'app' }: { mode?: GuideMode }) {
         <p className="hint">
           MITRE's own paper describes seven: it was written before ATT&CK v19 split what
           used to be Defense Evasion into <code>TA0005 Stealth</code> and{' '}
-          <code>TA0112 Defense Impairment</code>. F3 v1.1 followed the split, and so does
+          <code>TA0112 Defense Impairment</code>. F3 v1.2 follows the split, and so does
           this application.
         </p>
       </section>
@@ -206,7 +206,7 @@ export default function F3Guide({ mode = 'app' }: { mode?: GuideMode }) {
         <p>
           Now the trap. F3's convention is that a technique already described by ATT&CK{' '}
           <strong>keeps its ATT&CK number</strong>, so the F3 catalogue also publishes
-          numbers like <code>T1566</code> and <code>T1110.003</code>. The shape of an
+          numbers like <code>T1598</code> and <code>T1110.003</code>. The shape of an
           identifier therefore says nothing about which framework you are in: an{' '}
           <code>F</code> is always F3, a <code>T</code> may be either.
         </p>
@@ -229,12 +229,12 @@ export default function F3Guide({ mode = 'app' }: { mode?: GuideMode }) {
           <code>impersonates</code> was already the most fraud-shaped verb STIX had.
         </p>
         <p>
-          The 43 techniques F3 borrows from ATT&CK go out as <strong>ATT&CK</strong>{' '}
+          The 46 techniques F3 borrows from ATT&CK go out as <strong>ATT&CK</strong>{' '}
           techniques, because that is what they are: one number is one object, and a
           technique that came in through the fraud palette must not become a second card
           for something already on the canvas. F3's own techniques go out with a{' '}
           <code>mitre-f3</code> reference and a link to their page, which an{' '}
-          <code>F1005</code> needs and a <code>T1566</code> does not.
+          <code>F1005</code> needs and a <code>T1598</code> does not.
         </p>
       </section>
 

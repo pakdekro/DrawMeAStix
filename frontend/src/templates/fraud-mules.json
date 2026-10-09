@@ -34,7 +34,7 @@
       "key": "f1047",
       "type": "attack-pattern",
       "label": "Moving it along",
-      "fixed": "Transfer of funds",
+      "fixed": "Transfer of Funds",
       "prefill": { "x_mitre_id": "F1047", "mitre_framework": "mitre-f3" }
     },
     {
