@@ -22,10 +22,13 @@ Two consequences, both handled below:
   cards carrying the SAME deterministic ID on the canvas, which is exactly the
   collision the builder warns about.
 
-Four `isAttack` identifiers are not in our Enterprise dataset: T1451, T1453 and
-T1660 belong to ATT&CK Mobile, and T1586.004 exists nowhere in ATT&CK - F3
-minted it under an ATT&CK parent. They keep the F3 spelling and are listed at
-the end of the run rather than silently trusted.
+Some `isAttack` identifiers are not in our ATT&CK dataset, which carries the
+three matrices. They come in two kinds. F3 mints its own under an ATT&CK
+parent: as of F3 1.2, T1585.004 and T1586.004 exist nowhere in ATT&CK. And F3
+keeps citing numbers ATT&CK has since revoked: T1672 Email Spoofing became
+T1684.002 in ATT&CK v19, so F3's card for it is NOT the one the ATT&CK palette
+offers. They keep the F3 spelling and are listed at the end of the run rather
+than silently trusted; the run is the current list, this paragraph is not.
 
 Usage: cd backend && uv run python scripts/build_f3_dataset.py
 """
@@ -159,7 +162,7 @@ def main() -> None:
     print(f"  read from {source}, the most recent published native file")
     print(f"  {renamed} names taken back from ATT&CK (F3 spells sub-techniques by full path)")
     if unknown_attack_ids:
-        print("  flagged isAttack but absent from our Enterprise dataset, F3 spelling kept:")
+        print("  flagged isAttack but absent from our ATT&CK dataset, F3 spelling kept:")
         for tid in unknown_attack_ids:
             print(f"    {tid}")
 
