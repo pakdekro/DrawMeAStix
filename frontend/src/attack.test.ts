@@ -87,6 +87,22 @@ describe("the three domains", () => {
   });
 });
 
+describe("revoked numbers", () => {
+  const REVOKED = (dataset as { revoked: Record<string, string> }).revoked;
+  const OFFERED = new Set(ENTRIES.filter((e) => e.type === "attack-pattern").map((e) => e.id));
+
+  // The map is what the F3 build follows to land on the technique ATT&CK
+  // offers today, so a successor that is not offered would lead nowhere.
+  it("each lead to a technique the palette offers, and none is offered itself", () => {
+    expect(Object.keys(REVOKED).length).toBeGreaterThan(0);
+    for (const [number, successor] of Object.entries(REVOKED)) {
+      expect(OFFERED.has(number)).toBe(false);
+      expect(OFFERED.has(successor)).toBe(true);
+    }
+    expect(REVOKED["T1672"]).toBe("T1684.002");
+  });
+});
+
 describe("recherche", () => {
   it("par nom, insensible à la casse", () => {
     expect(searchAttack(ENTRIES, "apt28")[0].id).toBe("G0007");
