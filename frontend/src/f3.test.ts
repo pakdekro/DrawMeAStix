@@ -30,6 +30,7 @@ const ATTACK = (attackFile as { entries: AttackEntry[] }).entries;
 const ATTACK_NAMES = new Map(
   ATTACK.filter((e) => e.type === "attack-pattern" && e.id).map((e) => [e.id!, e.name]),
 );
+const ATTACK_REVOKED = (attackFile as { revoked: Record<string, string> }).revoked;
 
 describe("dataset distillé", () => {
   it("est peuplé et bien formé", () => {
@@ -70,6 +71,17 @@ describe("dataset distillé", () => {
       (e) => ATTACK_NAMES.has(e.id!) && ATTACK_NAMES.get(e.id!) !== e.name,
     ).map((e) => `${e.id!}: "${e.name}" vs "${ATTACK_NAMES.get(e.id!)!}"`);
     expect(drifted).toEqual([]);
+  });
+
+  // F3 1.2 still cites T1672, which ATT&CK v19 revoked in favour of
+  // T1684.002. Our identifiers derive from the number, so the old one would be
+  // a second object beside the technique the ATT&CK palette offers.
+  it("a number ATT&CK revoked is replaced by its successor", () => {
+    const stale = ENTRIES.filter((e) => e.framework === "mitre-attack" && e.id! in ATTACK_REVOKED);
+    expect(stale.map((e) => `${e.id!} -> ${ATTACK_REVOKED[e.id!]}`)).toEqual([]);
+    const spoofing = ENTRIES.find((e) => e.id === "T1684.002")!;
+    expect(spoofing.framework).toBe("mitre-attack");
+    expect(spoofing.name).toBe(ATTACK_NAMES.get("T1684.002"));
   });
 
   it("les tactiques citées par une technique sont déclarées", () => {
