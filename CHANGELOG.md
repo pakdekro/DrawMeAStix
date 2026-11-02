@@ -5,6 +5,75 @@ Notable changes, newest first. Dates are the day the work landed on `main`.
 The showcase page carries a shorter, friendlier version of the same history;
 this file is the one meant for people reading the code.
 
+## 2.1.0 "CyberFraud Edition" - 2 November 2026
+
+Two months of the four knowledge bases moving under the canvas, and the
+canvas following them. Every corpus shipped with 2.0.0 has been regenerated,
+three of them across a new version, and what MITRE renamed, split or
+retired is reflected in the pages, the scenarios and the tests that hold
+them together.
+
+Nothing you saved changes. A canvas that carries a technique MITRE has since
+retired keeps it, the bundle stays valid, and the file format has not moved;
+the palette simply stops offering what the catalogue no longer has.
+
+- **The corpora, from 2.0.0 to now.** ATT&CK goes from v19.2 to v20.0, its
+  three matrices together: 2,051 entries become 2,088, with prompt
+  injection, AI-enabled exfiltration and CAPTCHA evasion arriving in
+  Enterprise and scripting interpreters in ICS. F3 goes from 1.1 to 1.2, 123
+  techniques becoming 138: money mules, fraudulent call centres, cloned
+  devices, gift cards, coercion, and `F1058 Train AI Model`, which is where
+  F3 meets ATLAS. ATLAS goes from 2026.07 to 2026.10, 178 techniques
+  becoming 221. The actor corpus grows from 855 to 923. AADAPT has published
+  nothing new and is unchanged.
+
+- **ATLAS reorganised, and the scenarios followed.** Across three releases,
+  AI Attack Staging became AI Attack Adaptation and moved before Initial
+  Access, Create Proxy AI Model became Replicate AI Model Behavior, and AI
+  Supply Chain Compromise dropped the "AI". In 2026.10 Exfiltration via AI
+  Inference API lost its three sub-techniques to a new Training Data
+  Information from AI Models, and Extract LLM System Prompt and LLM Data
+  Leakage became sub-techniques of Data from AI Services. The model theft
+  scenario cited `AML.T0024.002 Extract AI Model`, which is gone and maps
+  to nothing; it now carries the pair MITRE's own case studies of model
+  theft use, `AML.T0024` to take the answers out and `AML.T0005.001` to
+  rebuild the model from them. The supply chain scenario spells
+  `AML.T0010.003` "Model Repository", as the catalogue now does.
+
+- **A number ATT&CK revoked lands on its successor.** F3 1.2 still cites
+  `T1672 Email Spoofing`, which ATT&CK v19 revoked in favour of
+  `T1684.002`. Our identifiers derive from the number, so the F3 palette was
+  offering a card that was not the one the ATT&CK palette offers, and a
+  case reaching email spoofing from both sides got two objects. The ATT&CK
+  dataset now carries a map of every revoked technique to its successor,
+  and the F3 build follows it.
+
+- **Three actors moved to ATT&CK, and their spelling with them.** `UNC1549`
+  and `TA455` are now aliases of ATT&CK's `G1059 NIMBUS MANTICORE`, and `The
+  Gentlemen` is `G1058`. ATT&CK is authoritative wherever it resolves a name,
+  so searching for one of those now offers the ATT&CK group, under its
+  ATT&CK name, which derives a different identifier than the MISP entry did.
+  An object already on a canvas keeps its identifier, and the two will not
+  merge on import until somebody says they are the same actor.
+
+- **A scenario stopped misnaming a technique.** The mule scenario spelled
+  `F1047` "Transfer of funds" where F3 1.2 says "Transfer of Funds". The
+  identifier is computed from the number, but the name travels with the
+  object, and a scenario that spells a technique its own way puts a card on
+  the canvas that disagrees with the catalogue it quotes.
+
+- **Pages that count instead of remembering.** The STIX guide said three
+  frameworks and then linked four, and the framework panel named two; both
+  are now built from the registry, so the next framework names itself. The
+  F3 page cited `T1566` as a number F3 publishes, which it does not;
+  `T1598` does. Every count the framework pages state is asserted against
+  the shipped file by a test, which is what turned each of these refreshes
+  into a red run rather than a silent one.
+
+- **The release job no longer fails on a release that exists.** It failed
+  on v2.0.0 for that reason, having built the tarball and attached it to
+  nothing. It now attaches the build and leaves notes written by hand alone.
+
 ## 2.0.0 "CyberFraud Edition" - 30 August 2026
 
 The release where the answer to "what is this for" changes. One canvas now
