@@ -35,16 +35,25 @@
       "key": "t0024",
       "type": "attack-pattern",
       "label": "Taking it out",
-      "fixed": "Extract AI Model",
-      "prefill": { "x_mitre_id": "AML.T0024.002", "mitre_framework": "mitre-atlas" }
+      "fixed": "Exfiltration via AI Inference API",
+      "prefill": { "x_mitre_id": "AML.T0024", "mitre_framework": "mitre-atlas" }
+    },
+    {
+      "key": "t0005",
+      "type": "attack-pattern",
+      "label": "Rebuilding it",
+      "fixed": "Replicate Behavior from Model Outputs",
+      "prefill": { "x_mitre_id": "AML.T0005.001", "mitre_framework": "mitre-atlas" }
     }
   ],
   "relations": [
     { "from": "actor", "rel": "targets", "to": "victim" },
     { "from": "actor", "rel": "uses", "to": "t0013" },
     { "from": "actor", "rel": "uses", "to": "t0024" },
+    { "from": "actor", "rel": "uses", "to": "t0005" },
     { "from": "t0013", "rel": "targets", "to": "victim" },
     { "from": "t0024", "rel": "targets", "to": "victim" },
+    { "from": "t0005", "rel": "targets", "to": "victim" },
     { "from": "actor", "rel": "owns", "to": "infra" },
     { "from": "infra", "rel": "consists-of", "to": "endpoint" },
     { "from": "infra", "rel": "consists-of", "to": "account" }

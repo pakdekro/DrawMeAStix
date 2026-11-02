@@ -71,7 +71,7 @@
       "key": "t0010",
       "type": "attack-pattern",
       "label": "How it arrives",
-      "fixed": "Model",
+      "fixed": "Model Repository",
       "prefill": {
         "x_mitre_id": "AML.T0010.003",
         "mitre_framework": "mitre-atlas"
