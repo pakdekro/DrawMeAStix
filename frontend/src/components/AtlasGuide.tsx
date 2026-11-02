@@ -228,8 +228,8 @@ export default function AtlasGuide({ mode = 'app' }: { mode?: GuideMode }) {
         </dl>
         <p>
           <strong>ATLAS borrows no identifier</strong>, and that is its whole difference
-          with the fraud matrix. Where F3 reuses 43 ATT&CK numbers verbatim, ATLAS gives
-          everything a number of its own and, for 44 of its 208 techniques, records which
+          with the fraud matrix. Where F3 reuses 46 ATT&CK numbers verbatim, ATLAS gives
+          everything a number of its own and, for 48 of its 221 techniques, records which
           ATT&CK technique it was adapted from. <code>AML.T0000</code> is adapted from{' '}
           <code>T1596</code>; it is not <code>T1596</code>. So the export writes an{' '}
           <code>mitre-atlas</code> reference and nothing else, exactly as MITRE's own ATLAS
@@ -240,7 +240,7 @@ export default function AtlasGuide({ mode = 'app' }: { mode?: GuideMode }) {
       <section className="guide-section">
         <h2>Two cards called Phishing</h2>
         <p>
-          Forty-two ATLAS techniques carry a name that also exists in ATT&CK. Put both on
+          Forty-eight ATLAS techniques carry a name that also exists in ATT&CK. Put both on
           one canvas and you get two cards with the same name, two different numbers and two
           different framework marks, which is correct: they are two entries in two
           catalogues, and the identifiers this tool derives keep them apart the whole way
