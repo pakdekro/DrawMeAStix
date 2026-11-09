@@ -10,7 +10,9 @@
  * vectors consume.
  */
 
+import { entityKey } from "./entityKey";
 import { canonicalObservable } from "./ioc";
+import { NODE_H } from "./placement";
 import { announceChange } from "./sync";
 import { lintInvestigation } from "./lint";
 import { buildBundle, ExportError } from "./stix/bundle";
@@ -1012,6 +1014,123 @@ export async function importBundle(bundle: unknown, name?: string) {
     relationship_count: state.relationships.length,
   };
   return { investigation, report };
+}
+
+/** What a merge found already there, and so did not write a second time. */
+export interface AlreadyPresent {
+  entities: number;
+  relationships: number;
+  notes: number;
+}
+
+/** Room left between the existing drawing and what a merge brings in. */
+const MERGE_GAP = 2 * NODE_H;
+
+/**
+ * Imports a bundle INTO an existing investigation, rather than beside it.
+ *
+ * From inside an investigation, "import" means "add this to what I am
+ * looking at": the home page is where a bundle becomes an investigation of
+ * its own. So the investigation keeps its name and description, and what
+ * the bundle brings is merged into it:
+ *
+ * - an entity that is already there (same business key, the one every other
+ *   way in deduplicates on) is the SAME object: the bundle's relationships
+ *   and notes hang on the existing one, which is left as the analyst made it;
+ * - a relationship or a note that already exists is not written twice, so
+ *   importing the same bundle again changes nothing;
+ * - curated entities keep their own arrangement, moved as a block below the
+ *   existing drawing rather than on top of it; third-party ones go to the
+ *   triage tray, as on any import.
+ */
+export async function importBundleInto(iid: string, bundle: unknown) {
+  requestPersistence();
+  const { state, report } = importBundleCore(bundle as never);
+  return tx(STORES.slice() as StoreName[], "readwrite", async (stores) => {
+    const inv = await getInvestigationOr404(stores, iid);
+    const [entities, relationships, notes] = await Promise.all([
+      byInvestigation<EntityRow>(stores.entities, iid),
+      byInvestigation<RelationshipRow>(stores.relationships, iid),
+      byInvestigation<NoteRow>(stores.notes, iid),
+    ]);
+    const present: AlreadyPresent = { entities: 0, relationships: 0, notes: 0 };
+
+    // imported local id -> id in this investigation, existing or new
+    const byKey = new Map(entities.map((e) => [entityKey(e), e.id]));
+    const local = new Map<string, string>();
+    const added: EntityRow[] = [];
+    for (const row of state.entities) {
+      const key = entityKey(row);
+      const existing = byKey.get(key);
+      if (existing !== undefined) {
+        local.set(row.id, existing);
+        present.entities += 1;
+        continue;
+      }
+      byKey.set(key, row.id);
+      local.set(row.id, row.id);
+      added.push({ ...row, investigation_id: iid });
+    }
+
+    const onCanvas = entities.filter((e) => e.status === "confirmed");
+    const arriving = added.filter((e) => e.status === "confirmed");
+    if (onCanvas.length > 0 && arriving.length > 0) {
+      const left = Math.min(...onCanvas.map((e) => e.position_x));
+      const bottom = Math.max(...onCanvas.map((e) => e.position_y)) + NODE_H;
+      const dx = left - Math.min(...arriving.map((e) => e.position_x));
+      const dy = bottom + MERGE_GAP - Math.min(...arriving.map((e) => e.position_y));
+      for (const row of arriving) {
+        row.position_x += dx;
+        row.position_y += dy;
+      }
+    }
+    for (const row of added) stores.entities.put(row);
+
+    const relKey = (r: Pick<RelationshipRow, "source_id" | "target_id" | "rel_type">) =>
+      `${r.source_id}|${r.target_id}|${r.rel_type}`;
+    const relKeys = new Set(relationships.map(relKey));
+    let relCount = 0;
+    for (const row of state.relationships) {
+      const merged = {
+        ...row,
+        investigation_id: iid,
+        source_id: local.get(row.source_id) ?? row.source_id,
+        target_id: local.get(row.target_id) ?? row.target_id,
+      };
+      if (relKeys.has(relKey(merged))) {
+        present.relationships += 1;
+        continue;
+      }
+      relKeys.add(relKey(merged));
+      stores.relationships.put(merged);
+      relCount += 1;
+    }
+
+    const noteKey = (n: Pick<NoteRow, "entity_id" | "kind" | "content">) =>
+      `${n.entity_id ?? ""}|${n.kind}|${n.content}`;
+    const noteKeys = new Set(notes.map(noteKey));
+    let noteCount = 0;
+    for (const row of state.notes) {
+      const merged = {
+        ...row,
+        investigation_id: iid,
+        entity_id: row.entity_id === null ? null : (local.get(row.entity_id) ?? null),
+      };
+      if (noteKeys.has(noteKey(merged))) {
+        present.notes += 1;
+        continue;
+      }
+      noteKeys.add(noteKey(merged));
+      stores.notes.put(merged);
+      noteCount += 1;
+    }
+
+    if (added.length + relCount + noteCount > 0) touch(stores, inv);
+    return {
+      report: { ...report, entities: added.length, relationships: relCount, notes: noteCount },
+      alreadyPresent: present,
+    };
+  });
 }
 
 // --- Backup / restore (#123) -------------------------------------------------

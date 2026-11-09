@@ -1304,8 +1304,10 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
     [iid, showInfo, showError],
   )
 
-  // Importing a STIX bundle → a new investigation (same model as the home
-  // page: one bundle = one investigation). We navigate to it once created.
+  // Importing a STIX bundle from inside an investigation MERGES it into this
+  // one: an entity already on the board is reused, not drawn twice, and
+  // importing the same bundle again changes nothing. A bundle becomes an
+  // investigation of its own from the home page.
   const importStix = useCallback(
     async (file: File) => {
       try {
@@ -1316,13 +1318,26 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
         } catch {
           throw new Error('This file is not valid JSON')
         }
-        const result = await api.importBundle(bundle, file.name.replace(/\.[^.]*$/, ''))
-        window.location.hash = `#/inv/${result.investigation.id}`
+        const { report, alreadyPresent } = await api.importBundleInto(iid, bundle)
+        await reload()
+        const parts = [
+          `${report.entities} entit${report.entities === 1 ? 'y' : 'ies'}`,
+          `${report.relationships} relationship(s)`,
+        ]
+        if (report.notes > 0) parts.push(`${report.notes} note(s)`)
+        const known =
+          alreadyPresent.entities + alreadyPresent.relationships + alreadyPresent.notes
+        showInfo(
+          `Bundle merged: ${parts.join(', ')} added` +
+            (known > 0 ? `; ${known} already in this investigation, kept as they were` : '') +
+            '.' +
+            (report.warnings.length > 0 ? ` ${report.warnings.join('; ')}.` : ''),
+        )
       } catch (e) {
         showError(e)
       }
     },
-    [showError],
+    [iid, reload, showInfo, showError],
   )
 
   /**
@@ -2780,11 +2795,11 @@ function WorkspaceInner({ investigationId }: { investigationId: string }) {
                   }}
                 />
               </label>
-              <label className="menu-item" title="Import a STIX 2.1 bundle → new investigation">
+              <label className="menu-item" title="Merge a STIX 2.1 bundle into this investigation">
                 <Icon name="doc" size={15} />
                 <span>
                   A STIX bundle…
-                  <em>opens a new investigation</em>
+                  <em>merged into this investigation</em>
                 </span>
                 <input
                   type="file"
