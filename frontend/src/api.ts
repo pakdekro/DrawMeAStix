@@ -124,6 +124,7 @@ export const api = {
   ): Promise<ExportResult> => store.exportBundle(iid, opts) as Promise<ExportResult>,
   importBundle: (bundle: unknown, name?: string): Promise<ImportResult> =>
     store.importBundle(bundle, name),
+  importBundleInto: (iid: string, bundle: unknown) => store.importBundleInto(iid, bundle),
 
   exportBackup: (includeSettings?: boolean) => store.exportBackup(includeSettings),
   inspectBackup: (data: unknown) => store.inspectBackup(data),

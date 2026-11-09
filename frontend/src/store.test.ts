@@ -41,6 +41,7 @@ import {
   exportBundle,
   getInvestigation,
   importBundle,
+  importBundleInto,
   listCaptures,
   listEntities,
   listInvestigations,
@@ -61,6 +62,7 @@ import {
   updateEntity,
 } from "./store";
 import golden from "./stix/golden-bundle.json";
+import { NODE_H } from "./placement";
 
 beforeEach(async () => {
   await _resetForTests();
@@ -270,6 +272,88 @@ describe("export / import via le store", () => {
 
   it("import d'un non-bundle : erreur explicite", async () => {
     await expect(importBundle({ type: "rien" })).rejects.toThrow("STIX bundle");
+  });
+});
+
+describe("importing a bundle into an open investigation", () => {
+  /** A curated bundle: APT28 uses X-Agent, with a note on the actor. */
+  async function curatedBundle() {
+    const { inv, actor, malware } = await seed();
+    await createRelationship(inv.id, {
+      source_id: actor.id,
+      target_id: malware.id,
+      rel_type: "uses",
+    });
+    await createNote(inv.id, { content: "attribution?", entity_id: actor.id });
+    const { bundle } = await exportBundle(inv.id, { tlp: "none", include_notes: true });
+    await deleteInvestigation(inv.id);
+    return bundle;
+  }
+
+  it("merges into the investigation instead of creating another one", async () => {
+    const bundle = await curatedBundle();
+    const target = await createInvestigation("Case in progress", "kept");
+    const { report, alreadyPresent } = await importBundleInto(target.id, bundle);
+    expect(report).toMatchObject({ entities: 2, relationships: 1, notes: 1 });
+    expect(alreadyPresent).toEqual({ entities: 0, relationships: 0, notes: 0 });
+    const all = await listInvestigations();
+    expect(all).toHaveLength(1);
+    expect(all[0]).toMatchObject({ name: "Case in progress", description: "kept" });
+    expect(all[0].entity_count).toBe(2);
+  });
+
+  it("reuses an entity already there, whatever its case", async () => {
+    const bundle = await curatedBundle();
+    const target = await createInvestigation("Case");
+    const mine = await createEntity(target.id, {
+      stix_type: "threat-actor",
+      name: "apt28",
+      properties: { description: "my own words" },
+    });
+    const { alreadyPresent } = await importBundleInto(target.id, bundle);
+    expect(alreadyPresent.entities).toBe(1);
+    const entities = await listEntities(target.id);
+    expect(entities.filter((e) => e.stix_type === "threat-actor")).toEqual([
+      expect.objectContaining({ id: mine.id, properties: { description: "my own words" } }),
+    ]);
+    const [rel] = await listRelationships(target.id);
+    expect(rel.source_id).toBe(mine.id);
+    const [note] = await listNotes(target.id);
+    expect(note.entity_id).toBe(mine.id);
+  });
+
+  it("importing the same bundle twice changes nothing", async () => {
+    const bundle = await curatedBundle();
+    const target = await createInvestigation("Case");
+    await importBundleInto(target.id, bundle);
+    const { report, alreadyPresent } = await importBundleInto(target.id, bundle);
+    expect(report).toMatchObject({ entities: 0, relationships: 0, notes: 0 });
+    expect(alreadyPresent).toEqual({ entities: 2, relationships: 1, notes: 1 });
+    expect(await listEntities(target.id)).toHaveLength(2);
+    expect(await listRelationships(target.id)).toHaveLength(1);
+    expect(await listNotes(target.id)).toHaveLength(1);
+  });
+
+  it("places what arrives below the existing drawing, not on top of it", async () => {
+    const bundle = await curatedBundle();
+    const target = await createInvestigation("Case");
+    await createEntity(target.id, {
+      stix_type: "campaign",
+      name: "Already drawn",
+      position_x: 100,
+      position_y: 500,
+    });
+    await importBundleInto(target.id, bundle);
+    const arrived = (await listEntities(target.id)).filter((e) => e.name !== "Already drawn");
+    expect(arrived).toHaveLength(2);
+    for (const e of arrived) expect(e.position_y).toBeGreaterThan(500 + NODE_H);
+    expect(Math.min(...arrived.map((e) => e.position_x))).toBe(100);
+  });
+
+  it("an unknown investigation is refused, and nothing is written", async () => {
+    const bundle = await curatedBundle();
+    await expect(importBundleInto("nope", bundle)).rejects.toMatchObject({ status: 404 });
+    expect(await listInvestigations()).toHaveLength(0);
   });
 });
 
