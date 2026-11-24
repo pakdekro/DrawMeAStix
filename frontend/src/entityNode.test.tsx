@@ -6,7 +6,7 @@ import type { Entity } from './types'
 
 /**
  * The card says which framework a technique came from, because a fraud case
- * mixes the two and the number does not arbitrate: F3 reuses 43 ATT&CK
+ * mixes the two and the number does not arbitrate: F3 reuses 42 ATT&CK
  * numbers and publishes T-numbers of its own.
  */
 const card = (properties: Record<string, unknown>, stix_type = 'attack-pattern') => {

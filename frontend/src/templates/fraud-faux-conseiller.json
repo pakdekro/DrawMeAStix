@@ -60,8 +60,8 @@
       "key": "f1025",
       "type": "attack-pattern",
       "label": "The transfer the victim makes",
-      "fixed": "Electronic Funds Transfer: Peer-to-Peer Transfer",
-      "prefill": { "x_mitre_id": "F1025.001", "mitre_framework": "mitre-f3" }
+      "fixed": "Transfer of Funds: Peer-to-Peer Transfer",
+      "prefill": { "x_mitre_id": "F1047.001", "mitre_framework": "mitre-f3" }
     }
   ],
   "relations": [

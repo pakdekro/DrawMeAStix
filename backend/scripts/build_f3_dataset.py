@@ -6,7 +6,7 @@ only describe the hierarchy) - importing it would drop the whole matrix into an
 investigation. What the palette needs is a dictionary, exactly as for ATT&CK.
 
 The native file is also the only one that carries `isAttack`, and that flag is
-the whole point of this script: 46 of the 138 techniques are ATT&CK techniques
+the whole point of this script: 42 of the 153 techniques are ATT&CK techniques
 that F3 reuses by number, and the STIX bundle LOSES that provenance - every
 external reference in it says `mitre-f3`, T-ids included. Reading the bundle
 instead, we would end up claiming that T1566 is an F3 identifier.
@@ -21,15 +21,15 @@ Three consequences, all handled below:
   names the leaf ("Password Guessing"). Keeping both spellings would put two
   cards carrying the SAME deterministic ID on the canvas, which is exactly the
   collision the builder warns about;
-- a number ATT&CK has since revoked is replaced by its successor. F3 1.2
+- a number ATT&CK has since revoked is replaced by its successor. F3 1.3
   still cites T1672 Email Spoofing, which ATT&CK v19 revoked in favour of
   T1684.002: kept as is, F3's card for it would be a second object beside the
   one the ATT&CK palette offers. The ATT&CK dataset carries the revocations,
   which is why this build runs after it.
 
 Some `isAttack` identifiers are still not in our ATT&CK dataset, which carries
-the three matrices: F3 mints its own under an ATT&CK parent, and as of F3 1.2
-T1585.004 and T1586.004 exist nowhere in ATT&CK. They keep the F3 spelling and
+the three matrices: F3 mints its own under an ATT&CK parent, and as of F3 1.3
+T1586.004 exists nowhere in ATT&CK. They keep the F3 spelling and
 are listed at the end of the run rather than silently trusted; the run is the
 current list, this paragraph is not.
 
@@ -107,7 +107,10 @@ def main() -> None:
 
     tactics = [o for o in data if o.get("tactic") is True]
     techniques = [o for o in data if o.get("tactic") is not True]
-    version = next((o.get("version") for o in data if o.get("version")), "?")
+    # The release is the file's, not any object's: each technique carries the
+    # version it last changed in, so the first one read said "1.2" about the
+    # 1.3 release.
+    version = NATIVE.match(source).group(1)
     by_tactic_id = {t["id"]: shortname(t["name"]) for t in tactics}
 
     entries = []

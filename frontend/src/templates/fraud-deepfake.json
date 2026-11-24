@@ -50,8 +50,8 @@
       "key": "f1025",
       "type": "attack-pattern",
       "label": "The transfer",
-      "fixed": "Electronic Funds Transfer: Wire Transfer",
-      "prefill": { "x_mitre_id": "F1025.003", "mitre_framework": "mitre-f3" }
+      "fixed": "Transfer of Funds: Wire Transfer",
+      "prefill": { "x_mitre_id": "F1047.004", "mitre_framework": "mitre-f3" }
     }
   ],
   "relations": [

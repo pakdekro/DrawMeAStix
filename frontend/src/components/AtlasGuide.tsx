@@ -228,7 +228,7 @@ export default function AtlasGuide({ mode = 'app' }: { mode?: GuideMode }) {
         </dl>
         <p>
           <strong>ATLAS borrows no identifier</strong>, and that is its whole difference
-          with the fraud matrix. Where F3 reuses 46 ATT&CK numbers verbatim, ATLAS gives
+          with the fraud matrix. Where F3 reuses 42 ATT&CK numbers verbatim, ATLAS gives
           everything a number of its own and, for 48 of its 221 techniques, records which
           ATT&CK technique it was adapted from. <code>AML.T0000</code> is adapted from{' '}
           <code>T1596</code>; it is not <code>T1596</code>. So the export writes an{' '}
