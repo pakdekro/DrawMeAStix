@@ -3,8 +3,8 @@
  *
  * The framework brings no new verb: its bundle carries `subtechnique-of` and
  * nothing else, which describes the catalogue and never reaches a canvas. What
- * it does bring is an identifier space that OVERLAPS ATT&CK's on purpose - 46
- * of its 138 techniques are ATT&CK techniques reused by number, and its own 92
+ * it does bring is an identifier space that OVERLAPS ATT&CK's on purpose - 42
+ * of its 153 techniques are ATT&CK techniques reused by number, and its own 111
  * start with an F. Everything checked here follows from that single fact.
  */
 
@@ -34,7 +34,7 @@ const ATTACK_REVOKED = (attackFile as { revoked: Record<string, string> }).revok
 
 describe("dataset distillé", () => {
   it("est peuplé et bien formé", () => {
-    expect(ENTRIES.length).toBe(138);
+    expect(ENTRIES.length).toBe(153);
     expect(F3.tactics).toHaveLength(8);
     for (const e of ENTRIES) {
       expect(e.type).toBe("attack-pattern");
@@ -52,8 +52,8 @@ describe("dataset distillé", () => {
       expect(e.framework).toBe(e.id!.startsWith("F") ? "mitre-f3" : "mitre-attack");
     }
     const borrowed = ENTRIES.filter((e) => e.framework === "mitre-attack");
-    expect(borrowed).toHaveLength(46);
-    expect(ENTRIES.length - borrowed.length).toBe(92);
+    expect(borrowed).toHaveLength(42);
+    expect(ENTRIES.length - borrowed.length).toBe(111);
   });
 
   /**
